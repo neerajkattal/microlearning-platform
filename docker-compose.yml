@@ -5,6 +5,11 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-microlearning}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-microlearning}
       POSTGRES_DB: ${POSTGRES_DB:-microlearning}
+    ports:
+      # Exposed for host-side tools: `make migrate` runs Alembic from the
+      # host (the api image doesn't carry the root alembic.ini/migrations),
+      # and it's handy for local psql access.
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
