@@ -1,0 +1,85 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-microlearning}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-microlearning}
+      POSTGRES_DB: ${POSTGRES_DB:-microlearning}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-microlearning}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/api.Dockerfile
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-microlearning}:${POSTGRES_PASSWORD:-microlearning}@postgres:5432/${POSTGRES_DB:-microlearning}
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./services/api/app:/app/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  worker:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/worker.Dockerfile
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-microlearning}:${POSTGRES_PASSWORD:-microlearning}@postgres:5432/${POSTGRES_DB:-microlearning}
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./services/worker/app:/app/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: python -m app.main
+
+  web:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/web.Dockerfile
+    environment:
+      VITE_API_BASE: /api
+    volumes:
+      - ./apps/web:/repo/apps/web
+      - ./packages:/repo/packages
+      # npm workspaces hoist deps to the repo-root node_modules (that's
+      # also where @microlearning/* workspace symlinks live) — not
+      # apps/web/node_modules — so that's the directory to preserve
+      # against the bind mounts above.
+      - web_node_modules:/repo/node_modules
+    depends_on:
+      - api
+
+  nginx:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - web
+      - api
+
+volumes:
+  pgdata:
+  web_node_modules:
