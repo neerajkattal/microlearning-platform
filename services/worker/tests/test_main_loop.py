@@ -1,5 +1,6 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
+from app.jobs import JOB_REGISTRY, ScheduledJob
 from app.main import run
 
 
@@ -12,8 +13,51 @@ def test_run_completes_after_max_iterations_without_hanging():
         patch("app.main.check_database", return_value=True) as db_check,
         patch("app.main.check_redis", return_value=True) as redis_check,
         patch("app.main.time.sleep"),
+        patch("httpx.post"),  # the registered ingest_opentdb job would otherwise make a real call
     ):
         run(max_iterations=2)
 
     assert db_check.call_count == 2
     assert redis_check.call_count == 2
+
+
+def test_scheduled_job_runs_on_first_tick_then_waits_out_its_interval():
+    fake_job = MagicMock()
+    JOB_REGISTRY["_test_job"] = ScheduledJob(name="_test_job", interval_seconds=3600, fn=fake_job)
+    try:
+        with (
+            patch("app.main.make_engine"),
+            patch("app.main.make_redis"),
+            patch("app.main.check_database", return_value=True),
+            patch("app.main.check_redis", return_value=True),
+            patch("app.main.time.sleep"),
+            patch("httpx.post"),
+        ):
+            run(max_iterations=3)
+    finally:
+        del JOB_REGISTRY["_test_job"]
+
+    # Fires on the first tick (nothing has ever run), then its 3600s
+    # interval means it should NOT fire again within just 3 quick ticks.
+    assert fake_job.call_count == 1
+
+
+def test_a_failing_job_does_not_crash_the_loop():
+    failing_job = MagicMock(side_effect=RuntimeError("boom"))
+    JOB_REGISTRY["_test_failing_job"] = ScheduledJob(name="_test_failing_job", interval_seconds=0, fn=failing_job)
+    try:
+        with (
+            patch("app.main.make_engine"),
+            patch("app.main.make_redis"),
+            patch("app.main.check_database", return_value=True),
+            patch("app.main.check_redis", return_value=True),
+            patch("app.main.time.sleep"),
+            patch("httpx.post"),
+        ):
+            run(max_iterations=2)
+    finally:
+        del JOB_REGISTRY["_test_failing_job"]
+
+    # interval_seconds=0 means it's due every tick; the loop must survive
+    # both calls rather than dying on the first exception.
+    assert failing_job.call_count == 2
