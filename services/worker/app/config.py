@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     worker_env: str = "development"
     poll_interval_seconds: float = 5.0
+    api_base_url: str = "http://api:8000"
+    opentdb_ingestion_interval_seconds: float = 3600.0
+    opentdb_ingestion_amount: int = 20
 
 
 settings = Settings()

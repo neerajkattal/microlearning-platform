@@ -33,15 +33,23 @@ def run(max_iterations: Optional[int] = None) -> None:
         f"jobs_registered={len(JOB_REGISTRY)}"
     )
 
+    last_run: dict[str, float] = {}
     iterations = 0
     while not _shutdown_requested:
         db_ok = check_database(engine)
         redis_ok = check_redis(redis_client)
         logger.info(f"connectivity check database={db_ok} redis={redis_ok}")
 
+        now = time.monotonic()
         for name, job in JOB_REGISTRY.items():
+            if now - last_run.get(name, 0.0) < job.interval_seconds:
+                continue
             logger.info(f"running job={name}")
-            job()
+            try:
+                job.fn()
+            except Exception:
+                logger.exception(f"job={name} raised an exception")
+            last_run[name] = now
 
         iterations += 1
         if max_iterations is not None and iterations >= max_iterations:
