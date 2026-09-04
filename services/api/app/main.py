@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import health, ingestion, questions
+from .routers import health, ingestion, questions, quiz
 
 app = FastAPI(title="Microlearning Platform API")
 
@@ -15,3 +15,4 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(ingestion.router)
 app.include_router(questions.router)
+app.include_router(quiz.router)

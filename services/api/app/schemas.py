@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -37,3 +38,50 @@ class QuestionSummaryOut(BaseModel):
     category: str
     source: str
     created_at: datetime
+
+
+class StartQuizSessionRequest(BaseModel):
+    category: Optional[str] = None
+    question_count: int = Field(default=5, ge=1, le=20)
+
+
+class AnswerChoiceOut(BaseModel):
+    # id + text only — never isCorrect (CLAUDE.md "Security boundary").
+    id: int
+    text: str
+
+
+class SessionQuestionOut(BaseModel):
+    session_question_id: int
+    question_id: int
+    prompt: str
+    difficulty: str
+    choices: list[AnswerChoiceOut]
+
+
+class QuizSessionOut(BaseModel):
+    id: int
+    status: str
+    questions: list[SessionQuestionOut]
+
+
+class SubmitAnswerRequest(BaseModel):
+    selected_answer_id: int
+    response_time_ms: Optional[int] = Field(default=None, ge=0)
+
+
+class SubmitAnswerResult(BaseModel):
+    is_correct: bool
+    correct_answer_id: int
+    explanation: Optional[str]
+    xp_earned: int
+
+
+class CompleteSessionResult(BaseModel):
+    session_id: int
+    score: int
+    total_questions: int
+    xp_earned: int
+    total_xp: int
+    level: int
+    streak: int
