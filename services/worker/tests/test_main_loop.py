@@ -42,6 +42,31 @@ def test_scheduled_job_runs_on_first_tick_then_waits_out_its_interval():
     assert fake_job.call_count == 1
 
 
+def test_first_run_fires_even_when_the_monotonic_clock_starts_small():
+    """Regression test: time.monotonic()'s absolute value is unspecified —
+    it can start near 0 depending on the platform. Caught live in docker
+    compose: with a naive `last_run.get(name, 0.0)` default, a small clock
+    value made `now - 0.0 < interval_seconds` true, silently skipping the
+    job's first run entirely. Must fire regardless of the clock's origin."""
+    fake_job = MagicMock()
+    JOB_REGISTRY["_test_job"] = ScheduledJob(name="_test_job", interval_seconds=3600, fn=fake_job)
+    try:
+        with (
+            patch("app.main.make_engine"),
+            patch("app.main.make_redis"),
+            patch("app.main.check_database", return_value=True),
+            patch("app.main.check_redis", return_value=True),
+            patch("app.main.time.sleep"),
+            patch("app.main.time.monotonic", return_value=1.0),  # small, like a fresh container
+            patch("httpx.post"),
+        ):
+            run(max_iterations=1)
+    finally:
+        del JOB_REGISTRY["_test_job"]
+
+    assert fake_job.call_count == 1
+
+
 def test_a_failing_job_does_not_crash_the_loop():
     failing_job = MagicMock(side_effect=RuntimeError("boom"))
     JOB_REGISTRY["_test_failing_job"] = ScheduledJob(name="_test_failing_job", interval_seconds=0, fn=failing_job)

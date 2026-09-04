@@ -33,7 +33,13 @@ def run(max_iterations: Optional[int] = None) -> None:
         f"jobs_registered={len(JOB_REGISTRY)}"
     )
 
-    last_run: dict[str, float] = {}
+    # `None` means "never run" — this must not be a magic 0.0 sentinel
+    # compared against time.monotonic(), since that clock's absolute value
+    # is unspecified (may start near 0, may be large) and a small enough
+    # value would make `now - 0.0 < interval_seconds` true, silently
+    # skipping a job's very first run. (Caught via docker compose: the
+    # ingest_opentdb job never fired on worker startup with that version.)
+    last_run: dict[str, Optional[float]] = {}
     iterations = 0
     while not _shutdown_requested:
         db_ok = check_database(engine)
@@ -42,7 +48,8 @@ def run(max_iterations: Optional[int] = None) -> None:
 
         now = time.monotonic()
         for name, job in JOB_REGISTRY.items():
-            if now - last_run.get(name, 0.0) < job.interval_seconds:
+            previous = last_run.get(name)
+            if previous is not None and now - previous < job.interval_seconds:
                 continue
             logger.info(f"running job={name}")
             try:
