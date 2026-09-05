@@ -7,11 +7,19 @@ interface QuizQuestionProps {
 }
 
 export function QuizQuestion({ session }: QuizQuestionProps) {
-  const [index] = useState(0);
-  const [questionStartedAt] = useState(() => Date.now());
+  const [index, setIndex] = useState(0);
+  const [questionStartedAt, setQuestionStartedAt] = useState(() => Date.now());
   const [selectedAnswerId, setSelectedAnswerId] = useState<number | null>(null);
   const [result, setResult] = useState<SubmitAnswerResult | null>(null);
   const current = session.questions[index];
+  const isLastQuestion = index === session.questions.length - 1;
+
+  function goToNextQuestion() {
+    setIndex((i) => i + 1);
+    setSelectedAnswerId(null);
+    setResult(null);
+    setQuestionStartedAt(Date.now());
+  }
 
   async function selectAnswer(answerId: number) {
     if (result) return; // already answered
@@ -42,6 +50,9 @@ export function QuizQuestion({ session }: QuizQuestionProps) {
 
   return (
     <div className="max-w-xl mx-auto space-y-4">
+      <p className="text-sm text-gray-500">
+        Question {index + 1} of {session.questions.length}
+      </p>
       <h2 className="text-lg font-medium">{current.prompt}</h2>
       <div className="grid gap-2">
         {current.choices.map((choice) => (
@@ -61,6 +72,11 @@ export function QuizQuestion({ session }: QuizQuestionProps) {
             {result.is_correct ? "Correct!" : "Not quite."} +{result.xp_earned} XP
           </p>
           {result.explanation && <p className="text-sm text-gray-500">{result.explanation}</p>}
+          {!isLastQuestion && (
+            <button onClick={goToNextQuestion} className="px-4 py-2 rounded bg-gray-800 text-white">
+              Next question
+            </button>
+          )}
         </div>
       )}
     </div>
