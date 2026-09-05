@@ -5,6 +5,7 @@ import { CategorySelect } from "./pages/CategorySelect";
 import { GameModeSelect, type GameMode } from "./pages/GameModeSelect";
 import { QuizQuestion } from "./components/QuizQuestion";
 import { LaneRush } from "./components/LaneRush";
+import { BalloonPop } from "./components/BalloonPop";
 import { ResultsScreen } from "./components/ResultsScreen";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "/api";
@@ -76,6 +77,13 @@ export default function App() {
       )}
       {screen.name === "quiz" && screen.mode === "lane-rush" && (
         <LaneRush
+          key={screen.session.id}
+          session={screen.session}
+          onComplete={(result) => setScreen({ name: "results", result })}
+        />
+      )}
+      {screen.name === "quiz" && screen.mode === "balloon-pop" && (
+        <BalloonPop
           key={screen.session.id}
           session={screen.session}
           onComplete={(result) => setScreen({ name: "results", result })}
