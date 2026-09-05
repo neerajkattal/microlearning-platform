@@ -18,4 +18,11 @@ describe("GameModeSelect", () => {
     fireEvent.click(screen.getByText("Lane Rush"));
     expect(onSelectMode).toHaveBeenCalledWith("lane-rush");
   });
+
+  it("calls onSelectMode with 'balloon-pop' when Balloon Pop is picked", () => {
+    const onSelectMode = vi.fn();
+    render(<GameModeSelect onSelectMode={onSelectMode} />);
+    fireEvent.click(screen.getByText("Balloon Pop"));
+    expect(onSelectMode).toHaveBeenCalledWith("balloon-pop");
+  });
 });

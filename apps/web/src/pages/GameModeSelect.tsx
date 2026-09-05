@@ -1,4 +1,4 @@
-export type GameMode = "classic" | "lane-rush";
+export type GameMode = "classic" | "lane-rush" | "balloon-pop";
 
 interface GameModeSelectProps {
   onSelectMode: (mode: GameMode) => void;
@@ -20,6 +20,13 @@ export function GameModeSelect({ onSelectMode }: GameModeSelectProps) {
       >
         <div className="font-medium">Lane Rush</div>
         <div className="text-sm text-gray-500">Steer into an answer</div>
+      </button>
+      <button
+        onClick={() => onSelectMode("balloon-pop")}
+        className="p-4 border rounded-lg hover:bg-gray-50 text-center col-span-2"
+      >
+        <div className="font-medium">Balloon Pop</div>
+        <div className="text-sm text-gray-500">Pop the right answer</div>
       </button>
     </div>
   );
