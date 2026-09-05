@@ -17,6 +17,7 @@ type Screen =
 export default function App() {
   const [status, setStatus] = useState<HealthStatus>("checking");
   const [screen, setScreen] = useState<Screen>({ name: "categories" });
+  const [lastCategory, setLastCategory] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`${API_BASE}/health`)
@@ -25,6 +26,7 @@ export default function App() {
   }, []);
 
   async function startQuiz(categorySlug: string | null) {
+    setLastCategory(categorySlug);
     const session = await api.startQuizSession({ category: categorySlug, questionCount: 5 });
     setScreen({ name: "quiz", session });
   }
@@ -51,7 +53,7 @@ export default function App() {
       {screen.name === "results" && (
         <ResultsScreen
           result={screen.result}
-          onPlayAgain={() => startQuiz(null)}
+          onPlayAgain={() => startQuiz(lastCategory)}
           onBackToCategories={() => setScreen({ name: "categories" })}
         />
       )}
