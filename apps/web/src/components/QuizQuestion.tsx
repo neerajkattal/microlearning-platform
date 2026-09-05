@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { api } from "../api";
-import type { QuizSession, SubmitAnswerResult } from "../types";
+import type { CompleteSessionResult, QuizSession, SubmitAnswerResult } from "../types";
 
 interface QuizQuestionProps {
   session: QuizSession;
+  onComplete: (result: CompleteSessionResult) => void;
 }
 
-export function QuizQuestion({ session }: QuizQuestionProps) {
+export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
   const [index, setIndex] = useState(0);
   const [questionStartedAt, setQuestionStartedAt] = useState(() => Date.now());
   const [selectedAnswerId, setSelectedAnswerId] = useState<number | null>(null);
   const [result, setResult] = useState<SubmitAnswerResult | null>(null);
+  const [finishing, setFinishing] = useState(false);
   const current = session.questions[index];
   const isLastQuestion = index === session.questions.length - 1;
 
@@ -19,6 +21,12 @@ export function QuizQuestion({ session }: QuizQuestionProps) {
     setSelectedAnswerId(null);
     setResult(null);
     setQuestionStartedAt(Date.now());
+  }
+
+  async function finishQuiz() {
+    setFinishing(true);
+    const completeResult = await api.completeQuizSession(session.id);
+    onComplete(completeResult);
   }
 
   async function selectAnswer(answerId: number) {
@@ -75,6 +83,15 @@ export function QuizQuestion({ session }: QuizQuestionProps) {
           {!isLastQuestion && (
             <button onClick={goToNextQuestion} className="px-4 py-2 rounded bg-gray-800 text-white">
               Next question
+            </button>
+          )}
+          {isLastQuestion && (
+            <button
+              onClick={finishQuiz}
+              disabled={finishing}
+              className="px-4 py-2 rounded bg-gray-800 text-white disabled:opacity-50"
+            >
+              {finishing ? "Finishing..." : "See results"}
             </button>
           )}
         </div>
