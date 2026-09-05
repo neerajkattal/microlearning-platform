@@ -9,26 +9,40 @@ const applyServerVerdictMock = vi.fn();
 const pressLeftMock = vi.fn();
 const pressRightMock = vi.fn();
 const destroyMock = vi.fn();
+const startFullscreenMock = vi.fn();
+const stopFullscreenMock = vi.fn();
 
 vi.mock("../game/LaneRushScene", () => ({
   LANE_RUSH_EVENTS: { ANSWER_LOCKED: "answer-locked", RACE_FINISHED: "race-finished" },
   CANVAS_WIDTH: 300,
   CANVAS_HEIGHT: 450,
   LaneRushScene: class {
-    events = {
-      on: (event: string, cb: (payload?: unknown) => void) => {
-        emittedHandlers[event] = cb;
-      },
-    };
     applyServerVerdict = applyServerVerdictMock;
     pressLeft = pressLeftMock;
     pressRight = pressRightMock;
   },
 }));
 
+// Mirrors real Phaser's actual (surprising) timing: scenes are added/
+// booted asynchronously, so `scene.getScene(...)` only resolves to an
+// instance once `add()` has run — but listeners the component attaches
+// live on the game-level `events` bus, which this fake makes available
+// synchronously, same as the real Phaser.Game constructor does.
 vi.mock("phaser", () => {
   class FakeGame {
+    events = {
+      on: (event: string, cb: (payload?: unknown) => void) => {
+        emittedHandlers[event] = cb;
+      },
+    };
     scene: { add: (key: string, SceneClass: new () => unknown) => void; getScene: () => unknown };
+    scale = {
+      fullscreen: { available: true },
+      isFullscreen: false,
+      on: vi.fn(),
+      startFullscreen: startFullscreenMock,
+      stopFullscreen: stopFullscreenMock,
+    };
     private instance: unknown;
     constructor() {
       this.scene = {
@@ -42,7 +56,17 @@ vi.mock("phaser", () => {
       destroyMock();
     }
   }
-  return { default: { Game: FakeGame, AUTO: 0 } };
+  return {
+    default: {
+      Game: FakeGame,
+      AUTO: 0,
+      Scale: {
+        FIT: 1,
+        CENTER_BOTH: 1,
+        Events: { ENTER_FULLSCREEN: "enterfullscreen", LEAVE_FULLSCREEN: "leavefullscreen" },
+      },
+    },
+  };
 });
 
 const session: QuizSession = {
@@ -122,5 +146,11 @@ describe("LaneRush", () => {
     const { unmount } = render(<LaneRush session={session} onComplete={vi.fn()} />);
     unmount();
     expect(destroyMock).toHaveBeenCalled();
+  });
+
+  it("toggles full screen via the game's scale manager", () => {
+    render(<LaneRush session={session} onComplete={vi.fn()} />);
+    fireEvent.click(screen.getByText("Full screen"));
+    expect(startFullscreenMock).toHaveBeenCalledTimes(1);
   });
 });

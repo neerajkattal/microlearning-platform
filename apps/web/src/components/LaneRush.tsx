@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Phaser from "phaser";
 import { api } from "../api";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, LANE_RUSH_EVENTS, LaneRushScene } from "../game/LaneRushScene";
@@ -18,8 +18,10 @@ interface AnswerLockedPayload {
 
 export function LaneRush({ session, onComplete }: LaneRushProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<LaneRushScene | null>(null);
+  const gameRef = useRef<Phaser.Game | null>(null);
   const onCompleteRef = useRef(onComplete);
+  const [fullscreenSupported, setFullscreenSupported] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     onCompleteRef.current = onComplete;
@@ -34,14 +36,30 @@ export function LaneRush({ session, onComplete }: LaneRushProps) {
       height: CANVAS_HEIGHT,
       parent: containerRef.current,
       backgroundColor: "#111827",
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: CANVAS_WIDTH,
+        height: CANVAS_HEIGHT,
+      },
     });
+    gameRef.current = game;
     game.scene.add(SCENE_KEY, LaneRushScene, true, { questions: session.questions });
-    const scene = game.scene.getScene(SCENE_KEY) as LaneRushScene;
-    sceneRef.current = scene;
+
+    setFullscreenSupported(game.scale.fullscreen.available);
+    game.scale.on(Phaser.Scale.Events.ENTER_FULLSCREEN, () => setIsFullscreen(true));
+    game.scale.on(Phaser.Scale.Events.LEAVE_FULLSCREEN, () => setIsFullscreen(false));
 
     let questionStartedAt = Date.now();
 
-    scene.events.on(LANE_RUSH_EVENTS.ANSWER_LOCKED, async (pending: AnswerLockedPayload) => {
+    // Listening on the game-level event bus, not the scene's own — Phaser
+    // adds/starts scenes asynchronously (on the next tick after
+    // `scene.add(...)`), so `game.scene.getScene(...)` is still null right
+    // here. `game.events` exists synchronously from the moment the Game is
+    // constructed, so it's the only thing safe to attach listeners to this
+    // early. The scene itself is looked up lazily below, once these
+    // callbacks actually fire — by then it's always booted.
+    game.events.on(LANE_RUSH_EVENTS.ANSWER_LOCKED, async (pending: AnswerLockedPayload) => {
       const responseTimeMs = Date.now() - questionStartedAt;
       const result = await api.submitAnswer({
         sessionId: session.id,
@@ -50,36 +68,66 @@ export function LaneRush({ session, onComplete }: LaneRushProps) {
         responseTimeMs,
       });
       questionStartedAt = Date.now();
-      scene.applyServerVerdict(result.is_correct);
+      const scene = game.scene.getScene(SCENE_KEY) as LaneRushScene | null;
+      scene?.applyServerVerdict(result.is_correct);
     });
 
-    scene.events.on(LANE_RUSH_EVENTS.RACE_FINISHED, async () => {
+    game.events.on(LANE_RUSH_EVENTS.RACE_FINISHED, async () => {
       const completeResult = await api.completeQuizSession(session.id);
       onCompleteRef.current(completeResult);
     });
 
     return () => {
       game.destroy(true);
-      sceneRef.current = null;
+      gameRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- deliberately
     // keyed on session.id only; onComplete is read via onCompleteRef so
     // its identity changing doesn't tear down and recreate the game.
   }, [session.id]);
 
+  function getScene(): LaneRushScene | null {
+    return (gameRef.current?.scene.getScene(SCENE_KEY) as LaneRushScene | undefined) ?? null;
+  }
+
+  function toggleFullscreen() {
+    const game = gameRef.current;
+    if (!game) return;
+    if (game.scale.isFullscreen) {
+      game.scale.stopFullscreen();
+    } else {
+      game.scale.startFullscreen();
+    }
+  }
+
   return (
     <div className="space-y-3">
-      <div ref={containerRef} className="mx-auto" style={{ width: CANVAS_WIDTH }} />
+      <div className="flex items-center justify-between" style={{ width: CANVAS_WIDTH, margin: "0 auto" }}>
+        <span className="text-xs text-gray-500">Steer with ◀ ▶ or A/D</span>
+        {fullscreenSupported && (
+          <button
+            onClick={toggleFullscreen}
+            className="text-xs px-3 py-1.5 border rounded-md hover:bg-gray-50"
+          >
+            {isFullscreen ? "Exit full screen" : "Full screen"}
+          </button>
+        )}
+      </div>
+      <div
+        ref={containerRef}
+        className="mx-auto"
+        style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT, maxWidth: "100%" }}
+      />
       <div className="flex justify-between sm:hidden" style={{ width: CANVAS_WIDTH, margin: "0 auto" }}>
         <button
-          onClick={() => sceneRef.current?.pressLeft()}
+          onClick={() => getScene()?.pressLeft()}
           aria-label="Move left"
           className="px-6 py-3 border rounded-lg text-lg"
         >
           ◀
         </button>
         <button
-          onClick={() => sceneRef.current?.pressRight()}
+          onClick={() => getScene()?.pressRight()}
           aria-label="Move right"
           className="px-6 py-3 border rounded-lg text-lg"
         >
