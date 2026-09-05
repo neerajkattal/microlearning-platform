@@ -18,6 +18,7 @@ export default function App() {
   const [status, setStatus] = useState<HealthStatus>("checking");
   const [screen, setScreen] = useState<Screen>({ name: "categories" });
   const [lastCategory, setLastCategory] = useState<string | null>(null);
+  const [startError, setStartError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`${API_BASE}/health`)
@@ -26,9 +27,17 @@ export default function App() {
   }, []);
 
   async function startQuiz(categorySlug: string | null) {
+    setStartError(null);
     setLastCategory(categorySlug);
-    const session = await api.startQuizSession({ category: categorySlug, questionCount: 5 });
-    setScreen({ name: "quiz", session });
+    try {
+      const session = await api.startQuizSession({ category: categorySlug, questionCount: 5 });
+      setScreen({ name: "quiz", session });
+    } catch {
+      // however we got here (initial pick or "play again"), land back on
+      // categories so the error has somewhere consistent to display
+      setScreen({ name: "categories" });
+      setStartError("Couldn't start a quiz for that category. Try another one.");
+    }
   }
 
   return (
@@ -42,7 +51,12 @@ export default function App() {
         </p>
       </header>
 
-      {screen.name === "categories" && <CategorySelect onSelectCategory={startQuiz} />}
+      {screen.name === "categories" && (
+        <div className="space-y-3">
+          {startError && <p className="text-red-600 text-center">{startError}</p>}
+          <CategorySelect onSelectCategory={startQuiz} />
+        </div>
+      )}
       {screen.name === "quiz" && (
         <QuizQuestion
           key={screen.session.id}
