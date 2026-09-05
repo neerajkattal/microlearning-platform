@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import type { Category } from "../types";
 
-export function CategorySelect() {
+interface CategorySelectProps {
+  onSelectCategory: (categorySlug: string | null) => void;
+}
+
+export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
   const [categories, setCategories] = useState<Category[] | null>(null);
   const [error, setError] = useState(false);
 
@@ -22,12 +26,24 @@ export function CategorySelect() {
   }
 
   return (
-    <ul>
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-2xl mx-auto">
+      <button
+        onClick={() => onSelectCategory(null)}
+        className="p-4 border rounded-lg hover:bg-gray-50 text-left"
+      >
+        <div className="font-medium">Any category</div>
+      </button>
       {categories.map((category) => (
-        <li key={category.id}>
-          {category.name} ({category.question_count})
-        </li>
+        <button
+          key={category.id}
+          onClick={() => onSelectCategory(category.slug)}
+          disabled={category.question_count === 0}
+          className="p-4 border rounded-lg hover:bg-gray-50 text-left disabled:opacity-40 disabled:hover:bg-transparent"
+        >
+          <div className="font-medium">{category.name}</div>
+          <div className="text-sm text-gray-500">{category.question_count} questions</div>
+        </button>
       ))}
-    </ul>
+    </div>
   );
 }
