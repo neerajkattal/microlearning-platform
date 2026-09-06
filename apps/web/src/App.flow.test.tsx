@@ -2,6 +2,12 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 
+// This suite only exercises the classic quiz path, but App imports LaneRush
+// eagerly, and real Phaser touches canvas APIs at import time that jsdom
+// doesn't implement — so it's stubbed out here the same way
+// LaneRush.test.tsx does.
+vi.mock("phaser", () => ({ default: { Game: class {}, Scene: class {}, AUTO: 0 } }));
+
 function jsonResponse(body: unknown) {
   return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(body) });
 }
@@ -51,11 +57,14 @@ describe("App — full quiz flow", () => {
     vi.unstubAllGlobals();
   });
 
-  it("goes category select -> quiz -> results end to end", async () => {
+  it("goes category select -> mode select -> quiz -> results end to end", async () => {
     render(<App />);
 
     await waitFor(() => screen.getByText("Math"));
     fireEvent.click(screen.getByText("Math"));
+
+    await waitFor(() => screen.getByText("Classic"));
+    fireEvent.click(screen.getByText("Classic"));
 
     await waitFor(() => screen.getByText("2 + 2?"));
     fireEvent.click(screen.getByText("4"));
@@ -72,6 +81,8 @@ describe("App — full quiz flow", () => {
 
     await waitFor(() => screen.getByText("Math"));
     fireEvent.click(screen.getByText("Math"));
+    await waitFor(() => screen.getByText("Classic"));
+    fireEvent.click(screen.getByText("Classic"));
     await waitFor(() => screen.getByText("2 + 2?"));
     fireEvent.click(screen.getByText("4"));
     await waitFor(() => screen.getByText("See results"));
