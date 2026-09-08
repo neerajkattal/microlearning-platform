@@ -8,6 +8,14 @@ import App from "./App";
 // LaneRush.test.tsx does.
 vi.mock("phaser", () => ({ default: { Game: class {}, Scene: class {}, AUTO: 0 } }));
 
+// Simulates an already-logged-in session (a stored token) so this suite
+// exercises the post-login app flow, not the login screen itself.
+vi.mock("./auth", () => ({
+  getToken: () => "fake-token",
+  setToken: () => {},
+  clearToken: () => {},
+}));
+
 function jsonResponse(body: unknown) {
   return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(body) });
 }
@@ -18,6 +26,13 @@ describe("App — full quiz flow", () => {
       "fetch",
       vi.fn((url: string, options?: RequestInit) => {
         if (url === "/api/health") return jsonResponse({ status: "ok" });
+        if (url === "/api/users/me") {
+          return jsonResponse({
+            user: { id: 1, username: "testuser" },
+            stats: { xp: 0, level: 1, current_streak: 0, longest_streak: 0 },
+            achievements: [],
+          });
+        }
         if (url === "/api/categories") {
           return jsonResponse([{ id: 1, name: "Math", slug: "math", question_count: 2 }]);
         }
@@ -45,6 +60,7 @@ describe("App — full quiz flow", () => {
         if (url === "/api/quiz-sessions/1/complete") {
           return jsonResponse({
             session_id: 1, score: 1, total_questions: 1, xp_earned: 10, total_xp: 10, level: 1, streak: 1,
+            achievements_earned: [],
           });
         }
         throw new Error(`unexpected fetch: ${url}`);

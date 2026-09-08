@@ -11,6 +11,7 @@ const result: CompleteSessionResult = {
   total_xp: 142,
   level: 2,
   streak: 3,
+  achievements_earned: [],
 };
 
 describe("ResultsScreen", () => {
@@ -38,5 +39,22 @@ describe("ResultsScreen", () => {
     render(<ResultsScreen result={result} onPlayAgain={vi.fn()} onBackToCategories={onBack} />);
     fireEvent.click(screen.getByText("Back to categories"));
     expect(onBack).toHaveBeenCalled();
+  });
+
+  it("shows newly earned achievements when present", () => {
+    const withAchievement: CompleteSessionResult = {
+      ...result,
+      achievements_earned: [
+        { code: "first_win", name: "First Win", description: "Answer one correctly.", icon: "🎯" },
+      ],
+    };
+    render(<ResultsScreen result={withAchievement} onPlayAgain={vi.fn()} onBackToCategories={vi.fn()} />);
+    expect(screen.getByText("Achievement unlocked!")).toBeTruthy();
+    expect(screen.getByText(/First Win/)).toBeTruthy();
+  });
+
+  it("shows no achievement banner when none were earned", () => {
+    render(<ResultsScreen result={result} onPlayAgain={vi.fn()} onBackToCategories={vi.fn()} />);
+    expect(screen.queryByText("Achievement unlocked!")).toBeNull();
   });
 });

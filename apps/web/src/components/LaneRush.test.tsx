@@ -122,7 +122,7 @@ describe("LaneRush", () => {
 
   it("completes the session and calls onComplete when the race finishes", async () => {
     const completeResult = {
-      session_id: 1, score: 1, total_questions: 1, xp_earned: 10, total_xp: 10, level: 1, streak: 1,
+      session_id: 1, score: 1, total_questions: 1, xp_earned: 10, total_xp: 10, level: 1, streak: 1, achievements_earned: [],
     };
     vi.spyOn(api, "completeQuizSession").mockResolvedValue(completeResult);
     const onComplete = vi.fn();
