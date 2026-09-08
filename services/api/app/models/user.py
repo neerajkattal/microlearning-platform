@@ -12,6 +12,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True, nullable=False, index=True)
     email = Column(String, unique=True, nullable=True)
+    password_hash = Column(String, nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     updated_at = Column(
         DateTime,

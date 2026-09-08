@@ -77,6 +77,15 @@ class SubmitAnswerResult(BaseModel):
     xp_earned: int
 
 
+class AchievementOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    code: str
+    name: str
+    description: str
+    icon: Optional[str]
+
+
 class CompleteSessionResult(BaseModel):
     session_id: int
     score: int
@@ -85,3 +94,48 @@ class CompleteSessionResult(BaseModel):
     total_xp: int
     level: int
     streak: int
+    achievements_earned: list[AchievementOut] = []
+
+
+class RegisterRequest(BaseModel):
+    username: str = Field(min_length=3, max_length=32, pattern=r"^[a-zA-Z0-9_]+$")
+    password: str = Field(min_length=8, max_length=128)
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class UserOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    username: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserOut
+
+
+class UserStatsOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    xp: int
+    level: int
+    current_streak: int
+    longest_streak: int
+
+
+class UserMeOut(BaseModel):
+    user: UserOut
+    stats: UserStatsOut
+    achievements: list[AchievementOut]
+
+
+class LeaderboardEntryOut(BaseModel):
+    username: str
+    xp: int
+    level: int
