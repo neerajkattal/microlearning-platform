@@ -31,3 +31,6 @@ docs/learning/TROUBLESHOOTING.md
 docs/learning/INFRASTRUCTURE.md
 docs/learning/PROJECT_MASTER_GUIDE.md
 docs/learning/EASY_EXPLAINER.md
+
+# database backups (may contain real user data, even if just local test data)
+backups/

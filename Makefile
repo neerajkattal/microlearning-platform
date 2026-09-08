@@ -1,4 +1,4 @@
-.PHONY: up down logs migrate makemigration test test-api test-worker test-web typecheck build
+.PHONY: up down logs migrate makemigration test test-api test-worker test-web typecheck build backup restore
 
 up:
 	docker compose up --build
@@ -38,3 +38,23 @@ typecheck:
 
 build:
 	npm run build -w @microlearning/web
+
+# See docs/operations/BACKUPS.md for the full runbook, including restore.
+backup:
+	mkdir -p backups
+	docker compose exec -T postgres pg_dump -U microlearning -d microlearning \
+		> backups/microlearning-$$(date +%Y%m%dT%H%M%S).sql
+	@echo "Backup written to backups/"
+	@ls -la backups/ | tail -1
+
+# Usage: make restore file=backups/microlearning-20260101T000000.sql
+# Destructive: drops and recreates the public schema before restoring, so
+# anything not in the given backup file is gone afterward. Requires the
+# stack to already be running (postgres reachable via docker compose).
+restore:
+	@test -n "$(file)" || (echo "Usage: make restore file=backups/<name>.sql" >&2 && exit 1)
+	@test -f "$(file)" || (echo "No such file: $(file)" >&2 && exit 1)
+	docker compose exec -T postgres psql -U microlearning -d microlearning \
+		-c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+	docker compose exec -T postgres psql -U microlearning -d microlearning < "$(file)"
+	@echo "Restored from $(file). Run 'make migrate' if the backup predates a later migration."
