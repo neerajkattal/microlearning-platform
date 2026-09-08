@@ -6,12 +6,8 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from .. import models
+from ..achievements import check_and_award_achievements
 from .scoring import apply_daily_activity, calculate_level, calculate_xp
-
-# No auth system yet (see docs/architecture/PHASE_0.md) — every request
-# acts as this single seeded user, same pattern as ingestion's lack of
-# auth. Revisit once a real auth phase exists.
-TEST_USERNAME = "test_user"
 
 
 class QuizEngineError(Exception):
@@ -42,21 +38,9 @@ class AnswerNotFoundError(QuizEngineError):
     pass
 
 
-def get_or_create_test_user(db: Session) -> models.User:
-    user = db.query(models.User).filter_by(username=TEST_USERNAME).first()
-    if user:
-        return user
-    user = models.User(username=TEST_USERNAME)
-    db.add(user)
-    db.flush()
-    db.add(models.UserStats(user_id=user.id))
-    db.flush()
-    return user
-
-
-def start_session(db: Session, *, category_slug: Optional[str], question_count: int) -> models.QuizSession:
-    user = get_or_create_test_user(db)
-
+def start_session(
+    db: Session, *, user: models.User, category_slug: Optional[str], question_count: int
+) -> models.QuizSession:
     query = db.query(models.Question)
     category = None
     if category_slug:
@@ -98,17 +82,20 @@ def start_session(db: Session, *, category_slug: Optional[str], question_count: 
     return session
 
 
-def get_session(db: Session, session_id: int) -> models.QuizSession:
+def get_session(db: Session, session_id: int, *, owner_id: int) -> models.QuizSession:
+    """`owner_id` mismatch raises the same error as a genuinely missing
+    session — a 404, not a 403 — so a session id belonging to another user
+    can't be distinguished from one that doesn't exist at all."""
     session = db.get(models.QuizSession, session_id)
-    if session is None:
+    if session is None or session.user_id != owner_id:
         raise SessionNotFoundError(f"quiz session {session_id} not found")
     return session
 
 
 def _get_in_progress_session_question(
-    db: Session, session_id: int, session_question_id: int
+    db: Session, session_id: int, session_question_id: int, *, owner_id: int
 ) -> tuple[models.QuizSession, models.QuizSessionQuestion]:
-    session = get_session(db, session_id)
+    session = get_session(db, session_id, owner_id=owner_id)
     if session.status != "in_progress":
         raise SessionNotInProgressError(f"quiz session {session_id} is {session.status}")
 
@@ -125,8 +112,9 @@ def submit_answer(
     session_question_id: int,
     selected_answer_id: int,
     response_time_ms: Optional[int],
+    owner_id: int,
 ) -> tuple[models.AnswerAttempt, int]:
-    session, sq = _get_in_progress_session_question(db, session_id, session_question_id)
+    session, sq = _get_in_progress_session_question(db, session_id, session_question_id, owner_id=owner_id)
 
     existing = db.query(models.AnswerAttempt).filter_by(quiz_session_question_id=sq.id).first()
     if existing:
@@ -157,8 +145,8 @@ def submit_answer(
     return attempt, xp_earned
 
 
-def complete_session(db: Session, session_id: int) -> dict:
-    session = get_session(db, session_id)
+def complete_session(db: Session, session_id: int, *, owner_id: int) -> dict:
+    session = get_session(db, session_id, owner_id=owner_id)
     if session.status != "in_progress":
         raise SessionNotInProgressError(f"quiz session {session_id} is {session.status}")
 
@@ -187,6 +175,10 @@ def complete_session(db: Session, session_id: int) -> dict:
     session.completed_at = datetime.now(UTC)
     session.score = score
 
+    newly_earned = check_and_award_achievements(
+        db, user=session.user, score=score, total_questions=len(session.session_questions), stats=stats
+    )
+
     db.commit()
 
     return {
@@ -197,4 +189,5 @@ def complete_session(db: Session, session_id: int) -> dict:
         "total_xp": stats.xp,
         "level": stats.level,
         "streak": stats.current_streak,
+        "achievements_earned": newly_earned,
     }

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
+from ..auth import get_current_user
 from ..database import get_db
 from ..quiz_engine import sessions as quiz_sessions
 from ..quiz_engine.sessions import (
@@ -17,10 +18,14 @@ router = APIRouter(prefix="/quiz-sessions", tags=["quiz"])
 
 
 @router.post("", response_model=schemas.QuizSessionOut, status_code=201)
-def start_quiz_session(payload: schemas.StartQuizSessionRequest, db: Session = Depends(get_db)):
+def start_quiz_session(
+    payload: schemas.StartQuizSessionRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
     try:
         session = quiz_sessions.start_session(
-            db, category_slug=payload.category, question_count=payload.question_count
+            db, user=current_user, category_slug=payload.category, question_count=payload.question_count
         )
     except NoQuestionsAvailableError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
@@ -28,9 +33,13 @@ def start_quiz_session(payload: schemas.StartQuizSessionRequest, db: Session = D
 
 
 @router.get("/{session_id}", response_model=schemas.QuizSessionOut)
-def get_quiz_session(session_id: int, db: Session = Depends(get_db)):
+def get_quiz_session(
+    session_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
     try:
-        session = quiz_sessions.get_session(db, session_id)
+        session = quiz_sessions.get_session(db, session_id, owner_id=current_user.id)
     except SessionNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     return _to_session_out(session)
@@ -42,6 +51,7 @@ def submit_answer(
     session_question_id: int,
     payload: schemas.SubmitAnswerRequest,
     db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
 ):
     try:
         attempt, xp_earned = quiz_sessions.submit_answer(
@@ -50,6 +60,7 @@ def submit_answer(
             session_question_id=session_question_id,
             selected_answer_id=payload.selected_answer_id,
             response_time_ms=payload.response_time_ms,
+            owner_id=current_user.id,
         )
     except (SessionNotFoundError, SessionQuestionNotFoundError, AnswerNotFoundError) as exc:
         raise HTTPException(status_code=404, detail=str(exc))
@@ -67,9 +78,13 @@ def submit_answer(
 
 
 @router.post("/{session_id}/complete", response_model=schemas.CompleteSessionResult)
-def complete_quiz_session(session_id: int, db: Session = Depends(get_db)):
+def complete_quiz_session(
+    session_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
     try:
-        result = quiz_sessions.complete_session(db, session_id)
+        result = quiz_sessions.complete_session(db, session_id, owner_id=current_user.id)
     except SessionNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except SessionNotInProgressError as exc:
