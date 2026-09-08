@@ -31,6 +31,13 @@ export interface SubmitAnswerResult {
   xp_earned: number;
 }
 
+export interface Achievement {
+  code: string;
+  name: string;
+  description: string;
+  icon: string | null;
+}
+
 export interface CompleteSessionResult {
   session_id: number;
   score: number;
@@ -39,4 +46,35 @@ export interface CompleteSessionResult {
   total_xp: number;
   level: number;
   streak: number;
+  achievements_earned: Achievement[];
+}
+
+export interface User {
+  id: number;
+  username: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
+}
+
+export interface UserStats {
+  xp: number;
+  level: number;
+  current_streak: number;
+  longest_streak: number;
+}
+
+export interface UserMe {
+  user: User;
+  stats: UserStats;
+  achievements: Achievement[];
+}
+
+export interface LeaderboardEntry {
+  username: string;
+  xp: number;
+  level: number;
 }

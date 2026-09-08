@@ -1,10 +1,28 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { api } from "./api";
+import { api, UnauthorizedError } from "./api";
+import { clearToken, setToken } from "./auth";
 
-function mockFetchOnce(body: unknown, ok = true) {
+// This environment's jsdom doesn't actually implement a working
+// localStorage (real browsers do — this is purely a test-env gap, same
+// category as jsdom's lack of a real <canvas>), so ./auth is mocked
+// with an in-memory stand-in rather than exercising real localStorage.
+vi.mock("./auth", () => {
+  let token: string | null = null;
+  return {
+    getToken: () => token,
+    setToken: (t: string) => {
+      token = t;
+    },
+    clearToken: () => {
+      token = null;
+    },
+  };
+});
+
+function mockFetchOnce(body: unknown, ok = true, status = ok ? 200 : 400) {
   (fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
     ok,
-    status: ok ? 200 : 400,
+    status,
     json: () => Promise.resolve(body),
   });
 }
@@ -12,10 +30,12 @@ function mockFetchOnce(body: unknown, ok = true) {
 describe("api client", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn());
+    clearToken();
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    clearToken();
   });
 
   it("listCategories fetches /categories", async () => {
@@ -56,5 +76,58 @@ describe("api client", () => {
   it("throws when the response is not ok", async () => {
     mockFetchOnce({ detail: "not found" }, false);
     await expect(api.listCategories()).rejects.toThrow("Request to /categories failed: 400");
+  });
+
+  it("register posts username and password", async () => {
+    mockFetchOnce({ access_token: "tok", token_type: "bearer", user: { id: 1, username: "alice" } });
+    await api.register({ username: "alice", password: "correct-horse" });
+
+    const [url, options] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(url).toBe("/api/auth/register");
+    expect(JSON.parse(options.body)).toEqual({ username: "alice", password: "correct-horse" });
+  });
+
+  it("login posts username and password", async () => {
+    mockFetchOnce({ access_token: "tok", token_type: "bearer", user: { id: 1, username: "alice" } });
+    await api.login({ username: "alice", password: "correct-horse" });
+
+    const [url] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(url).toBe("/api/auth/login");
+  });
+
+  it("attaches an Authorization header once a token is stored", async () => {
+    setToken("my-jwt");
+    mockFetchOnce([]);
+    await api.listCategories();
+
+    const [, options] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(options.headers.Authorization).toBe("Bearer my-jwt");
+  });
+
+  it("sends no Authorization header when no token is stored", async () => {
+    mockFetchOnce([]);
+    await api.listCategories();
+
+    const [, options] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(options.headers.Authorization).toBeUndefined();
+  });
+
+  it("throws UnauthorizedError and clears the stored token on a 401", async () => {
+    setToken("stale-token");
+    mockFetchOnce({ detail: "expired" }, false, 401);
+
+    await expect(api.getMe()).rejects.toBeInstanceOf(UnauthorizedError);
+
+    mockFetchOnce([]);
+    await api.listCategories();
+    const [, options] = (fetch as ReturnType<typeof vi.fn>).mock.calls[1];
+    expect(options.headers.Authorization).toBeUndefined();
+  });
+
+  it("getLeaderboard fetches /leaderboard", async () => {
+    mockFetchOnce([{ username: "alice", xp: 100, level: 2 }]);
+    const board = await api.getLeaderboard();
+    expect(fetch).toHaveBeenCalledWith("/api/leaderboard", expect.any(Object));
+    expect(board).toHaveLength(1);
   });
 });
