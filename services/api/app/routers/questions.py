@@ -1,28 +1,40 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from redis import Redis
 from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from .. import models, schemas
+from ..cache import cached_json
+from ..config import settings
 from ..database import get_db
+from ..redis_client import get_redis
 
 router = APIRouter(tags=["questions"])
 
 
 @router.get("/categories", response_model=list[schemas.CategoryOut])
-def list_categories(db: Session = Depends(get_db)):
-    rows = (
-        db.query(models.Category, func.count(models.Question.id))
-        .outerjoin(models.Question)
-        .group_by(models.Category.id)
-        .order_by(models.Category.name)
-        .all()
-    )
-    return [
-        schemas.CategoryOut(id=category.id, name=category.name, slug=category.slug, question_count=count)
-        for category, count in rows
-    ]
+def list_categories(db: Session = Depends(get_db), redis: Redis = Depends(get_redis)):
+    def compute():
+        rows = (
+            db.query(models.Category, func.count(models.Question.id))
+            .outerjoin(models.Question)
+            .group_by(models.Category.id)
+            .order_by(models.Category.name)
+            .all()
+        )
+        return [
+            {"id": category.id, "name": category.name, "slug": category.slug, "question_count": count}
+            for category, count in rows
+        ]
+
+    # The category list only changes when ingestion runs (a scheduled
+    # worker job, not a per-request event — see ADR-0003), so a short
+    # cache here trades a little staleness for skipping a join+group-by
+    # query on what's likely this app's single most-read endpoint.
+    data = cached_json(redis, "cache:categories", settings.categories_cache_ttl_seconds, compute)
+    return [schemas.CategoryOut(**row) for row in data]
 
 
 @router.get("/questions", response_model=list[schemas.QuestionSummaryOut])
