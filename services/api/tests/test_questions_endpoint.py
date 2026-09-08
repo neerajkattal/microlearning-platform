@@ -3,6 +3,9 @@ from fastapi.testclient import TestClient
 from app import models
 from app.database import get_db
 from app.main import app
+from app.redis_client import get_redis
+
+from .conftest import FakeRedis
 
 client = TestClient(app)
 
@@ -98,3 +101,33 @@ def test_get_question_404_when_missing(db_session):
         app.dependency_overrides.clear()
 
     assert resp.status_code == 404
+
+
+def test_categories_response_is_cached_between_requests(db_session):
+    category_a, *_ = _seed(db_session)
+    fake_redis = FakeRedis()
+    app.dependency_overrides[get_db] = _override_get_db(db_session)
+    app.dependency_overrides[get_redis] = lambda: fake_redis
+    try:
+        first = client.get("/categories")
+        assert first.json()[0]["question_count"] == 1
+
+        # Add another question directly, bypassing the API — a cache-aside
+        # cache with no invalidation-on-write won't see this until the TTL
+        # expires, which is the whole point of the short TTL.
+        db_session.add(
+            models.Question(
+                text="another one?",
+                category_id=category_a.id,
+                difficulty="easy",
+                source_id=db_session.query(models.QuestionSource).first().id,
+                source_question_id="h-extra",
+            )
+        )
+        db_session.commit()
+
+        second = client.get("/categories")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert second.json() == first.json()  # still the stale, cached response

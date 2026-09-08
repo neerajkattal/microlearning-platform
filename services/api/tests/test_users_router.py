@@ -3,6 +3,9 @@ from fastapi.testclient import TestClient
 from app import models
 from app.database import get_db
 from app.main import app
+from app.redis_client import get_redis
+
+from .conftest import FakeRedis
 
 client = TestClient(app)
 
@@ -80,3 +83,29 @@ def test_leaderboard_respects_the_limit_query_param(db_session):
 
     assert resp.status_code == 200
     assert len(resp.json()) == 2
+
+
+def test_leaderboard_is_cached_between_requests(db_session):
+    fake_redis = FakeRedis()
+    app.dependency_overrides[get_db] = _override_get_db(db_session)
+    app.dependency_overrides[get_redis] = lambda: fake_redis
+    try:
+        user = models.User(username="cache_test_user", password_hash="not-a-real-hash")
+        db_session.add(user)
+        db_session.flush()
+        db_session.add(models.UserStats(user_id=user.id, xp=10, level=1))
+        db_session.commit()
+
+        first = client.get("/leaderboard")
+        assert first.json()[0]["xp"] == 10
+
+        # Change the score directly, bypassing the API - the cached
+        # response shouldn't reflect it until the TTL expires.
+        db_session.query(models.UserStats).filter_by(user_id=user.id).update({"xp": 9999})
+        db_session.commit()
+
+        second = client.get("/leaderboard")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert second.json() == first.json()  # still the stale, cached response
