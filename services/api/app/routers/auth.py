@@ -3,12 +3,23 @@ from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..auth import create_access_token, hash_password, verify_password
+from ..config import settings
 from ..database import get_db
+from ..rate_limit import rate_limit
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+_auth_rate_limit = rate_limit(
+    "auth", limit=settings.auth_rate_limit_max, window_seconds=settings.auth_rate_limit_window_seconds
+)
 
-@router.post("/register", response_model=schemas.TokenResponse, status_code=201)
+
+@router.post(
+    "/register",
+    response_model=schemas.TokenResponse,
+    status_code=201,
+    dependencies=[Depends(_auth_rate_limit)],
+)
 def register(payload: schemas.RegisterRequest, db: Session = Depends(get_db)):
     existing = db.query(models.User).filter_by(username=payload.username).first()
     if existing is not None:
@@ -25,7 +36,7 @@ def register(payload: schemas.RegisterRequest, db: Session = Depends(get_db)):
     return schemas.TokenResponse(access_token=token, user=schemas.UserOut.model_validate(user))
 
 
-@router.post("/login", response_model=schemas.TokenResponse)
+@router.post("/login", response_model=schemas.TokenResponse, dependencies=[Depends(_auth_rate_limit)])
 def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
     user = db.query(models.User).filter_by(username=payload.username).first()
     if user is None or not verify_password(payload.password, user.password_hash):

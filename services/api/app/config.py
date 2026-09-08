@@ -17,5 +17,11 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expires_minutes: int = 60 * 24 * 7  # 7 days — no refresh-token flow yet
 
+    auth_rate_limit_max: int = 5
+    auth_rate_limit_window_seconds: int = 60
+
+    categories_cache_ttl_seconds: int = 300
+    leaderboard_cache_ttl_seconds: int = 30
+
 
 settings = Settings()
