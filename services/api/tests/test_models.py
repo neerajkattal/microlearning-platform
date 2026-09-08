@@ -23,7 +23,7 @@ def _make_question(db):
 
 
 def test_user_stats_relationship(db_session):
-    user = models.User(username="ada")
+    user = models.User(username="ada", password_hash="not-a-real-hash")
     db_session.add(user)
     db_session.flush()
 
@@ -74,7 +74,7 @@ def test_duplicate_source_question_id_is_rejected(db_session):
 
 
 def test_quiz_session_records_shown_answer_order(db_session):
-    user = models.User(username="grace")
+    user = models.User(username="grace", password_hash="not-a-real-hash")
     question = _make_question(db_session)
     db_session.add(user)
     db_session.flush()
@@ -94,7 +94,7 @@ def test_quiz_session_records_shown_answer_order(db_session):
 
 
 def test_answer_attempt_is_one_per_session_question(db_session):
-    user = models.User(username="turing")
+    user = models.User(username="turing", password_hash="not-a-real-hash")
     question = _make_question(db_session)
     db_session.add(user)
     db_session.flush()
@@ -119,7 +119,7 @@ def test_answer_attempt_is_one_per_session_question(db_session):
 
 
 def test_user_achievement_cannot_be_earned_twice(db_session):
-    user = models.User(username="lovelace")
+    user = models.User(username="lovelace", password_hash="not-a-real-hash")
     achievement = models.Achievement(code="first_win", name="First Win", description="Win a quiz")
     db_session.add_all([user, achievement])
     db_session.flush()
