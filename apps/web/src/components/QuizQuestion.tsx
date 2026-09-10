@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api } from "../api";
+import { Button } from "./ui/Button";
 import type { CompleteSessionResult, QuizSession, SubmitAnswerResult } from "../types";
 
 interface QuizQuestionProps {
@@ -15,6 +16,7 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
   const [finishing, setFinishing] = useState(false);
   const current = session.questions[index];
   const isLastQuestion = index === session.questions.length - 1;
+  const progressPct = Math.round(((index + 1) / session.questions.length) * 100);
 
   function goToNextQuestion() {
     setIndex((i) => i + 1);
@@ -43,26 +45,39 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
   }
 
   function choiceClassName(choiceId: number): string {
-    const base = "text-left px-4 py-3 border rounded-lg transition-colors";
+    const base =
+      "text-left px-4 py-3.5 rounded-xl border transition-all duration-150 font-medium";
     if (!result) {
-      return `${base} hover:bg-gray-50`;
+      return `${base} border-slate-700 bg-slate-900/60 hover:border-amber-500/50 hover:bg-slate-800/60`;
     }
     if (choiceId === result.correct_answer_id) {
-      return `${base} border-green-500 bg-green-50`;
+      return `${base} border-emerald-500 bg-emerald-500/10 text-emerald-300`;
     }
     if (choiceId === selectedAnswerId) {
-      return `${base} border-red-500 bg-red-50`;
+      return `${base} border-red-500 bg-red-500/10 text-red-300`;
     }
-    return `${base} opacity-50`;
+    return `${base} border-slate-800 bg-slate-900/30 opacity-40`;
   }
 
   return (
-    <div className="max-w-xl mx-auto space-y-4">
-      <p className="text-sm text-gray-500">
-        Question {index + 1} of {session.questions.length}
-      </p>
-      <h2 className="text-lg font-medium">{current.prompt}</h2>
-      <div className="grid gap-2">
+    <div className="max-w-xl mx-auto space-y-5">
+      <div className="space-y-2">
+        <div className="flex justify-between items-center text-xs text-slate-500">
+          <span>
+            Question {index + 1} of {session.questions.length}
+          </span>
+        </div>
+        <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-500"
+            style={{ width: `${progressPct}%` }}
+          />
+        </div>
+      </div>
+
+      <h2 className="text-xl font-bold text-slate-100">{current.prompt}</h2>
+
+      <div className="grid gap-2.5">
         {current.choices.map((choice) => (
           <button
             key={choice.id}
@@ -74,25 +89,24 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
           </button>
         ))}
       </div>
+
       {result && (
-        <div className="space-y-1">
-          <p className={result.is_correct ? "text-green-700" : "text-red-700"}>
+        <div
+          className={`rounded-xl border p-4 space-y-2 animate-pop-in ${
+            result.is_correct
+              ? "border-emerald-500/40 bg-emerald-500/10"
+              : "border-red-500/40 bg-red-500/10"
+          }`}
+        >
+          <p className={`font-semibold ${result.is_correct ? "text-emerald-300" : "text-red-300"}`}>
             {result.is_correct ? "Correct!" : "Not quite."} +{result.xp_earned} XP
           </p>
-          {result.explanation && <p className="text-sm text-gray-500">{result.explanation}</p>}
-          {!isLastQuestion && (
-            <button onClick={goToNextQuestion} className="px-4 py-2 rounded bg-gray-800 text-white">
-              Next question
-            </button>
-          )}
+          {result.explanation && <p className="text-sm text-slate-400">{result.explanation}</p>}
+          {!isLastQuestion && <Button onClick={goToNextQuestion}>Next question</Button>}
           {isLastQuestion && (
-            <button
-              onClick={finishQuiz}
-              disabled={finishing}
-              className="px-4 py-2 rounded bg-gray-800 text-white disabled:opacity-50"
-            >
+            <Button onClick={finishQuiz} disabled={finishing}>
               {finishing ? "Finishing..." : "See results"}
-            </button>
+            </Button>
           )}
         </div>
       )}
