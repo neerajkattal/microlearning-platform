@@ -32,6 +32,12 @@ function isMainAppScreen(screen: Screen): boolean {
   return screen.name !== "checking-auth" && screen.name !== "auth";
 }
 
+function statusDotClass(status: HealthStatus): string {
+  if (status === "ok") return "bg-emerald-400";
+  if (status === "error") return "bg-red-500";
+  return "bg-slate-500 animate-pulse";
+}
+
 export default function App() {
   const [status, setStatus] = useState<HealthStatus>("checking");
   const [screen, setScreen] = useState<Screen>(() =>
@@ -96,79 +102,111 @@ export default function App() {
   }
 
   return (
-    <main className="min-h-screen px-4 py-10">
-      <header className="max-w-2xl mx-auto flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-semibold">Microlearning Platform</h1>
-        <div className="flex items-center gap-3 text-sm text-gray-500">
-          <span>
-            API: {status === "checking" && "checking..."}
-            {status === "ok" && "connected"}
-            {status === "error" && "unreachable"}
-          </span>
-          {currentUser && isMainAppScreen(screen) && (
-            <>
-              <button onClick={() => setScreen({ name: "stats" })} className="underline">
-                My Stats
-              </button>
-              <button onClick={() => setScreen({ name: "leaderboard" })} className="underline">
-                Leaderboard
-              </button>
-              <span>{currentUser.username}</span>
-              <button onClick={logOut} className="underline">
-                Log out
-              </button>
-            </>
-          )}
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans">
+      <div
+        className="pointer-events-none fixed inset-0 opacity-40"
+        style={{
+          background:
+            "radial-gradient(60rem 30rem at 15% -10%, rgba(245,158,11,0.12), transparent), radial-gradient(50rem 30rem at 100% 0%, rgba(37,99,235,0.14), transparent)",
+        }}
+      />
+      <header className="sticky top-0 z-10 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur">
+        <div className="max-w-5xl mx-auto flex justify-between items-center gap-3 px-4 py-4">
+          <h1 className="whitespace-nowrap text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r
+            from-amber-400 to-orange-300 bg-clip-text text-transparent">
+            Microlearning Platform
+          </h1>
+          <div className="flex items-center gap-3 sm:gap-4 text-sm text-slate-400 min-w-0">
+            <p className="flex items-center gap-1.5 whitespace-nowrap">
+              <span className={`inline-block w-2 h-2 rounded-full ${statusDotClass(status)}`} aria-hidden />
+              API: {status === "checking" && "checking..."}
+              {status === "ok" && "connected"}
+              {status === "error" && "unreachable"}
+            </p>
+            {currentUser && isMainAppScreen(screen) && (
+              <>
+                <button
+                  onClick={() => setScreen({ name: "stats" })}
+                  className="hidden sm:inline whitespace-nowrap rounded-full px-3 py-1 border border-slate-700 hover:border-amber-500/60 hover:text-amber-300 transition-colors"
+                >
+                  My Stats
+                </button>
+                <button
+                  onClick={() => setScreen({ name: "leaderboard" })}
+                  className="hidden sm:inline whitespace-nowrap rounded-full px-3 py-1 border border-slate-700 hover:border-amber-500/60 hover:text-amber-300 transition-colors"
+                >
+                  Leaderboard
+                </button>
+                <span className="hidden md:flex items-center gap-2 min-w-0">
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-slate-950 text-xs font-bold flex items-center justify-center">
+                    {currentUser.username.slice(0, 1).toUpperCase()}
+                  </span>
+                  <span className="truncate max-w-[8rem]">{currentUser.username}</span>
+                </span>
+                <button onClick={logOut} className="whitespace-nowrap hover:text-white transition-colors">
+                  Log out
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
-      {screen.name === "checking-auth" && <p className="text-center text-gray-500">Loading...</p>}
+      <main className="relative max-w-3xl mx-auto px-4 py-10">
+        {screen.name === "checking-auth" && (
+          <p className="text-center text-slate-500">Loading...</p>
+        )}
 
-      {screen.name === "auth" && <LoginScreen onAuthenticated={handleAuthenticated} />}
+        {screen.name === "auth" && <LoginScreen onAuthenticated={handleAuthenticated} />}
 
-      {screen.name === "categories" && (
-        <div className="space-y-3">
-          {startError && <p className="text-red-600 text-center">{startError}</p>}
-          <CategorySelect
-            onSelectCategory={(categorySlug) => setScreen({ name: "mode-select", categorySlug })}
+        {screen.name === "categories" && (
+          <div className="space-y-4">
+            {startError && (
+              <p className="text-red-400 text-center bg-red-500/10 border border-red-500/30 rounded-lg py-2 px-3">
+                {startError}
+              </p>
+            )}
+            <CategorySelect
+              onSelectCategory={(categorySlug) => setScreen({ name: "mode-select", categorySlug })}
+            />
+          </div>
+        )}
+        {screen.name === "mode-select" && (
+          <GameModeSelect onSelectMode={(mode) => startQuiz(screen.categorySlug, mode)} />
+        )}
+        {screen.name === "quiz" && screen.mode === "classic" && (
+          <QuizQuestion
+            key={screen.session.id}
+            session={screen.session}
+            onComplete={(result) => setScreen({ name: "results", result })}
           />
-        </div>
-      )}
-      {screen.name === "mode-select" && (
-        <GameModeSelect onSelectMode={(mode) => startQuiz(screen.categorySlug, mode)} />
-      )}
-      {screen.name === "quiz" && screen.mode === "classic" && (
-        <QuizQuestion
-          key={screen.session.id}
-          session={screen.session}
-          onComplete={(result) => setScreen({ name: "results", result })}
-        />
-      )}
-      {screen.name === "quiz" && screen.mode === "lane-rush" && (
-        <LaneRush
-          key={screen.session.id}
-          session={screen.session}
-          onComplete={(result) => setScreen({ name: "results", result })}
-        />
-      )}
-      {screen.name === "quiz" && screen.mode === "balloon-pop" && (
-        <BalloonPop
-          key={screen.session.id}
-          session={screen.session}
-          onComplete={(result) => setScreen({ name: "results", result })}
-        />
-      )}
-      {screen.name === "results" && (
-        <ResultsScreen
-          result={screen.result}
-          onPlayAgain={() => startQuiz(lastCategory, lastMode)}
-          onBackToCategories={() => setScreen({ name: "categories" })}
-        />
-      )}
-      {screen.name === "stats" && <StatsPage onBack={() => setScreen({ name: "categories" })} />}
-      {screen.name === "leaderboard" && (
-        <LeaderboardPage onBack={() => setScreen({ name: "categories" })} />
-      )}
-    </main>
+        )}
+        {screen.name === "quiz" && screen.mode === "lane-rush" && (
+          <LaneRush
+            key={screen.session.id}
+            session={screen.session}
+            onComplete={(result) => setScreen({ name: "results", result })}
+          />
+        )}
+        {screen.name === "quiz" && screen.mode === "balloon-pop" && (
+          <BalloonPop
+            key={screen.session.id}
+            session={screen.session}
+            onComplete={(result) => setScreen({ name: "results", result })}
+          />
+        )}
+        {screen.name === "results" && (
+          <ResultsScreen
+            result={screen.result}
+            onPlayAgain={() => startQuiz(lastCategory, lastMode)}
+            onBackToCategories={() => setScreen({ name: "categories" })}
+          />
+        )}
+        {screen.name === "stats" && <StatsPage onBack={() => setScreen({ name: "categories" })} />}
+        {screen.name === "leaderboard" && (
+          <LeaderboardPage onBack={() => setScreen({ name: "categories" })} />
+        )}
+      </main>
+    </div>
   );
 }
