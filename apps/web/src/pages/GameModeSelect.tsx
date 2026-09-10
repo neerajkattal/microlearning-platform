@@ -4,30 +4,32 @@ interface GameModeSelectProps {
   onSelectMode: (mode: GameMode) => void;
 }
 
+const MODES: { mode: GameMode; label: string; desc: string; emoji: string; wide?: boolean }[] = [
+  { mode: "classic", label: "Classic", desc: "Answer buttons", emoji: "📝" },
+  { mode: "lane-rush", label: "Lane Rush", desc: "Steer into an answer", emoji: "🏎️" },
+  { mode: "balloon-pop", label: "Balloon Pop", desc: "Pop the right answer", emoji: "🎈", wide: true },
+];
+
 export function GameModeSelect({ onSelectMode }: GameModeSelectProps) {
   return (
-    <div className="max-w-sm mx-auto grid grid-cols-2 gap-3">
-      <button
-        onClick={() => onSelectMode("classic")}
-        className="p-4 border rounded-lg hover:bg-gray-50 text-center"
-      >
-        <div className="font-medium">Classic</div>
-        <div className="text-sm text-gray-500">Answer buttons</div>
-      </button>
-      <button
-        onClick={() => onSelectMode("lane-rush")}
-        className="p-4 border rounded-lg hover:bg-gray-50 text-center"
-      >
-        <div className="font-medium">Lane Rush</div>
-        <div className="text-sm text-gray-500">Steer into an answer</div>
-      </button>
-      <button
-        onClick={() => onSelectMode("balloon-pop")}
-        className="p-4 border rounded-lg hover:bg-gray-50 text-center col-span-2"
-      >
-        <div className="font-medium">Balloon Pop</div>
-        <div className="text-sm text-gray-500">Pop the right answer</div>
-      </button>
+    <div className="max-w-md mx-auto space-y-4">
+      <h2 className="text-lg font-bold text-center text-slate-200">Choose your mode</h2>
+      <div className="grid grid-cols-2 gap-3">
+        {MODES.map(({ mode, label, desc, emoji, wide }) => (
+          <button
+            key={mode}
+            onClick={() => onSelectMode(mode)}
+            className={`rounded-xl border border-slate-800 bg-slate-900/60 p-5 text-center shadow-card
+              hover:border-amber-500/50 hover:-translate-y-0.5 transition-all ${wide ? "col-span-2" : ""}`}
+          >
+            <div className="text-2xl mb-1" aria-hidden>
+              {emoji}
+            </div>
+            <div className="font-semibold text-slate-100">{label}</div>
+            <div className="text-xs text-slate-500 mt-1">{desc}</div>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
