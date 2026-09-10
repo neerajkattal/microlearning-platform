@@ -108,11 +108,12 @@ export function BalloonPop({ session, onComplete }: BalloonPopProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between" style={{ width: CANVAS_WIDTH, margin: "0 auto" }}>
-        <span className="text-xs text-gray-500">Tap a balloon, or press 1-4</span>
+        <span className="text-xs text-slate-500">Tap a balloon, or press 1-4</span>
         {fullscreenSupported && (
           <button
             onClick={toggleFullscreen}
-            className="text-xs px-3 py-1.5 border rounded-md hover:bg-gray-50"
+            className="text-xs px-3 py-1.5 rounded-md border border-slate-700 text-slate-300
+              hover:border-amber-500/50 hover:text-amber-300 transition-colors"
           >
             {isFullscreen ? "Exit full screen" : "Full screen"}
           </button>
@@ -120,7 +121,7 @@ export function BalloonPop({ session, onComplete }: BalloonPopProps) {
       </div>
       <div
         ref={containerRef}
-        className="mx-auto"
+        className="mx-auto rounded-xl overflow-hidden border border-slate-800 shadow-card"
         style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT, maxWidth: "100%" }}
       />
       <div className="grid grid-cols-4 gap-2 sm:hidden" style={{ width: CANVAS_WIDTH, margin: "0 auto" }}>
@@ -129,7 +130,8 @@ export function BalloonPop({ session, onComplete }: BalloonPopProps) {
             key={index}
             onClick={() => getScene()?.popByIndex(index)}
             aria-label={`Pop balloon ${index + 1}`}
-            className="px-3 py-3 border rounded-lg text-lg"
+            className="px-3 py-3 rounded-lg border border-slate-700 bg-slate-900 text-lg text-slate-200
+              active:bg-slate-800"
           >
             {index + 1}
           </button>
