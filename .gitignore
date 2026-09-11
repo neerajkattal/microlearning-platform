@@ -34,3 +34,5 @@ docs/learning/EASY_EXPLAINER.md
 
 # database backups (may contain real user data, even if just local test data)
 backups/
+.vercel
+.env*
