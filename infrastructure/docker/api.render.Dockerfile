@@ -15,7 +15,12 @@ RUN pip install --no-cache-dir -r services/api/requirements.txt
 COPY services/api/app services/api/app
 COPY alembic.ini alembic.ini
 COPY migrations migrations
-WORKDIR /repo/services/api
+# Migrations run as part of the container's own startup, not via
+# Render's "pre-deploy command" — that field turned out to not actually
+# take effect when set through Render's API (accepted with a 200, never
+# persisted or reflected back), so baking it into the image's own CMD is
+# both simpler and platform-independent: this container is self-migrating
+# wherever it runs, not dependent on a Render-specific mechanism.
 # Render sets $PORT dynamically for web services; falls back to 10000
 # (Render's own conventional default) if it's ever unset.
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]
+CMD ["sh", "-c", "cd /repo && alembic -c alembic.ini upgrade head && cd /repo/services/api && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]
