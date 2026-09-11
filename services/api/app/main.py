@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
+from .config import settings
 from .request_logging import RequestLoggingMiddleware
 from .routers import auth, health, ingestion, questions, quiz, users
 
@@ -22,7 +23,7 @@ app = FastAPI(title="Microlearning Platform API")
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=settings.cors_origins_list,
     allow_methods=["*"],
     allow_headers=["*"],
 )

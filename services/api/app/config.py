@@ -9,6 +9,16 @@ class Settings(BaseSettings):
     opentdb_base_url: str = "https://opentdb.com/api.php"
     api_env: str = "development"
 
+    # Comma-separated list — dev default covers the local Vite dev server.
+    # A real deployment overrides this via the CORS_ORIGINS env var (e.g.
+    # the Vercel frontend's real origin). Kept as a single string setting
+    # rather than a list because that's how a plain env var arrives.
+    cors_origins: str = "http://localhost:5173"
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
     # Dev-only default — a real deployment must override this via the
     # JWT_SECRET_KEY env var. Rotating it invalidates every issued token,
     # which is fine here (there's no "logged out everywhere" support to
