@@ -1,0 +1,19 @@
+name: Keep API warm
+
+# Render's free web-service tier spins the container down after ~15 min
+# of no incoming traffic, and cold-starts it (~30-60s) on the next
+# request. Pinging /health on a schedule keeps a real visitor from being
+# the one to pay that cold-start cost. Not a guarantee (Render can still
+# enforce sleep under some conditions on the free tier), but works well
+# in practice at no cost — see docs/operations/DEPLOYMENT.md.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping the API health endpoint
+        run: curl -sf https://playtolearn-api.onrender.com/health

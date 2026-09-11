@@ -1,0 +1,52 @@
+# Render Blueprint — deploys the API, the background worker, and a
+# managed Postgres in one pass. Apply via the Render dashboard:
+# "New +" → "Blueprint" → connect this GitHub repo → Render reads this
+# file automatically. See docs/operations/DEPLOYMENT.md for the full,
+# step-by-step runbook (including the one thing this file can't set up
+# for you: Redis, since Render's own Redis isn't on the free tier —
+# use Upstash instead, and paste its URL into both services below).
+databases:
+  - name: playtolearn-db
+    plan: free
+    databaseName: microlearning
+    user: microlearning
+
+services:
+  - type: web
+    name: playtolearn-api
+    runtime: docker
+    dockerfilePath: ./infrastructure/docker/api.render.Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
+    # Runs once before each deploy — brings the production schema up to
+    # date the same way `make migrate` does locally, since there's no
+    # host machine here to run that command from.
+    preDeployCommand: "cd /repo && alembic -c alembic.ini upgrade head"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: playtolearn-db
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: "https://playtolearn.neerajkattal.app,https://playtolearn-five.vercel.app"
+      - key: REDIS_URL
+        sync: false # set manually to your Upstash Redis URL after creating it
+
+  - type: worker
+    name: playtolearn-worker
+    runtime: docker
+    dockerfilePath: ./infrastructure/docker/worker.Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: playtolearn-db
+          property: connectionString
+      - key: REDIS_URL
+        sync: false # same Upstash URL as the api service above
+      - key: API_BASE_URL
+        value: "https://playtolearn-api.onrender.com" # the api service's own public URL, per Render's <service-name>.onrender.com convention — confirm this matches once deployed
