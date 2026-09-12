@@ -91,6 +91,17 @@ class AchievementOut(BaseModel):
     icon: Optional[str]
 
 
+class AnswerReviewOut(BaseModel):
+    # Safe to expose only now - the session is already completed, so
+    # revealing correct_answer here can no longer let a client cheat on
+    # a question it hasn't submitted yet (CLAUDE.md "Security boundary").
+    question_id: int
+    prompt: str
+    your_answer: Optional[str]  # null if the question was never answered
+    correct_answer: str
+    is_correct: bool
+
+
 class CompleteSessionResult(BaseModel):
     session_id: int
     score: int
@@ -100,6 +111,7 @@ class CompleteSessionResult(BaseModel):
     level: int
     streak: int
     achievements_earned: list[AchievementOut] = []
+    review: list[AnswerReviewOut] = []
 
 
 class RegisterRequest(BaseModel):

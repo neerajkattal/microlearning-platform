@@ -246,6 +246,39 @@ def test_complete_session_only_credits_answered_questions(db_session):
     assert result["score"] == 1
     assert result["total_questions"] == 2  # total reflects the session size, not just answered ones
 
+    # the unanswered question still shows up in the review, with no
+    # answer of its own but the correct one still revealed (safe now
+    # that the session is over - see schemas.AnswerReviewOut)
+    unanswered = next(r for r in result["review"] if r["question_id"] == session.session_questions[1].question_id)
+    assert unanswered["your_answer"] is None
+    assert unanswered["is_correct"] is False
+    assert unanswered["correct_answer"]
+
+
+def test_complete_session_review_includes_prompt_and_chosen_and_correct_answers(db_session):
+    user = _make_user(db_session)
+    _make_question(db_session, text="2+2?", correct="4", incorrect=["3", "5", "22"])
+    session = quiz_sessions.start_session(db_session, user=user, category_slug=None, question_count=1)
+
+    sq = session.session_questions[0]
+    wrong_answer = next(a for a in sq.question.answers if not a.is_correct)
+    quiz_sessions.submit_answer(
+        db_session, session_id=session.id, session_question_id=sq.id,
+        selected_answer_id=wrong_answer.id, response_time_ms=None, owner_id=user.id,
+    )
+
+    result = quiz_sessions.complete_session(db_session, session.id, owner_id=user.id)
+
+    assert result["review"] == [
+        {
+            "question_id": sq.question_id,
+            "prompt": "2+2?",
+            "your_answer": wrong_answer.text,
+            "correct_answer": "4",
+            "is_correct": False,
+        }
+    ]
+
 
 def test_complete_session_cannot_be_called_twice(db_session):
     user = _make_user(db_session)

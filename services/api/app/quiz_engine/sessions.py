@@ -154,10 +154,24 @@ def complete_session(db: Session, session_id: int, *, owner_id: int) -> dict:
 
     total_xp_earned = 0
     score = 0
+    review = []
     for sq in session.session_questions:
         attempt = sq.attempt
+        correct_answer = next(a for a in sq.question.answers if a.is_correct)
+
         if attempt is None:
-            continue  # unanswered — no credit, matches server-authoritative scoring
+            # unanswered — no credit, matches server-authoritative scoring
+            review.append(
+                {
+                    "question_id": sq.question_id,
+                    "prompt": sq.question.text,
+                    "your_answer": None,
+                    "correct_answer": correct_answer.text,
+                    "is_correct": False,
+                }
+            )
+            continue
+
         if attempt.is_correct:
             score += 1
         total_xp_earned += calculate_xp(
@@ -165,6 +179,15 @@ def complete_session(db: Session, session_id: int, *, owner_id: int) -> dict:
             difficulty=sq.question.difficulty,
             response_time_ms=attempt.response_time_ms,
             current_streak=stats.current_streak,
+        )
+        review.append(
+            {
+                "question_id": sq.question_id,
+                "prompt": sq.question.text,
+                "your_answer": attempt.selected_answer.text if attempt.selected_answer else None,
+                "correct_answer": correct_answer.text,
+                "is_correct": attempt.is_correct,
+            }
         )
 
     stats.xp += total_xp_earned
@@ -190,4 +213,5 @@ def complete_session(db: Session, session_id: int, *, owner_id: int) -> dict:
         "level": stats.level,
         "streak": stats.current_streak,
         "achievements_earned": newly_earned,
+        "review": review,
     }
