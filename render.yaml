@@ -1,10 +1,17 @@
-# Render Blueprint — deploys the API, the background worker, and a
-# managed Postgres in one pass. Apply via the Render dashboard:
-# "New +" → "Blueprint" → connect this GitHub repo → Render reads this
-# file automatically. See docs/operations/DEPLOYMENT.md for the full,
-# step-by-step runbook (including the one thing this file can't set up
-# for you: Redis, since Render's own Redis isn't on the free tier —
-# use Upstash instead, and paste its URL into both services below).
+# Render Blueprint — deploys the API and a managed Postgres. Apply via
+# the Render dashboard: "New +" → "Blueprint" → connect this GitHub repo
+# → Render reads this file automatically. See docs/operations/DEPLOYMENT.md
+# for the full runbook, including Redis (Upstash — Render's own Redis
+# isn't on the free tier, paste its URL into REDIS_URL below).
+#
+# No worker/cron_job service here on purpose: Render's free tier only
+# allows web services — both `type: worker` and a cron job came back
+# rejected ("only web services allowed for plan" / "invalid plan: free")
+# when actually tried against Render's API, not assumed from docs. The
+# worker's only job was calling the API's own /ingestion/opentdb
+# endpoint on a schedule (ADR-0003), so .github/workflows/
+# scheduled-ingestion.yml does that instead, for free, from GitHub
+# Actions.
 databases:
   - name: playtolearn-db
     plan: free
@@ -19,10 +26,10 @@ services:
     dockerContext: .
     plan: free
     healthCheckPath: /health
-    # Runs once before each deploy — brings the production schema up to
-    # date the same way `make migrate` does locally, since there's no
-    # host machine here to run that command from.
-    preDeployCommand: "cd /repo && alembic -c alembic.ini upgrade head"
+    # NOT preDeployCommand: that field accepted the value (200/201) but
+    # never actually took effect, confirmed by checking the service back
+    # afterward — see api.render.Dockerfile's own CMD, which runs
+    # `alembic upgrade head` itself on every container start instead.
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -34,19 +41,3 @@ services:
         value: "https://playtolearn.neerajkattal.app,https://playtolearn-five.vercel.app"
       - key: REDIS_URL
         sync: false # set manually to your Upstash Redis URL after creating it
-
-  - type: worker
-    name: playtolearn-worker
-    runtime: docker
-    dockerfilePath: ./infrastructure/docker/worker.Dockerfile
-    dockerContext: .
-    plan: free
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: playtolearn-db
-          property: connectionString
-      - key: REDIS_URL
-        sync: false # same Upstash URL as the api service above
-      - key: API_BASE_URL
-        value: "https://playtolearn-api.onrender.com" # the api service's own public URL, per Render's <service-name>.onrender.com convention — confirm this matches once deployed

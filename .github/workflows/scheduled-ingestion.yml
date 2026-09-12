@@ -1,0 +1,23 @@
+name: Scheduled question ingestion
+
+# Render's free tier only allows web services - background workers and
+# cron jobs both require a paid plan (confirmed directly against
+# Render's API: both requests came back "only web services allowed for
+# plan" / "invalid plan: free"). The worker's whole job was just calling
+# the API's own /ingestion/opentdb endpoint on a schedule (see
+# ADR-0003), so this workflow does that instead of running a second
+# always-on Render service - same effect, no extra cost.
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger OpenTDB ingestion on the live API
+        run: |
+          curl -sf -X POST https://playtolearn-api.onrender.com/ingestion/opentdb \
+            -H "Content-Type: application/json" \
+            -d '{"amount": 50}'
