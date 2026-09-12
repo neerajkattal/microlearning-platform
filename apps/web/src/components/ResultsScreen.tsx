@@ -69,6 +69,39 @@ export function ResultsScreen({ result, onPlayAgain, onBackToCategories }: Resul
         </div>
       )}
 
+      {result.review.length > 0 && (
+        <div className="text-left space-y-2">
+          <p className="font-semibold text-sm text-slate-300">Question review</p>
+          <ul className="space-y-2">
+            {result.review.map((item, index) => (
+              <li
+                key={item.question_id}
+                className={`rounded-xl border px-4 py-3 space-y-1 ${
+                  item.is_correct
+                    ? "border-emerald-500/30 bg-emerald-500/5"
+                    : "border-rose-500/30 bg-rose-500/5"
+                }`}
+              >
+                <p className="text-xs text-slate-500">Question {index + 1}</p>
+                <p className="text-sm text-slate-100 font-medium">{item.prompt}</p>
+                <p className="text-sm">
+                  <span className="text-slate-500">Your answer: </span>
+                  <span className={item.is_correct ? "text-emerald-400" : "text-rose-400"}>
+                    {item.your_answer ?? "No answer"}
+                  </span>
+                </p>
+                {!item.is_correct && (
+                  <p className="text-sm">
+                    <span className="text-slate-500">Correct answer: </span>
+                    <span className="text-emerald-400">{item.correct_answer}</span>
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="flex gap-3 justify-center">
         <Button onClick={onPlayAgain}>Play again</Button>
         <Button variant="secondary" onClick={onBackToCategories}>

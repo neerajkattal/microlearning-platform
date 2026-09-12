@@ -61,6 +61,9 @@ describe("App — full quiz flow", () => {
           return jsonResponse({
             session_id: 1, score: 1, total_questions: 1, xp_earned: 10, total_xp: 10, level: 1, streak: 1,
             achievements_earned: [],
+            review: [
+              { question_id: 100, prompt: "2 + 2?", your_answer: "4", correct_answer: "4", is_correct: true },
+            ],
           });
         }
         throw new Error(`unexpected fetch: ${url}`);

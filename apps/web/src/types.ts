@@ -38,6 +38,14 @@ export interface Achievement {
   icon: string | null;
 }
 
+export interface AnswerReview {
+  question_id: number;
+  prompt: string;
+  your_answer: string | null;
+  correct_answer: string;
+  is_correct: boolean;
+}
+
 export interface CompleteSessionResult {
   session_id: number;
   score: number;
@@ -47,6 +55,7 @@ export interface CompleteSessionResult {
   level: number;
   streak: number;
   achievements_earned: Achievement[];
+  review: AnswerReview[];
 }
 
 export interface User {

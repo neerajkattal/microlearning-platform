@@ -12,6 +12,10 @@ const result: CompleteSessionResult = {
   level: 2,
   streak: 3,
   achievements_earned: [],
+  review: [
+    { question_id: 1, prompt: "2 + 2?", your_answer: "4", correct_answer: "4", is_correct: true },
+    { question_id: 2, prompt: "Capital of France?", your_answer: "Berlin", correct_answer: "Paris", is_correct: false },
+  ],
 };
 
 describe("ResultsScreen", () => {
@@ -56,5 +60,25 @@ describe("ResultsScreen", () => {
   it("shows no achievement banner when none were earned", () => {
     render(<ResultsScreen result={result} onPlayAgain={vi.fn()} onBackToCategories={vi.fn()} />);
     expect(screen.queryByText("Achievement unlocked!")).toBeNull();
+  });
+
+  it("shows a per-question review with the chosen and correct answers", () => {
+    render(<ResultsScreen result={result} onPlayAgain={vi.fn()} onBackToCategories={vi.fn()} />);
+    expect(screen.getByText("Capital of France?")).toBeTruthy();
+    expect(screen.getByText("Berlin")).toBeTruthy();
+    // "Paris" appears as the correct answer only for the wrong question,
+    // since the right one doesn't render a separate "Correct answer" line.
+    expect(screen.getByText("Paris")).toBeTruthy();
+  });
+
+  it("shows 'No answer' for a question that was never answered", () => {
+    const withUnanswered: CompleteSessionResult = {
+      ...result,
+      review: [
+        { question_id: 3, prompt: "Unanswered one?", your_answer: null, correct_answer: "X", is_correct: false },
+      ],
+    };
+    render(<ResultsScreen result={withUnanswered} onPlayAgain={vi.fn()} onBackToCategories={vi.fn()} />);
+    expect(screen.getByText("No answer")).toBeTruthy();
   });
 });
