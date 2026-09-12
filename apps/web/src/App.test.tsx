@@ -48,7 +48,7 @@ describe("App", () => {
 
   it("renders the app title", () => {
     render(<App />);
-    expect(screen.getByText("Microlearning Platform")).toBeTruthy();
+    expect(screen.getByText("PlayToLearn")).toBeTruthy();
   });
 
   it("shows the API as connected once /api/health resolves ok", async () => {
