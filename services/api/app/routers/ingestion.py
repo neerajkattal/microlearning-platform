@@ -17,7 +17,7 @@ router = APIRouter(prefix="/ingestion", tags=["ingestion"])
 @router.post("/opentdb", response_model=schemas.IngestionResultOut)
 def ingest_opentdb(payload: schemas.IngestionRequest, db: Session = Depends(get_db)):
     provider = OpenTDBProvider()
-    result = run_ingestion(db, provider, amount=payload.amount)
+    result = run_ingestion(db, provider, amount=payload.amount, category=payload.category)
     return schemas.IngestionResultOut(
         fetched=result.fetched,
         inserted=result.inserted,

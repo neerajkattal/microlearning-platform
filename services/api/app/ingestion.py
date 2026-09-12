@@ -60,11 +60,11 @@ def get_or_create_source(db: Session, name: str, base_url: str | None = None) ->
     return source
 
 
-def _fetch_with_retry(provider: QuestionProvider, amount: int) -> list[RawQuestion]:
+def _fetch_with_retry(provider: QuestionProvider, amount: int, category: str | None = None) -> list[RawQuestion]:
     last_error: Exception | None = None
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            return provider.fetch_batch(amount=amount)
+            return provider.fetch_batch(amount=amount, category=category)
         except (httpx.HTTPStatusError, httpx.RequestError) as exc:
             last_error = exc
             if attempt < MAX_RETRIES:
@@ -109,12 +109,19 @@ def _ingest_one(db: Session, source: models.QuestionSource, raw: RawQuestion) ->
     return "inserted"
 
 
-def run_ingestion(db: Session, provider: QuestionProvider, *, amount: int, source_name: str = "opentdb") -> IngestionResult:
+def run_ingestion(
+    db: Session,
+    provider: QuestionProvider,
+    *,
+    amount: int,
+    category: str | None = None,
+    source_name: str = "opentdb",
+) -> IngestionResult:
     result = IngestionResult()
     source = get_or_create_source(db, source_name)
 
     try:
-        raw_questions = _fetch_with_retry(provider, amount)
+        raw_questions = _fetch_with_retry(provider, amount, category)
     except (httpx.HTTPStatusError, httpx.RequestError) as exc:
         result.errors.append(f"fetch failed after {MAX_RETRIES} attempts: {exc!r}")
         return result

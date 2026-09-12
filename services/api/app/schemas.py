@@ -6,6 +6,11 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class IngestionRequest(BaseModel):
     amount: int = Field(default=10, ge=1, le=50)
+    # OpenTDB's own numeric category id (9-32, from its /api_category.php),
+    # not one of our internal Category rows - those are created dynamically
+    # from whatever category name a question arrives with and have no fixed
+    # id to pass back in. Omit to fetch OpenTDB's normal random mix.
+    category: Optional[str] = None
 
 
 class IngestionResultOut(BaseModel):

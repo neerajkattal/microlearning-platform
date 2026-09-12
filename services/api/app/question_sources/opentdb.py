@@ -22,7 +22,16 @@ class OpenTDBProvider(QuestionProvider):
         self._client = client or httpx.Client(timeout=10.0)
 
     def fetch_batch(self, *, amount: int, category: Optional[str] = None) -> list[RawQuestion]:
-        response = self._client.get(self.base_url, params={"amount": amount, "type": "multiple"})
+        params: dict[str, int | str] = {"amount": amount, "type": "multiple"}
+        # OpenTDB's own category ids (9-32, from GET /api_category.php) -
+        # passed through as-is rather than mapped from our internal
+        # Category rows, since those are created dynamically from
+        # whatever category name a question arrives with (see
+        # ingestion.get_or_create_category) and have no fixed id of
+        # their own to translate from.
+        if category:
+            params["category"] = category
+        response = self._client.get(self.base_url, params=params)
         response.raise_for_status()
         payload = response.json()
 
