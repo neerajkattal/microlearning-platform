@@ -1,16 +1,43 @@
-# Microlearning Platform
+# PlayToLearn
 
-A production-oriented gamified microlearning platform. Users answer multiple-choice
-questions through short interactive games (Lane Rush, Balloon Pop), backed by a
-shared question/quiz system that's independent of any single game's presentation.
+**Live:** [playtolearn-five.vercel.app](https://playtolearn-five.vercel.app)
+
+A full-stack gamified trivia platform. Questions are answered through short
+interactive browser games (a lane-dodging runner, a balloon-popping game) instead
+of a plain multiple-choice form, backed by a real quiz engine, auth, XP/leaderboard
+system, and a live production deployment.
+
+**Stack:** FastAPI (Python) · PostgreSQL · Redis · SQLAlchemy/Alembic · React +
+TypeScript · Phaser (game engine) · Docker Compose · deployed on Vercel + Render +
+Upstash.
+
+## Highlights
+
+- **Server-authoritative scoring** — the client never sees which answer is correct
+  until after it submits; answer order is shuffled per session.
+- **Two Phaser game modes** sharing one quiz engine, each split into a pure,
+  fully-unit-tested game-logic module plus a thin rendering layer.
+- **Real auth, XP, streaks, achievements, and a leaderboard** — JWT + bcrypt,
+  server-computed scoring formula (base + difficulty + speed + streak bonuses).
+- **Production hardening**: structured JSON logging with request IDs, Redis rate
+  limiting on auth endpoints, Redis caching on hot read endpoints, a documented
+  self-review that found and fixed a real bug (the rate limiter was keying off the
+  reverse proxy's IP instead of the real client's).
+- **182 automated tests** (87 backend, 95 frontend) across unit, integration, and
+  component-level coverage.
+- **Live deployment** — Vercel (frontend) + Render (API, Docker) + Upstash (Redis),
+  with a free-tier-aware architecture (a GitHub Actions cron replaces a paid
+  background worker, another pings the API to avoid cold starts).
 
 See `CLAUDE.md` for the full engineering constitution, and `docs/START_HERE.md` for
 the product/architecture overview.
 
 ## Status
 
-Phase 0 (foundation) complete. See `docs/architecture/PHASE_0.md` for what's actually
-built vs. skeleton, and `docs/BUILD_PLAN.md` for the phased roadmap.
+Phases 0-7 of the build plan complete (foundation, question ingestion, quiz engine,
+two game modes, auth/gamification, production hardening) plus a UI/UX redesign and a
+live deployment. See `docs/BUILD_PLAN.md` for the phased roadmap and
+`docs/architecture/` for what each phase actually delivered.
 
 ## Local setup
 
@@ -59,5 +86,5 @@ make build        # production build of apps/web
 - `docs/architecture/QUESTION_SYSTEM.md` — Q&A architecture
 - `docs/decisions/` — architecture decision records
 - `docs/DEFINITION_OF_DONE.md` — delivery quality gate
-- `docs/operations/` — runbooks (populated in later phases)
-- `docs/learning/` — infrastructure learning notes
+- `docs/operations/DEPLOYMENT.md` — how the live deployment actually works (Vercel/Render/Upstash, real gaps found and fixed along the way)
+- `docs/learning/` — infrastructure learning notes (gitignored, personal)
