@@ -1,3 +1,5 @@
+export type Difficulty = "easy" | "medium" | "hard" | null;
+
 export interface Category {
   id: number;
   name: string;
@@ -29,6 +31,10 @@ export interface SubmitAnswerResult {
   correct_answer_id: number;
   explanation: string | null;
   xp_earned: number;
+}
+
+export interface HintResult {
+  eliminated_answer_ids: number[];
 }
 
 export interface Achievement {

@@ -3,6 +3,7 @@ import type {
   AuthResponse,
   Category,
   CompleteSessionResult,
+  HintResult,
   LeaderboardEntry,
   QuizSession,
   SubmitAnswerResult,
@@ -49,10 +50,14 @@ export const api = {
 
   listCategories: () => request<Category[]>("/categories"),
 
-  startQuizSession: (params: { category: string | null; questionCount: number }) =>
+  startQuizSession: (params: { category: string | null; difficulty?: string | null; questionCount: number }) =>
     request<QuizSession>("/quiz-sessions", {
       method: "POST",
-      body: JSON.stringify({ category: params.category, question_count: params.questionCount }),
+      body: JSON.stringify({
+        category: params.category,
+        difficulty: params.difficulty ?? null,
+        question_count: params.questionCount,
+      }),
     }),
 
   getQuizSession: (sessionId: number) => request<QuizSession>(`/quiz-sessions/${sessionId}`),
@@ -71,4 +76,9 @@ export const api = {
 
   completeQuizSession: (sessionId: number) =>
     request<CompleteSessionResult>(`/quiz-sessions/${sessionId}/complete`, { method: "POST" }),
+
+  getHint: (params: { sessionId: number; sessionQuestionId: number }) =>
+    request<HintResult>(`/quiz-sessions/${params.sessionId}/questions/${params.sessionQuestionId}/hint`, {
+      method: "POST",
+    }),
 };

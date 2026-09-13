@@ -45,13 +45,21 @@ describe("api client", () => {
     expect(categories).toHaveLength(1);
   });
 
-  it("startQuizSession posts category and question_count", async () => {
+  it("startQuizSession posts category, difficulty, and question_count", async () => {
     mockFetchOnce({ id: 1, status: "in_progress", questions: [] });
-    await api.startQuizSession({ category: "math", questionCount: 5 });
+    await api.startQuizSession({ category: "math", difficulty: "hard", questionCount: 5 });
 
     const [url, options] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(url).toBe("/api/quiz-sessions");
-    expect(JSON.parse(options.body)).toEqual({ category: "math", question_count: 5 });
+    expect(JSON.parse(options.body)).toEqual({ category: "math", difficulty: "hard", question_count: 5 });
+  });
+
+  it("startQuizSession defaults difficulty to null when omitted", async () => {
+    mockFetchOnce({ id: 1, status: "in_progress", questions: [] });
+    await api.startQuizSession({ category: "math", questionCount: 5 });
+
+    const [, options] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(JSON.parse(options.body)).toEqual({ category: "math", difficulty: null, question_count: 5 });
   });
 
   it("submitAnswer posts to the correct nested path", async () => {
