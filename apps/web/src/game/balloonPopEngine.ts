@@ -3,7 +3,7 @@ import type { SessionQuestion } from "../types";
 export const BALLOON_COUNT = 4;
 export const COUNTDOWN_MS = 3000;
 
-export type BalloonPopPhase = "idle" | "countdown" | "running" | "finished";
+export type BalloonPopPhase = "idle" | "countdown" | "running" | "paused" | "finished";
 
 export interface PendingResolution {
   sessionQuestionId: number;
@@ -24,6 +24,9 @@ export interface BalloonPopState {
   score: number;
   answers: AnswerRecord[];
   countdownMs: number;
+  // Answer ids ruled out by a hint for the current question only — reset
+  // every time a new question spawns (see spawnNextQuestion).
+  eliminatedAnswerIds: number[];
 }
 
 export function createGameState(questions: SessionQuestion[]): BalloonPopState {
@@ -37,11 +40,28 @@ export function createGameState(questions: SessionQuestion[]): BalloonPopState {
     score: 0,
     answers: [],
     countdownMs: COUNTDOWN_MS,
+    eliminatedAnswerIds: [],
   };
 }
 
 export function start(state: BalloonPopState): BalloonPopState {
   return state.phase === "idle" ? { ...state, phase: "countdown", countdownMs: COUNTDOWN_MS } : state;
+}
+
+/** Freezes balloon popping — `popBalloon` already only works while
+ * `phase === "running"`, so entering any other phase (this one included)
+ * blocks it for free. No-op outside "running". */
+export function pause(state: BalloonPopState): BalloonPopState {
+  return state.phase === "running" ? { ...state, phase: "paused" } : state;
+}
+
+export function resume(state: BalloonPopState): BalloonPopState {
+  return state.phase === "paused" ? { ...state, phase: "running" } : state;
+}
+
+/** Record which 2 answer ids a hint ruled out for the current question. */
+export function applyHint(state: BalloonPopState, eliminatedAnswerIds: number[]): BalloonPopState {
+  return { ...state, eliminatedAnswerIds };
 }
 
 /** Advance the countdown by `dtMs` of wall-clock time. Unlike Lane Rush's
@@ -83,9 +103,9 @@ export function popBalloon(state: BalloonPopState, balloonIndex: number): Balloo
 function spawnNextQuestion(state: BalloonPopState): BalloonPopState {
   const [next, ...rest] = state.queue;
   if (!next) {
-    return { ...state, currentQuestion: null, queue: [], phase: "finished" };
+    return { ...state, currentQuestion: null, queue: [], phase: "finished", eliminatedAnswerIds: [] };
   }
-  return { ...state, currentQuestion: next, queue: rest, poppedBalloonIndex: null };
+  return { ...state, currentQuestion: next, queue: rest, poppedBalloonIndex: null, eliminatedAnswerIds: [] };
 }
 
 /** Apply the server's verdict for the popped balloon: record the answer,

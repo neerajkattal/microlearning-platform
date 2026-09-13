@@ -4,8 +4,11 @@ import {
   BALLOON_COUNT,
   BalloonPopState,
   applyAnswerResult,
+  applyHint,
   createGameState,
+  pause as enginePause,
   popBalloon,
+  resume as engineResume,
   start,
   update as engineUpdate,
 } from "./balloonPopEngine";
@@ -66,6 +69,10 @@ function balloonCenter(index: number): { x: number; y: number } {
 export const BALLOON_POP_EVENTS = {
   ANSWER_LOCKED: "answer-locked",
   GAME_FINISHED: "game-finished",
+  // Fired whenever the current question changes (a new one spawns, or the
+  // round ends) - the React wrapper uses this to know a hint no longer
+  // applies to whatever question is now current.
+  QUESTION_CHANGED: "question-changed",
 } as const;
 
 export class BalloonPopScene extends Phaser.Scene {
@@ -88,6 +95,7 @@ export class BalloonPopScene extends Phaser.Scene {
   private popKeys: Phaser.Input.Keyboard.Key[] = [];
   private awaitingVerdict = false;
   private finishedEmitted = false;
+  private lastEmittedQuestionId: number | null = null;
 
   constructor() {
     super({ key: "BalloonPopScene" });
@@ -195,6 +203,12 @@ export class BalloonPopScene extends Phaser.Scene {
       this.game.events.emit(BALLOON_POP_EVENTS.ANSWER_LOCKED, this.state.pendingResolution);
     }
 
+    const currentQuestionId = this.state.currentQuestion?.session_question_id ?? null;
+    if (currentQuestionId !== this.lastEmittedQuestionId) {
+      this.lastEmittedQuestionId = currentQuestionId;
+      this.game.events.emit(BALLOON_POP_EVENTS.QUESTION_CHANGED, currentQuestionId);
+    }
+
     if (this.state.phase === "finished" && !this.finishedEmitted) {
       this.finishedEmitted = true;
       this.game.events.emit(BALLOON_POP_EVENTS.GAME_FINISHED, {
@@ -219,6 +233,26 @@ export class BalloonPopScene extends Phaser.Scene {
    * touch controls, just numbered instead of directional. */
   popByIndex(index: number) {
     this.attemptPop(index);
+  }
+
+  pauseGame() {
+    this.state = enginePause(this.state);
+  }
+
+  resumeGame() {
+    this.state = engineResume(this.state);
+  }
+
+  isPaused() {
+    return this.state.phase === "paused";
+  }
+
+  getCurrentSessionQuestionId(): number | null {
+    return this.state.currentQuestion?.session_question_id ?? null;
+  }
+
+  applyHint(eliminatedAnswerIds: number[]) {
+    this.state = applyHint(this.state, eliminatedAnswerIds);
   }
 
   private attemptPop(index: number) {
@@ -290,7 +324,11 @@ export class BalloonPopScene extends Phaser.Scene {
       const numberText = this.numberTexts[i];
       const { x, y } = balloonCenter(i);
       const isPopping = this.state.poppedBalloonIndex === i;
-      const scale = isPopping ? this.popScale : 1;
+      const isEliminated = !!choice && this.state.eliminatedAnswerIds.includes(choice.id);
+      // A hint-eliminated balloon is still poppable (not physically
+      // blocked), just visually marked as ruled-out - same "disabled but
+      // not removed" treatment as the other two modes.
+      const scale = isPopping ? this.popScale : isEliminated ? 0.7 : 1;
 
       text.setText(choice?.text ?? "");
       numberText.setVisible(!!choice);
@@ -298,15 +336,18 @@ export class BalloonPopScene extends Phaser.Scene {
         text.setFontSize(fontSizeFor(choice.text));
       }
       text.setPosition(x, y);
-      text.setAlpha(scale);
-      numberText.setAlpha(scale);
+      text.setAlpha(isEliminated ? 0.4 : scale);
+      numberText.setAlpha(isEliminated ? 0.4 : scale);
 
       if (!choice || scale <= 0.02) continue;
 
       g.fillStyle(Phaser.Display.Color.HexStringToColor(PALETTE.string).color, 1);
       g.fillRect(x - 1, y + BALLOON_RADIUS_Y * scale, 2, 16 * scale);
 
-      g.fillStyle(Phaser.Display.Color.HexStringToColor(BALLOON_COLORS[i % BALLOON_COLORS.length]).color, 1);
+      g.fillStyle(
+        Phaser.Display.Color.HexStringToColor(BALLOON_COLORS[i % BALLOON_COLORS.length]).color,
+        isEliminated ? 0.4 : 1
+      );
       g.fillEllipse(x, y, BALLOON_RADIUS_X * 2 * scale, BALLOON_RADIUS_Y * 2 * scale);
       // A small highlight, for a bit of shine instead of a flat circle.
       g.fillStyle(0xffffff, 0.25);

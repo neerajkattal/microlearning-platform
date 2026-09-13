@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   COUNTDOWN_MS,
   applyAnswerResult,
+  applyHint,
   createGameState,
+  pause,
   popBalloon,
+  resume,
   start,
   stop,
   update,
@@ -173,5 +176,49 @@ describe("stop", () => {
     };
     const stopped = stop(state);
     expect(stopped.answers).toContainEqual({ sessionQuestionId: 1, chosenAnswerId: 2 });
+  });
+});
+
+describe("pause/resume", () => {
+  it("pauses a running round", () => {
+    const state: BalloonPopState = { ...createGameState(QUESTIONS), phase: "running" };
+    expect(pause(state).phase).toBe("paused");
+  });
+
+  it("does nothing if not running (e.g. still in countdown)", () => {
+    const state = start(createGameState(QUESTIONS)); // countdown
+    expect(pause(state)).toEqual(state);
+  });
+
+  it("blocks popping a balloon while paused", () => {
+    const state: BalloonPopState = { ...createGameState(QUESTIONS), phase: "paused" };
+    expect(popBalloon(state, 0)).toEqual(state);
+  });
+
+  it("resumes a paused round back to running", () => {
+    const state: BalloonPopState = { ...createGameState(QUESTIONS), phase: "paused" };
+    expect(resume(state).phase).toBe("running");
+  });
+
+  it("resume does nothing if not paused", () => {
+    const state: BalloonPopState = { ...createGameState(QUESTIONS), phase: "running" };
+    expect(resume(state)).toEqual(state);
+  });
+});
+
+describe("applyHint", () => {
+  it("records the eliminated answer ids", () => {
+    const state = createGameState(QUESTIONS);
+    expect(applyHint(state, [1, 3]).eliminatedAnswerIds).toEqual([1, 3]);
+  });
+
+  it("is cleared when the next question spawns", () => {
+    const state: BalloonPopState = {
+      ...createGameState(QUESTIONS),
+      phase: "running",
+      eliminatedAnswerIds: [1, 3],
+      pendingResolution: { sessionQuestionId: 1, chosenAnswerId: 2 },
+    };
+    expect(applyAnswerResult(state, true).eliminatedAnswerIds).toEqual([]);
   });
 });

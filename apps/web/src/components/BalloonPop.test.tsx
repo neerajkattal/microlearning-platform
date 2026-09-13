@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BalloonPop } from "./BalloonPop";
 import { api } from "../api";
@@ -10,14 +10,34 @@ const popByIndexMock = vi.fn();
 const destroyMock = vi.fn();
 const startFullscreenMock = vi.fn();
 const stopFullscreenMock = vi.fn();
+const pauseGameMock = vi.fn();
+const resumeGameMock = vi.fn();
+const applyHintMock = vi.fn();
+let scenePaused = false;
+let sceneCurrentSessionQuestionId: number | null = 10;
 
 vi.mock("../game/BalloonPopScene", () => ({
-  BALLOON_POP_EVENTS: { ANSWER_LOCKED: "answer-locked", GAME_FINISHED: "game-finished" },
+  BALLOON_POP_EVENTS: {
+    ANSWER_LOCKED: "answer-locked",
+    GAME_FINISHED: "game-finished",
+    QUESTION_CHANGED: "question-changed",
+  },
   CANVAS_WIDTH: 320,
   CANVAS_HEIGHT: 560,
   BalloonPopScene: class {
     applyServerVerdict = applyServerVerdictMock;
     popByIndex = popByIndexMock;
+    pauseGame = () => {
+      scenePaused = true;
+      pauseGameMock();
+    };
+    resumeGame = () => {
+      scenePaused = false;
+      resumeGameMock();
+    };
+    isPaused = () => scenePaused;
+    getCurrentSessionQuestionId = () => sceneCurrentSessionQuestionId;
+    applyHint = applyHintMock;
   },
 }));
 
@@ -91,9 +111,17 @@ describe("BalloonPop", () => {
     popByIndexMock.mockClear();
     destroyMock.mockClear();
     startFullscreenMock.mockClear();
+    pauseGameMock.mockClear();
+    resumeGameMock.mockClear();
+    applyHintMock.mockClear();
+    scenePaused = false;
+    sceneCurrentSessionQuestionId = 10;
   });
 
-  afterEach(cleanup);
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
 
   it("registers listeners for both scene events on mount", () => {
     render(<BalloonPop session={session} onComplete={vi.fn()} />);
@@ -148,5 +176,57 @@ describe("BalloonPop", () => {
     render(<BalloonPop session={session} onComplete={vi.fn()} />);
     fireEvent.click(screen.getByText("Full screen"));
     expect(startFullscreenMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("pauses the scene and shows a resume overlay, then resumes on click", () => {
+    render(<BalloonPop session={session} onComplete={vi.fn()} />);
+
+    fireEvent.click(screen.getByLabelText("Pause"));
+    expect(pauseGameMock).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("Paused")).toBeTruthy();
+
+    fireEvent.click(screen.getByText("Resume"));
+    expect(resumeGameMock).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("Paused")).toBeNull();
+  });
+
+  it("disables the balloon touch buttons while paused", () => {
+    render(<BalloonPop session={session} onComplete={vi.fn()} />);
+    fireEvent.click(screen.getByLabelText("Pause"));
+    expect((screen.getByLabelText("Pop balloon 1") as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("fetches a hint for the current question and applies it to the scene", async () => {
+    vi.spyOn(api, "getHint").mockResolvedValue({ eliminated_answer_ids: [1] });
+    render(<BalloonPop session={session} onComplete={vi.fn()} />);
+    act(() => emittedHandlers["question-changed"](10));
+
+    fireEvent.click(screen.getByLabelText("Get a hint"));
+
+    await waitFor(() => expect(applyHintMock).toHaveBeenCalledWith([1]));
+    expect(api.getHint).toHaveBeenCalledWith({ sessionId: 1, sessionQuestionId: 10 });
+  });
+
+  it("disables the hint button once a hint has been used for the current question", async () => {
+    vi.spyOn(api, "getHint").mockResolvedValue({ eliminated_answer_ids: [1] });
+    render(<BalloonPop session={session} onComplete={vi.fn()} />);
+    act(() => emittedHandlers["question-changed"](10));
+
+    fireEvent.click(screen.getByLabelText("Get a hint"));
+    await waitFor(() => expect((screen.getByLabelText("Get a hint") as HTMLButtonElement).disabled).toBe(true));
+
+    expect(api.getHint).toHaveBeenCalledTimes(1);
+  });
+
+  it("re-enables the hint button once a new question spawns", async () => {
+    vi.spyOn(api, "getHint").mockResolvedValue({ eliminated_answer_ids: [1] });
+    render(<BalloonPop session={session} onComplete={vi.fn()} />);
+    act(() => emittedHandlers["question-changed"](10));
+
+    fireEvent.click(screen.getByLabelText("Get a hint"));
+    await waitFor(() => expect((screen.getByLabelText("Get a hint") as HTMLButtonElement).disabled).toBe(true));
+
+    act(() => emittedHandlers["question-changed"](11));
+    expect((screen.getByLabelText("Get a hint") as HTMLButtonElement).disabled).toBe(false);
   });
 });
