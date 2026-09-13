@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { api, UnauthorizedError } from "./api";
 import { clearToken, getToken } from "./auth";
-import type { CompleteSessionResult, QuizSession, User } from "./types";
+import type { CompleteSessionResult, Difficulty, QuizSession, User } from "./types";
 import { CategorySelect } from "./pages/CategorySelect";
 import { GameModeSelect, type GameMode } from "./pages/GameModeSelect";
 import { LoginScreen } from "./pages/LoginScreen";
 import { StatsPage } from "./pages/StatsPage";
 import { LeaderboardPage } from "./pages/LeaderboardPage";
+import { QuizOptionsModal } from "./components/QuizOptionsModal";
 import { QuizQuestion } from "./components/QuizQuestion";
 import { LaneRush } from "./components/LaneRush";
 import { BalloonPop } from "./components/BalloonPop";
@@ -20,7 +21,7 @@ type Screen =
   | { name: "checking-auth" }
   | { name: "auth" }
   | { name: "categories" }
-  | { name: "mode-select"; categorySlug: string | null }
+  | { name: "mode-select"; categorySlug: string | null; difficulty: Difficulty; questionCount: number }
   | { name: "quiz"; session: QuizSession; mode: GameMode }
   | { name: "results"; result: CompleteSessionResult }
   | { name: "stats" }
@@ -46,7 +47,10 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [lastCategory, setLastCategory] = useState<string | null>(null);
   const [lastMode, setLastMode] = useState<GameMode>("classic");
+  const [lastDifficulty, setLastDifficulty] = useState<Difficulty>(null);
+  const [lastQuestionCount, setLastQuestionCount] = useState(5);
   const [startError, setStartError] = useState<string | null>(null);
+  const [pendingCategory, setPendingCategory] = useState<{ slug: string | null; name: string } | null>(null);
 
   useEffect(() => {
     fetch(`${API_BASE}/health`)
@@ -81,12 +85,19 @@ export default function App() {
     setScreen({ name: "auth" });
   }
 
-  async function startQuiz(categorySlug: string | null, mode: GameMode) {
+  async function startQuiz(
+    categorySlug: string | null,
+    mode: GameMode,
+    difficulty: Difficulty = null,
+    questionCount: number = 5
+  ) {
     setStartError(null);
     setLastCategory(categorySlug);
     setLastMode(mode);
+    setLastDifficulty(difficulty);
+    setLastQuestionCount(questionCount);
     try {
-      const session = await api.startQuizSession({ category: categorySlug, questionCount: 5 });
+      const session = await api.startQuizSession({ category: categorySlug, difficulty, questionCount });
       setScreen({ name: "quiz", session, mode });
     } catch (err) {
       if (err instanceof UnauthorizedError) {
@@ -97,7 +108,7 @@ export default function App() {
       // however we got here (mode pick or "play again"), land back on
       // categories so the error has somewhere consistent to display
       setScreen({ name: "categories" });
-      setStartError("Couldn't start a quiz for that category. Try another one.");
+      setStartError("No questions match that category/difficulty combination. Try a different one.");
     }
   }
 
@@ -167,12 +178,26 @@ export default function App() {
               </p>
             )}
             <CategorySelect
-              onSelectCategory={(categorySlug) => setScreen({ name: "mode-select", categorySlug })}
+              onSelectCategory={(categorySlug, categoryName) =>
+                setPendingCategory({ slug: categorySlug, name: categoryName })
+              }
             />
           </div>
         )}
+        {pendingCategory && (
+          <QuizOptionsModal
+            categoryName={pendingCategory.name}
+            onCancel={() => setPendingCategory(null)}
+            onStart={(difficulty, questionCount) => {
+              setScreen({ name: "mode-select", categorySlug: pendingCategory.slug, difficulty, questionCount });
+              setPendingCategory(null);
+            }}
+          />
+        )}
         {screen.name === "mode-select" && (
-          <GameModeSelect onSelectMode={(mode) => startQuiz(screen.categorySlug, mode)} />
+          <GameModeSelect
+            onSelectMode={(mode) => startQuiz(screen.categorySlug, mode, screen.difficulty, screen.questionCount)}
+          />
         )}
         {screen.name === "quiz" && screen.mode === "classic" && (
           <QuizQuestion
@@ -198,7 +223,7 @@ export default function App() {
         {screen.name === "results" && (
           <ResultsScreen
             result={screen.result}
-            onPlayAgain={() => startQuiz(lastCategory, lastMode)}
+            onPlayAgain={() => startQuiz(lastCategory, lastMode, lastDifficulty, lastQuestionCount)}
             onBackToCategories={() => setScreen({ name: "categories" })}
           />
         )}

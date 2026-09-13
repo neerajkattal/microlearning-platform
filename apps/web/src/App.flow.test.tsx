@@ -82,6 +82,9 @@ describe("App — full quiz flow", () => {
     await waitFor(() => screen.getByText("Math"));
     fireEvent.click(screen.getByText("Math"));
 
+    await waitFor(() => screen.getByText("Continue"));
+    fireEvent.click(screen.getByText("Continue"));
+
     await waitFor(() => screen.getByText("Classic"));
     fireEvent.click(screen.getByText("Classic"));
 
@@ -100,6 +103,8 @@ describe("App — full quiz flow", () => {
 
     await waitFor(() => screen.getByText("Math"));
     fireEvent.click(screen.getByText("Math"));
+    await waitFor(() => screen.getByText("Continue"));
+    fireEvent.click(screen.getByText("Continue"));
     await waitFor(() => screen.getByText("Classic"));
     fireEvent.click(screen.getByText("Classic"));
     await waitFor(() => screen.getByText("2 + 2?"));

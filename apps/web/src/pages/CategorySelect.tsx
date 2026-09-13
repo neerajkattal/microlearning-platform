@@ -3,7 +3,7 @@ import { api } from "../api";
 import type { Category } from "../types";
 
 interface CategorySelectProps {
-  onSelectCategory: (categorySlug: string | null) => void;
+  onSelectCategory: (categorySlug: string | null, categoryName: string) => void;
 }
 
 const ACCENTS = ["bg-amber-500", "bg-blue-500", "bg-emerald-500", "bg-rose-500", "bg-violet-500", "bg-cyan-500"];
@@ -36,7 +36,7 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
       <h2 className="text-lg font-bold text-center text-slate-200">Pick a category</h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <button
-          onClick={() => onSelectCategory(null)}
+          onClick={() => onSelectCategory(null, "Any category")}
           className="group relative overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60
             p-4 text-left shadow-card hover:border-amber-500/50 hover:-translate-y-0.5 transition-all"
         >
@@ -49,7 +49,7 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
         {categories.map((category, index) => (
           <button
             key={category.id}
-            onClick={() => onSelectCategory(category.slug)}
+            onClick={() => onSelectCategory(category.slug, category.name)}
             disabled={category.question_count === 0}
             className="group relative overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60
               p-4 text-left shadow-card hover:border-amber-500/50 hover:-translate-y-0.5 transition-all

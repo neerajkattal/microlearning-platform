@@ -42,7 +42,7 @@ describe("CategorySelect", () => {
     await waitFor(() => screen.getByText("Math"));
     fireEvent.click(screen.getByText("Math"));
 
-    expect(onSelect).toHaveBeenCalledWith("math");
+    expect(onSelect).toHaveBeenCalledWith("math", "Math");
   });
 
   it("calls onSelectCategory with null for 'any category'", async () => {
@@ -53,7 +53,7 @@ describe("CategorySelect", () => {
     await waitFor(() => screen.getByText("Any category"));
     fireEvent.click(screen.getByText("Any category"));
 
-    expect(onSelect).toHaveBeenCalledWith(null);
+    expect(onSelect).toHaveBeenCalledWith(null, "Any category");
   });
 
   it("disables categories with zero questions", async () => {
