@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 
@@ -61,5 +61,16 @@ describe("App", () => {
     (fetch as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("network error"));
     render(<App />);
     await waitFor(() => expect(screen.getByText(/unreachable/).textContent).toBe("API: unreachable"));
+  });
+
+  it("clicking the PlayToLearn title navigates back to categories from elsewhere", async () => {
+    render(<App />);
+    await waitFor(() => screen.getByText("Leaderboard"));
+    fireEvent.click(screen.getByText("Leaderboard"));
+    await waitFor(() => expect(screen.queryByText("Pick a category")).toBeNull());
+
+    fireEvent.click(screen.getByText("PlayToLearn"));
+
+    await waitFor(() => expect(screen.getByText("Pick a category")).toBeTruthy());
   });
 });

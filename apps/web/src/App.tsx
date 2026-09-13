@@ -123,10 +123,15 @@ export default function App() {
       />
       <header className="sticky top-0 z-10 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur">
         <div className="max-w-5xl mx-auto flex justify-between items-center gap-3 px-4 py-4">
-          <h1 className="whitespace-nowrap text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r
-            from-amber-400 to-orange-300 bg-clip-text text-transparent">
+          <button
+            onClick={() => currentUser && setScreen({ name: "categories" })}
+            aria-label="Go to home"
+            className="whitespace-nowrap text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r
+              from-amber-400 to-orange-300 bg-clip-text text-transparent disabled:cursor-default"
+            disabled={!currentUser}
+          >
             PlayToLearn
-          </h1>
+          </button>
           <div className="flex items-center gap-3 sm:gap-4 text-sm text-slate-400 min-w-0">
             <p className="flex items-center gap-1.5 whitespace-nowrap">
               <span className={`inline-block w-2 h-2 rounded-full ${statusDotClass(status)}`} aria-hidden />
