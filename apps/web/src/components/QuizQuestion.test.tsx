@@ -124,6 +124,59 @@ describe("QuizQuestion", () => {
     expect(options.method).toBe("POST");
   });
 
+  it("uses a hint to disable the eliminated choices", async () => {
+    mockFetchOnce({ eliminated_answer_ids: [1] });
+    render(<QuizQuestion session={twoQuestionSession} onComplete={vi.fn()} />);
+
+    fireEvent.click(screen.getByLabelText("Get a hint"));
+
+    await waitFor(() => expect(screen.getByText("3").closest("button")?.disabled).toBe(true));
+    expect(screen.getByText("4").closest("button")?.disabled).toBe(false);
+
+    const [url, options] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(url).toBe("/api/quiz-sessions/1/questions/10/hint");
+    expect(options.method).toBe("POST");
+  });
+
+  it("disables the hint button once a hint has already been used", async () => {
+    mockFetchOnce({ eliminated_answer_ids: [1] });
+    render(<QuizQuestion session={twoQuestionSession} onComplete={vi.fn()} />);
+
+    fireEvent.click(screen.getByLabelText("Get a hint"));
+    await waitFor(() => expect((screen.getByLabelText("Get a hint") as HTMLButtonElement).disabled).toBe(true));
+
+    expect(fetch).toHaveBeenCalledTimes(1); // clicking again wouldn't fire a second request
+  });
+
+  it("resets the hint when moving to the next question", async () => {
+    mockFetchOnce({ eliminated_answer_ids: [1] });
+    mockFetchOnce({ is_correct: true, correct_answer_id: 2, explanation: null, xp_earned: 10 });
+    render(<QuizQuestion session={twoQuestionSession} onComplete={vi.fn()} />);
+
+    fireEvent.click(screen.getByLabelText("Get a hint"));
+    await waitFor(() => expect(screen.getByText("3").closest("button")?.disabled).toBe(true));
+
+    fireEvent.click(screen.getByText("4"));
+    await waitFor(() => screen.getByText("Next question"));
+    fireEvent.click(screen.getByText("Next question"));
+
+    expect(screen.getByText("6").closest("button")?.disabled).toBe(false);
+    expect(screen.getByText("7").closest("button")?.disabled).toBe(false);
+  });
+
+  it("pauses and shows a resume button, blocking answer clicks while paused", () => {
+    render(<QuizQuestion session={twoQuestionSession} onComplete={vi.fn()} />);
+
+    fireEvent.click(screen.getByLabelText("Pause"));
+    expect(screen.getByText("Paused")).toBeTruthy();
+
+    fireEvent.click(screen.getByText("4")); // clicking a choice while paused should no-op
+    expect(fetch).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByText("Resume"));
+    expect(screen.queryByText("Paused")).toBeNull();
+  });
+
   it("ignores clicks on a choice after one has already been selected", async () => {
     mockFetchOnce({ is_correct: true, correct_answer_id: 2, explanation: null, xp_earned: 10 });
     render(<QuizQuestion session={twoQuestionSession} onComplete={vi.fn()} />);
