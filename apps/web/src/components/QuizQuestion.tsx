@@ -38,6 +38,13 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
     onComplete(completeResult);
   }
 
+  function stopQuiz() {
+    if (finishing) return;
+    if (window.confirm("Stop this quiz? You'll see results for what you've answered so far.")) {
+      finishQuiz();
+    }
+  }
+
   async function selectAnswer(answerId: number) {
     if (result || paused) return; // already answered, or paused
     setSelectedAnswerId(answerId);
@@ -127,6 +134,16 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
                 hover:text-slate-200 disabled:opacity-30 transition-colors"
             >
               ⏸
+            </button>
+            <button
+              onClick={stopQuiz}
+              disabled={finishing}
+              aria-label="Stop"
+              title="End the quiz now"
+              className="rounded-full p-1.5 border border-slate-800 text-red-400 hover:border-red-500/60
+                hover:bg-red-500/10 disabled:opacity-30 transition-colors"
+            >
+              ⏹
             </button>
           </div>
         </div>

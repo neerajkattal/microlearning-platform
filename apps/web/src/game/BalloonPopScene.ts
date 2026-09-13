@@ -10,6 +10,7 @@ import {
   popBalloon,
   resume as engineResume,
   start,
+  stop as engineStop,
   update as engineUpdate,
 } from "./balloonPopEngine";
 
@@ -253,6 +254,13 @@ export class BalloonPopScene extends Phaser.Scene {
 
   applyHint(eliminatedAnswerIds: number[]) {
     this.state = applyHint(this.state, eliminatedAnswerIds);
+  }
+
+  /** Ends the round early. The next `update()` tick notices `phase ===
+   * "finished"` and emits GAME_FINISHED itself - same path as a normal
+   * finish, so the React wrapper needs no separate handling for this. */
+  stopGame() {
+    this.state = engineStop(this.state);
   }
 
   private attemptPop(index: number) {

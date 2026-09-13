@@ -139,6 +139,12 @@ export function BalloonPop({ session, onComplete }: BalloonPopProps) {
     setPaused(false);
   }
 
+  function stopGame() {
+    if (window.confirm("Stop this quiz? You'll see results for what you've answered so far.")) {
+      getScene()?.stopGame();
+    }
+  }
+
   async function useHint() {
     const scene = getScene();
     const sessionQuestionId = scene?.getCurrentSessionQuestionId();
@@ -175,6 +181,15 @@ export function BalloonPop({ session, onComplete }: BalloonPopProps) {
               hover:text-white transition-colors text-xs"
           >
             ⏸
+          </button>
+          <button
+            onClick={stopGame}
+            aria-label="Stop"
+            title="End the quiz now"
+            className="rounded-full p-1.5 border border-slate-700 text-red-400 hover:border-red-500/60
+              hover:bg-red-500/10 transition-colors text-xs"
+          >
+            ⏹
           </button>
         </div>
         {fullscreenSupported && (

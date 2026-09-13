@@ -46,6 +46,7 @@ describe("QuizQuestion", () => {
   afterEach(() => {
     cleanup();
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it("renders the first question's prompt and choices", () => {
@@ -122,6 +123,34 @@ describe("QuizQuestion", () => {
     const [url, options] = (fetch as ReturnType<typeof vi.fn>).mock.calls[1];
     expect(url).toBe("/api/quiz-sessions/2/complete");
     expect(options.method).toBe("POST");
+  });
+
+  it("stops the quiz early and completes the session when confirmed", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    mockFetchOnce({
+      session_id: 1, score: 0, total_questions: 2, xp_earned: 0, total_xp: 0, level: 1, streak: 0,
+    });
+    const onComplete = vi.fn();
+    render(<QuizQuestion session={twoQuestionSession} onComplete={onComplete} />);
+
+    fireEvent.click(screen.getByLabelText("Stop"));
+
+    await waitFor(() => expect(onComplete).toHaveBeenCalledWith(
+      expect.objectContaining({ session_id: 1 })
+    ));
+    const [url, options] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(url).toBe("/api/quiz-sessions/1/complete");
+    expect(options.method).toBe("POST");
+  });
+
+  it("does not stop the quiz if the confirmation is declined", () => {
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    render(<QuizQuestion session={twoQuestionSession} onComplete={vi.fn()} />);
+
+    fireEvent.click(screen.getByLabelText("Stop"));
+
+    expect(fetch).not.toHaveBeenCalled();
+    expect(screen.getByText("2 + 2?")).toBeTruthy();
   });
 
   it("uses a hint to disable the eliminated choices", async () => {

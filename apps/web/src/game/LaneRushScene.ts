@@ -10,6 +10,7 @@ import {
   resume as engineResume,
   shiftLane,
   start,
+  stop as engineStop,
   update as engineUpdate,
 } from "./laneRushEngine";
 
@@ -278,6 +279,13 @@ export class LaneRushScene extends Phaser.Scene {
 
   applyHint(eliminatedAnswerIds: number[]) {
     this.state = applyHint(this.state, eliminatedAnswerIds);
+  }
+
+  /** Ends the race early. The next `update()` tick notices `phase ===
+   * "finished"` and emits RACE_FINISHED itself - same path as a normal
+   * finish, so the React wrapper needs no separate handling for this. */
+  stopGame() {
+    this.state = engineStop(this.state);
   }
 
   private handleKeyboardInput() {

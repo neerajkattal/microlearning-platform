@@ -13,6 +13,7 @@ const stopFullscreenMock = vi.fn();
 const pauseGameMock = vi.fn();
 const resumeGameMock = vi.fn();
 const applyHintMock = vi.fn();
+const stopGameMock = vi.fn();
 let scenePaused = false;
 let sceneCurrentSessionQuestionId: number | null = 10;
 
@@ -38,6 +39,7 @@ vi.mock("../game/BalloonPopScene", () => ({
     isPaused = () => scenePaused;
     getCurrentSessionQuestionId = () => sceneCurrentSessionQuestionId;
     applyHint = applyHintMock;
+    stopGame = stopGameMock;
   },
 }));
 
@@ -114,6 +116,7 @@ describe("BalloonPop", () => {
     pauseGameMock.mockClear();
     resumeGameMock.mockClear();
     applyHintMock.mockClear();
+    stopGameMock.mockClear();
     scenePaused = false;
     sceneCurrentSessionQuestionId = 10;
   });
@@ -228,5 +231,19 @@ describe("BalloonPop", () => {
 
     act(() => emittedHandlers["question-changed"](11));
     expect((screen.getByLabelText("Get a hint") as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it("stops the round when Stop is clicked and confirmed", () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    render(<BalloonPop session={session} onComplete={vi.fn()} />);
+    fireEvent.click(screen.getByLabelText("Stop"));
+    expect(stopGameMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not stop the round if the confirmation is declined", () => {
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    render(<BalloonPop session={session} onComplete={vi.fn()} />);
+    fireEvent.click(screen.getByLabelText("Stop"));
+    expect(stopGameMock).not.toHaveBeenCalled();
   });
 });

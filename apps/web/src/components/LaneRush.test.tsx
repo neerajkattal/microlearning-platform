@@ -14,6 +14,7 @@ const stopFullscreenMock = vi.fn();
 const pauseGameMock = vi.fn();
 const resumeGameMock = vi.fn();
 const applyHintMock = vi.fn();
+const stopGameMock = vi.fn();
 let scenePaused = false;
 let sceneCurrentSessionQuestionId: number | null = 10;
 
@@ -40,6 +41,7 @@ vi.mock("../game/LaneRushScene", () => ({
     isPaused = () => scenePaused;
     getCurrentSessionQuestionId = () => sceneCurrentSessionQuestionId;
     applyHint = applyHintMock;
+    stopGame = stopGameMock;
   },
 }));
 
@@ -116,6 +118,7 @@ describe("LaneRush", () => {
     pauseGameMock.mockClear();
     resumeGameMock.mockClear();
     applyHintMock.mockClear();
+    stopGameMock.mockClear();
     scenePaused = false;
     sceneCurrentSessionQuestionId = 10;
   });
@@ -233,5 +236,19 @@ describe("LaneRush", () => {
 
     act(() => emittedHandlers["gate-changed"](11));
     expect((screen.getByLabelText("Get a hint") as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it("stops the race when Stop is clicked and confirmed", () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    render(<LaneRush session={session} onComplete={vi.fn()} />);
+    fireEvent.click(screen.getByLabelText("Stop"));
+    expect(stopGameMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not stop the race if the confirmation is declined", () => {
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    render(<LaneRush session={session} onComplete={vi.fn()} />);
+    fireEvent.click(screen.getByLabelText("Stop"));
+    expect(stopGameMock).not.toHaveBeenCalled();
   });
 });
