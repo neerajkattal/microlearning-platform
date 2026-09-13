@@ -25,7 +25,11 @@ def start_quiz_session(
 ):
     try:
         session = quiz_sessions.start_session(
-            db, user=current_user, category_slug=payload.category, question_count=payload.question_count
+            db,
+            user=current_user,
+            category_slug=payload.category,
+            question_count=payload.question_count,
+            difficulty=payload.difficulty,
         )
     except NoQuestionsAvailableError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
@@ -75,6 +79,24 @@ def submit_answer(
         explanation=question.explanation,
         xp_earned=xp_earned,
     )
+
+
+@router.post("/{session_id}/questions/{session_question_id}/hint", response_model=schemas.HintOut)
+def get_hint(
+    session_id: int,
+    session_question_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    try:
+        eliminated = quiz_sessions.get_hint(
+            db, session_id=session_id, session_question_id=session_question_id, owner_id=current_user.id
+        )
+    except (SessionNotFoundError, SessionQuestionNotFoundError) as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except SessionNotInProgressError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    return schemas.HintOut(eliminated_answer_ids=eliminated)
 
 
 @router.post("/{session_id}/complete", response_model=schemas.CompleteSessionResult)

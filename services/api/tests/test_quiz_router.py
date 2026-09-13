@@ -72,6 +72,25 @@ def test_start_session_404_when_no_questions(db_session):
     assert resp.status_code == 404
 
 
+def test_hint_endpoint_returns_two_ids_never_leaking_which_is_correct(db_session):
+    _seed_questions(db_session, count=1)
+    app.dependency_overrides[get_db] = _override_get_db(db_session)
+    try:
+        headers = _auth_headers("hint_router_user")
+        session = client.post("/quiz-sessions", json={"question_count": 1}, headers=headers).json()
+        sq = session["questions"][0]
+        resp = client.post(
+            f"/quiz-sessions/{session['id']}/questions/{sq['session_question_id']}/hint", headers=headers
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert set(body.keys()) == {"eliminated_answer_ids"}  # no is_correct anywhere
+    assert len(body["eliminated_answer_ids"]) == 2
+
+
 def test_full_quiz_flow_start_answer_complete(db_session):
     _seed_questions(db_session, count=2)
     app.dependency_overrides[get_db] = _override_get_db(db_session)

@@ -11,7 +11,7 @@ from app.quiz_engine.sessions import (
 )
 
 
-def _make_question(db, text="2+2?", category_slug="math", correct="4", incorrect=None):
+def _make_question(db, text="2+2?", category_slug="math", correct="4", incorrect=None, difficulty="easy"):
     category = db.query(models.Category).filter_by(slug=category_slug).first()
     if category is None:
         category = models.Category(name=category_slug.title(), slug=category_slug)
@@ -26,7 +26,7 @@ def _make_question(db, text="2+2?", category_slug="math", correct="4", incorrect
     question = models.Question(
         text=text,
         category_id=category.id,
-        difficulty="easy",
+        difficulty=difficulty,
         source_id=source.id,
         source_question_id=text,  # unique enough for tests
     )
@@ -73,6 +73,33 @@ def test_start_session_filters_by_category(db_session):
 
     assert len(session.session_questions) == 1
     assert session.session_questions[0].question.text == "math one"
+
+
+def test_start_session_filters_by_difficulty(db_session):
+    user = _make_user(db_session)
+    _make_question(db_session, text="easy one", difficulty="easy")
+    _make_question(db_session, text="hard one", difficulty="hard")
+
+    session = quiz_sessions.start_session(
+        db_session, user=user, category_slug=None, question_count=5, difficulty="hard"
+    )
+
+    assert len(session.session_questions) == 1
+    assert session.session_questions[0].question.text == "hard one"
+
+
+def test_start_session_filters_by_category_and_difficulty_together(db_session):
+    user = _make_user(db_session)
+    _make_question(db_session, text="math easy", category_slug="math", difficulty="easy")
+    _make_question(db_session, text="math hard", category_slug="math", difficulty="hard")
+    _make_question(db_session, text="history hard", category_slug="history", difficulty="hard")
+
+    session = quiz_sessions.start_session(
+        db_session, user=user, category_slug="math", question_count=5, difficulty="hard"
+    )
+
+    assert len(session.session_questions) == 1
+    assert session.session_questions[0].question.text == "math hard"
 
 
 def test_start_session_raises_when_no_questions_available(db_session):
@@ -183,6 +210,46 @@ def test_submit_answer_rejects_a_session_owned_by_someone_else(db_session):
             db_session, session_id=session.id, session_question_id=sq.id,
             selected_answer_id=answer.id, response_time_ms=None, owner_id=intruder.id,
         )
+
+
+def test_get_hint_eliminates_two_wrong_answers_never_the_correct_one(db_session):
+    user = _make_user(db_session)
+    _make_question(db_session, correct="4", incorrect=["3", "5", "22"])
+    session = quiz_sessions.start_session(db_session, user=user, category_slug=None, question_count=1)
+    sq = session.session_questions[0]
+    correct_id = next(a.id for a in sq.question.answers if a.is_correct)
+
+    eliminated = quiz_sessions.get_hint(
+        db_session, session_id=session.id, session_question_id=sq.id, owner_id=user.id
+    )
+
+    assert len(eliminated) == 2
+    assert correct_id not in eliminated
+
+
+def test_get_hint_is_deterministic_for_the_same_question(db_session):
+    user = _make_user(db_session)
+    _make_question(db_session, correct="4", incorrect=["3", "5", "22"])
+    session = quiz_sessions.start_session(db_session, user=user, category_slug=None, question_count=1)
+    sq = session.session_questions[0]
+
+    first = quiz_sessions.get_hint(db_session, session_id=session.id, session_question_id=sq.id, owner_id=user.id)
+    second = quiz_sessions.get_hint(db_session, session_id=session.id, session_question_id=sq.id, owner_id=user.id)
+
+    # same pair every time - a second call picking a *different* pair
+    # would leak the third wrong answer's identity by elimination.
+    assert first == second
+
+
+def test_get_hint_rejects_a_session_owned_by_someone_else(db_session):
+    owner = _make_user(db_session, "hint_owner")
+    intruder = _make_user(db_session, "hint_intruder")
+    _make_question(db_session)
+    session = quiz_sessions.start_session(db_session, user=owner, category_slug=None, question_count=1)
+    sq = session.session_questions[0]
+
+    with pytest.raises(SessionNotFoundError):
+        quiz_sessions.get_hint(db_session, session_id=session.id, session_question_id=sq.id, owner_id=intruder.id)
 
 
 def test_complete_session_raises_for_unknown_session(db_session):

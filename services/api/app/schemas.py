@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -47,6 +47,7 @@ class QuestionSummaryOut(BaseModel):
 
 class StartQuizSessionRequest(BaseModel):
     category: Optional[str] = None
+    difficulty: Optional[Literal["easy", "medium", "hard"]] = None
     question_count: int = Field(default=5, ge=1, le=20)
 
 
@@ -73,6 +74,14 @@ class QuizSessionOut(BaseModel):
 class SubmitAnswerRequest(BaseModel):
     selected_answer_id: int
     response_time_ms: Optional[int] = Field(default=None, ge=0)
+
+
+class HintOut(BaseModel):
+    # Exactly 2 answer ids, guaranteed wrong - never enough on its own to
+    # infer which of the remaining 2 is correct (CLAUDE.md "Security
+    # boundary"). See quiz_engine.sessions.get_hint for why this is
+    # deterministic per question rather than re-randomized per call.
+    eliminated_answer_ids: list[int]
 
 
 class SubmitAnswerResult(BaseModel):

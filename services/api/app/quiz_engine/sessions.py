@@ -39,7 +39,12 @@ class AnswerNotFoundError(QuizEngineError):
 
 
 def start_session(
-    db: Session, *, user: models.User, category_slug: Optional[str], question_count: int
+    db: Session,
+    *,
+    user: models.User,
+    category_slug: Optional[str],
+    question_count: int,
+    difficulty: Optional[str] = None,
 ) -> models.QuizSession:
     query = db.query(models.Question)
     category = None
@@ -48,6 +53,8 @@ def start_session(
         if category is None:
             raise NoQuestionsAvailableError(f"unknown category: {category_slug}")
         query = query.filter(models.Question.category_id == category.id)
+    if difficulty:
+        query = query.filter(models.Question.difficulty == difficulty)
 
     # Random selection, not spaced-repetition/no-repeat — Phase 2 proves
     # the session/scoring mechanic; smarter selection is a later concern.
@@ -55,7 +62,7 @@ def start_session(
     # only errors when the pool is empty.
     questions = query.order_by(func.random()).limit(question_count).all()
     if not questions:
-        raise NoQuestionsAvailableError("no questions available for the requested category")
+        raise NoQuestionsAvailableError("no questions available for the requested category/difficulty")
 
     session = models.QuizSession(
         user_id=user.id,
@@ -143,6 +150,19 @@ def submit_answer(
     db.refresh(attempt)
 
     return attempt, xp_earned
+
+
+def get_hint(db: Session, *, session_id: int, session_question_id: int, owner_id: int) -> list[int]:
+    """Returns 2 answer ids safe to rule out — always wrong, never the
+    correct one. Deterministic per session-question (seeded off its own
+    id) rather than re-randomized on every call: with only 3 wrong
+    answers to begin with, a second call picking a *different* random
+    pair would expose the identity of the one wrong answer left out the
+    first time, defeating the whole point via repeated calls."""
+    _, sq = _get_in_progress_session_question(db, session_id, session_question_id, owner_id=owner_id)
+
+    wrong_answer_ids = [a.id for a in sq.question.answers if not a.is_correct]
+    return sorted(random.Random(sq.id).sample(wrong_answer_ids, min(2, len(wrong_answer_ids))))
 
 
 def complete_session(db: Session, session_id: int, *, owner_id: int) -> dict:
