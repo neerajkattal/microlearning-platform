@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LaneRush } from "./LaneRush";
 import { api } from "../api";
@@ -11,15 +11,35 @@ const pressRightMock = vi.fn();
 const destroyMock = vi.fn();
 const startFullscreenMock = vi.fn();
 const stopFullscreenMock = vi.fn();
+const pauseGameMock = vi.fn();
+const resumeGameMock = vi.fn();
+const applyHintMock = vi.fn();
+let scenePaused = false;
+let sceneCurrentSessionQuestionId: number | null = 10;
 
 vi.mock("../game/LaneRushScene", () => ({
-  LANE_RUSH_EVENTS: { ANSWER_LOCKED: "answer-locked", RACE_FINISHED: "race-finished" },
+  LANE_RUSH_EVENTS: {
+    ANSWER_LOCKED: "answer-locked",
+    RACE_FINISHED: "race-finished",
+    GATE_CHANGED: "gate-changed",
+  },
   CANVAS_WIDTH: 300,
   CANVAS_HEIGHT: 450,
   LaneRushScene: class {
     applyServerVerdict = applyServerVerdictMock;
     pressLeft = pressLeftMock;
     pressRight = pressRightMock;
+    pauseGame = () => {
+      scenePaused = true;
+      pauseGameMock();
+    };
+    resumeGame = () => {
+      scenePaused = false;
+      resumeGameMock();
+    };
+    isPaused = () => scenePaused;
+    getCurrentSessionQuestionId = () => sceneCurrentSessionQuestionId;
+    applyHint = applyHintMock;
   },
 }));
 
@@ -93,9 +113,17 @@ describe("LaneRush", () => {
     pressLeftMock.mockClear();
     pressRightMock.mockClear();
     destroyMock.mockClear();
+    pauseGameMock.mockClear();
+    resumeGameMock.mockClear();
+    applyHintMock.mockClear();
+    scenePaused = false;
+    sceneCurrentSessionQuestionId = 10;
   });
 
-  afterEach(cleanup);
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
 
   it("registers listeners for both scene events on mount", () => {
     render(<LaneRush session={session} onComplete={vi.fn()} />);
@@ -152,5 +180,58 @@ describe("LaneRush", () => {
     render(<LaneRush session={session} onComplete={vi.fn()} />);
     fireEvent.click(screen.getByText("Full screen"));
     expect(startFullscreenMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("pauses the scene and shows a resume overlay, then resumes on click", () => {
+    render(<LaneRush session={session} onComplete={vi.fn()} />);
+
+    fireEvent.click(screen.getByLabelText("Pause"));
+    expect(pauseGameMock).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("Paused")).toBeTruthy();
+
+    fireEvent.click(screen.getByText("Resume"));
+    expect(resumeGameMock).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("Paused")).toBeNull();
+  });
+
+  it("disables the touch controls while paused", () => {
+    render(<LaneRush session={session} onComplete={vi.fn()} />);
+    fireEvent.click(screen.getByLabelText("Pause"));
+    expect((screen.getByLabelText("Move left") as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByLabelText("Move right") as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("fetches a hint for the current gate and applies it to the scene", async () => {
+    vi.spyOn(api, "getHint").mockResolvedValue({ eliminated_answer_ids: [1] });
+    render(<LaneRush session={session} onComplete={vi.fn()} />);
+    act(() => emittedHandlers["gate-changed"](10));
+
+    fireEvent.click(screen.getByLabelText("Get a hint"));
+
+    await waitFor(() => expect(applyHintMock).toHaveBeenCalledWith([1]));
+    expect(api.getHint).toHaveBeenCalledWith({ sessionId: 1, sessionQuestionId: 10 });
+  });
+
+  it("disables the hint button once a hint has been used for the current gate", async () => {
+    vi.spyOn(api, "getHint").mockResolvedValue({ eliminated_answer_ids: [1] });
+    render(<LaneRush session={session} onComplete={vi.fn()} />);
+    act(() => emittedHandlers["gate-changed"](10));
+
+    fireEvent.click(screen.getByLabelText("Get a hint"));
+    await waitFor(() => expect((screen.getByLabelText("Get a hint") as HTMLButtonElement).disabled).toBe(true));
+
+    expect(api.getHint).toHaveBeenCalledTimes(1);
+  });
+
+  it("re-enables the hint button once a new gate spawns", async () => {
+    vi.spyOn(api, "getHint").mockResolvedValue({ eliminated_answer_ids: [1] });
+    render(<LaneRush session={session} onComplete={vi.fn()} />);
+    act(() => emittedHandlers["gate-changed"](10));
+
+    fireEvent.click(screen.getByLabelText("Get a hint"));
+    await waitFor(() => expect((screen.getByLabelText("Get a hint") as HTMLButtonElement).disabled).toBe(true));
+
+    act(() => emittedHandlers["gate-changed"](11));
+    expect((screen.getByLabelText("Get a hint") as HTMLButtonElement).disabled).toBe(false);
   });
 });

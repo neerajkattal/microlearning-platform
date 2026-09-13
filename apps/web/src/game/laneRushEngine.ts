@@ -4,7 +4,7 @@ export const LANE_COUNT = 4;
 export const GATE_TRAVEL_MS = 6000;
 export const COUNTDOWN_MS = 3000;
 
-export type LaneRushPhase = "idle" | "countdown" | "running" | "finished";
+export type LaneRushPhase = "idle" | "countdown" | "running" | "paused" | "finished";
 
 export interface Gate {
   question: SessionQuestion;
@@ -30,6 +30,9 @@ export interface LaneRushState {
   score: number;
   answers: AnswerRecord[];
   countdownMs: number;
+  // Answer ids ruled out by a hint for the current gate's question only —
+  // reset every time a new gate spawns (see spawnNextGate).
+  eliminatedAnswerIds: number[];
 }
 
 export function createGameState(questions: SessionQuestion[]): LaneRushState {
@@ -43,11 +46,29 @@ export function createGameState(questions: SessionQuestion[]): LaneRushState {
     score: 0,
     answers: [],
     countdownMs: COUNTDOWN_MS,
+    eliminatedAnswerIds: [],
   };
 }
 
 export function start(state: LaneRushState): LaneRushState {
   return state.phase === "idle" ? { ...state, phase: "countdown", countdownMs: COUNTDOWN_MS } : state;
+}
+
+/** Freezes gate movement and lane input — everything `update`/`shiftLane`
+ * already gate on `phase === "running"`, so entering any other phase
+ * (this one included) pauses them for free. No-op outside "running"
+ * (can't pause a countdown or an already-finished race). */
+export function pause(state: LaneRushState): LaneRushState {
+  return state.phase === "running" ? { ...state, phase: "paused" } : state;
+}
+
+export function resume(state: LaneRushState): LaneRushState {
+  return state.phase === "paused" ? { ...state, phase: "running" } : state;
+}
+
+/** Record which 2 answer ids a hint ruled out for the current gate. */
+export function applyHint(state: LaneRushState, eliminatedAnswerIds: number[]): LaneRushState {
+  return { ...state, eliminatedAnswerIds };
 }
 
 /** Advance the race by `dtMs` of wall-clock time. Pure — returns a new
@@ -94,9 +115,9 @@ export function shiftLane(state: LaneRushState, direction: -1 | 1): LaneRushStat
 function spawnNextGate(state: LaneRushState): LaneRushState {
   const [next, ...rest] = state.queue;
   if (!next) {
-    return { ...state, currentGate: null, queue: [], phase: "finished" };
+    return { ...state, currentGate: null, queue: [], phase: "finished", eliminatedAnswerIds: [] };
   }
-  return { ...state, currentGate: { question: next, progress: 0 }, queue: rest };
+  return { ...state, currentGate: { question: next, progress: 0 }, queue: rest, eliminatedAnswerIds: [] };
 }
 
 /** Apply the server's verdict for the pending gate: record the answer,

@@ -4,7 +4,10 @@ import {
   LANE_COUNT,
   LaneRushState,
   applyAnswerResult,
+  applyHint,
   createGameState,
+  pause as enginePause,
+  resume as engineResume,
   shiftLane,
   start,
   update as engineUpdate,
@@ -69,6 +72,10 @@ function laneLeftEdgeX(lane: number): number {
 export const LANE_RUSH_EVENTS = {
   ANSWER_LOCKED: "answer-locked",
   RACE_FINISHED: "race-finished",
+  // Fired whenever the current gate's question changes (a new one spawns,
+  // or the race ends) - the React wrapper uses this to know a hint no
+  // longer applies to whatever question is now current.
+  GATE_CHANGED: "gate-changed",
 } as const;
 
 export class LaneRushScene extends Phaser.Scene {
@@ -95,6 +102,7 @@ export class LaneRushScene extends Phaser.Scene {
   private rightWasDown = false;
   private awaitingVerdict = false;
   private finishedEmitted = false;
+  private lastEmittedGateId: number | null = null;
 
   constructor() {
     super({ key: "LaneRushScene" });
@@ -196,6 +204,12 @@ export class LaneRushScene extends Phaser.Scene {
       this.game.events.emit(LANE_RUSH_EVENTS.ANSWER_LOCKED, this.state.pendingResolution);
     }
 
+    const currentGateId = this.state.currentGate?.question.session_question_id ?? null;
+    if (currentGateId !== this.lastEmittedGateId) {
+      this.lastEmittedGateId = currentGateId;
+      this.game.events.emit(LANE_RUSH_EVENTS.GATE_CHANGED, currentGateId);
+    }
+
     if (this.state.phase === "finished" && !this.finishedEmitted) {
       this.finishedEmitted = true;
       this.game.events.emit(LANE_RUSH_EVENTS.RACE_FINISHED, {
@@ -244,6 +258,26 @@ export class LaneRushScene extends Phaser.Scene {
 
   pressRight() {
     this.state = shiftLane(this.state, 1);
+  }
+
+  pauseGame() {
+    this.state = enginePause(this.state);
+  }
+
+  resumeGame() {
+    this.state = engineResume(this.state);
+  }
+
+  isPaused() {
+    return this.state.phase === "paused";
+  }
+
+  getCurrentSessionQuestionId(): number | null {
+    return this.state.currentGate?.question.session_question_id ?? null;
+  }
+
+  applyHint(eliminatedAnswerIds: number[]) {
+    this.state = applyHint(this.state, eliminatedAnswerIds);
   }
 
   private handleKeyboardInput() {
@@ -313,6 +347,12 @@ export class LaneRushScene extends Phaser.Scene {
       text.setText(choice?.text ?? "");
       if (choice) {
         text.setFontSize(fontSizeFor(choice.text));
+        // A hint-eliminated lane is still driveable (its gate square isn't
+        // physically blocked), just visually marked as ruled-out - same
+        // "disabled but not removed" treatment as the Classic mode choices.
+        const eliminated = this.state.eliminatedAnswerIds.includes(choice.id);
+        text.setColor(eliminated ? "#64748b" : PALETTE.answerText);
+        text.setAlpha(eliminated ? 0.5 : 1);
       }
     }
   }

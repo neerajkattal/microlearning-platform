@@ -3,7 +3,10 @@ import {
   GATE_TRAVEL_MS,
   LANE_COUNT,
   applyAnswerResult,
+  applyHint,
   createGameState,
+  pause,
+  resume,
   shiftLane,
   start,
   stop,
@@ -190,5 +193,61 @@ describe("stop", () => {
     };
     const stopped = stop(state);
     expect(stopped.answers).toContainEqual({ sessionQuestionId: 1, chosenAnswerId: 2 });
+  });
+});
+
+describe("pause/resume", () => {
+  it("pauses a running race", () => {
+    const state: LaneRushState = { ...createGameState(QUESTIONS), phase: "running" };
+    expect(pause(state).phase).toBe("paused");
+  });
+
+  it("does nothing if not running (e.g. still in countdown)", () => {
+    const state = start(createGameState(QUESTIONS)); // countdown
+    expect(pause(state)).toEqual(state);
+  });
+
+  it("freezes gate progress while paused", () => {
+    let state: LaneRushState = { ...createGameState(QUESTIONS), phase: "running" };
+    state = pause(state);
+    const before = state.currentGate?.progress;
+    state = update(state, 1000);
+    expect(state.currentGate?.progress).toBe(before);
+  });
+
+  it("blocks lane changes while paused", () => {
+    let state: LaneRushState = { ...createGameState(QUESTIONS), phase: "running" };
+    state = pause(state);
+    const before = state.carLane;
+    state = shiftLane(state, 1);
+    expect(state.carLane).toBe(before);
+  });
+
+  it("resumes a paused race back to running", () => {
+    const state: LaneRushState = { ...createGameState(QUESTIONS), phase: "paused" };
+    expect(resume(state).phase).toBe("running");
+  });
+
+  it("resume does nothing if not paused", () => {
+    const state: LaneRushState = { ...createGameState(QUESTIONS), phase: "running" };
+    expect(resume(state)).toEqual(state);
+  });
+});
+
+describe("applyHint", () => {
+  it("records the eliminated answer ids", () => {
+    const state = createGameState(QUESTIONS);
+    expect(applyHint(state, [1, 3]).eliminatedAnswerIds).toEqual([1, 3]);
+  });
+
+  it("is cleared when the next gate spawns", () => {
+    let state: LaneRushState = {
+      ...createGameState(QUESTIONS),
+      phase: "running",
+      eliminatedAnswerIds: [1, 3],
+      pendingResolution: { sessionQuestionId: 1, chosenAnswerId: 2 },
+    };
+    state = applyAnswerResult(state, true);
+    expect(state.eliminatedAnswerIds).toEqual([]);
   });
 });
