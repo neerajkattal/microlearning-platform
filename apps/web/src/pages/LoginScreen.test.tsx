@@ -49,6 +49,20 @@ describe("LoginScreen", () => {
     await waitFor(() => expect(onAuthenticated).toHaveBeenCalledWith({ id: 2, username: "bob" }));
   });
 
+  it("switches to register mode when the demo widget's CTA is clicked", () => {
+    render(<LoginScreen onAuthenticated={vi.fn()} />);
+
+    fireEvent.click(screen.getByText("Mars"));
+    fireEvent.click(screen.getByText("Next"));
+    fireEvent.click(screen.getByText("Pacific"));
+    fireEvent.click(screen.getByText("Next"));
+    fireEvent.click(screen.getByText("Experience Points"));
+    fireEvent.click(screen.getByText("See results →"));
+    fireEvent.click(screen.getByText("Create free account"));
+
+    expect(screen.getByText("Create account")).toBeTruthy(); // submit button now in register mode
+  });
+
   it("shows an error message when login fails", async () => {
     vi.spyOn(api, "login").mockRejectedValue(new Error("401"));
     const { container } = render(<LoginScreen onAuthenticated={vi.fn()} />);
