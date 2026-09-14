@@ -18,9 +18,25 @@ describe("StatsPage", () => {
     render(<StatsPage onBack={vi.fn()} />);
     expect(screen.getByText("Loading your stats...")).toBeTruthy();
 
-    await waitFor(() => expect(screen.getByText("alice")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText(/Welcome back, alice/)).toBeTruthy());
     expect(screen.getByText("120")).toBeTruthy();
     expect(screen.getByText("First Win")).toBeTruthy();
+  });
+
+  it("shows the achievement count and the current/longest streak", async () => {
+    vi.spyOn(api, "getMe").mockResolvedValue({
+      user: { id: 1, username: "alice", avatar: "astronaut" },
+      stats: { xp: 120, level: 2, current_streak: 3, longest_streak: 5 },
+      achievements: [
+        { code: "first_win", name: "First Win", description: "Answer one correctly.", icon: "🎯" },
+      ],
+    });
+
+    render(<StatsPage onBack={vi.fn()} />);
+
+    await waitFor(() => expect(screen.getByText("Achievements (1)")).toBeTruthy());
+    expect(screen.getByText("3 day(s)")).toBeTruthy();
+    expect(screen.getByText("Longest: 5 day(s)")).toBeTruthy();
   });
 
   it("shows a message when there are no achievements yet", async () => {
