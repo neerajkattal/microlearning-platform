@@ -8,7 +8,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const VARIANT_CLASSES: Record<Variant, string> = {
   primary:
-    "bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-glow disabled:bg-amber-500/40 disabled:shadow-none",
+    "bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white hover:from-violet-500 hover:to-fuchsia-400 shadow-glow disabled:opacity-40 disabled:shadow-none",
   secondary:
     "bg-slate-800 text-slate-100 border border-slate-700 hover:bg-slate-700 disabled:opacity-40",
   ghost: "text-slate-300 hover:text-white hover:bg-slate-800/60 disabled:opacity-40",
