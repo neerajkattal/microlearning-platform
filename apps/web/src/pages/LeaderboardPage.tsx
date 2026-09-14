@@ -50,13 +50,13 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                   : "border-slate-800 bg-slate-900/60"
               }`}
             >
-              <span className="flex items-center gap-3">
-                <span className="w-7 text-center text-lg" aria-hidden>
+              <span className="flex items-center gap-3 min-w-0 flex-1">
+                <span className="w-7 shrink-0 text-center text-lg" aria-hidden>
                   {MEDALS[index] ?? index + 1}
                 </span>
-                <span className="font-semibold text-slate-100">{entry.username}</span>
+                <span className="font-semibold text-slate-100 truncate">{entry.username}</span>
               </span>
-              <span className="text-sm text-slate-400">
+              <span className="text-sm text-slate-400 shrink-0 whitespace-nowrap pl-3">
                 {entry.xp} XP · Level {entry.level}
               </span>
             </li>
