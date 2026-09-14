@@ -18,14 +18,15 @@ describe("FeaturedCarousel", () => {
 
   it("shows the first category's info panel by default", () => {
     render(<FeaturedCarousel categories={categories} onSelect={vi.fn()} />);
-    expect(screen.getByText("🎯 69 questions available")).toBeTruthy();
+    expect(screen.getByText("🎯 69")).toBeTruthy();
+    expect(screen.getByText("⚡ 35")).toBeTruthy();
   });
 
   it("switches the info panel to whichever card is hovered", () => {
     render(<FeaturedCarousel categories={categories} onSelect={vi.fn()} />);
     const [filmButton] = screen.getAllByRole("button", { name: /Entertainment: Film/ });
     fireEvent.mouseEnter(filmButton);
-    expect(screen.getByText("🎯 57 questions available")).toBeTruthy();
+    expect(screen.getByText("🎯 57")).toBeTruthy();
   });
 
   it("reverts to the default info panel when the mouse leaves", () => {
@@ -33,7 +34,14 @@ describe("FeaturedCarousel", () => {
     const [filmButton] = screen.getAllByRole("button", { name: /Entertainment: Film/ });
     fireEvent.mouseEnter(filmButton);
     fireEvent.mouseLeave(filmButton);
-    expect(screen.getByText("🎯 69 questions available")).toBeTruthy();
+    expect(screen.getByText("🎯 69")).toBeTruthy();
+  });
+
+  it("calls onSelect from the info panel's Play Now button too", () => {
+    const onSelect = vi.fn();
+    render(<FeaturedCarousel categories={categories} onSelect={onSelect} />);
+    fireEvent.click(screen.getByText("Play Now"));
+    expect(onSelect).toHaveBeenCalledWith(categories[0], expect.anything());
   });
 
   it("calls onSelect with the clicked category", () => {
