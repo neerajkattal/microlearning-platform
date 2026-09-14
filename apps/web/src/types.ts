@@ -94,4 +94,5 @@ export interface LeaderboardEntry {
   avatar: string;
   xp: number;
   level: number;
+  badges: number;
 }

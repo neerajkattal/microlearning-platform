@@ -5,11 +5,12 @@ import type { LeaderboardEntry } from "../types";
 
 interface LeaderboardPageProps {
   onBack: () => void;
+  currentUsername?: string;
 }
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
-export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
+export function LeaderboardPage({ onBack, currentUsername }: LeaderboardPageProps) {
   const [entries, setEntries] = useState<LeaderboardEntry[] | null>(null);
   const [error, setError] = useState(false);
 
@@ -21,7 +22,7 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
   }, []);
 
   return (
-    <div className="max-w-md mx-auto space-y-5">
+    <div className="max-w-3xl mx-auto space-y-5">
       <button onClick={onBack} className="text-sm text-slate-400 hover:text-white transition-colors">
         ← Back
       </button>
@@ -41,35 +42,66 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
       )}
 
       {entries && entries.length > 0 && (
-        <ol className="space-y-2">
-          {entries.map((entry, index) => (
-            <li
-              key={entry.username}
-              className={`rounded-xl border p-3.5 flex justify-between items-center ${
-                index < 3
-                  ? "border-amber-500/30 bg-amber-500/5"
-                  : "border-slate-800 bg-slate-900/60"
-              }`}
-            >
-              <span className="flex items-center gap-3 min-w-0 flex-1">
-                <span className="w-6 shrink-0 text-center text-lg" aria-hidden>
-                  {MEDALS[index] ?? index + 1}
-                </span>
-                <span
-                  className="shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-amber-400/20 to-orange-500/20
-                    border border-amber-500/30 text-base flex items-center justify-center"
-                  aria-hidden
-                >
-                  {avatarEmoji(entry.avatar)}
-                </span>
-                <span className="font-semibold text-slate-100 truncate">{entry.username}</span>
-              </span>
-              <span className="text-sm text-slate-400 shrink-0 whitespace-nowrap pl-3">
-                {entry.xp} XP · Level {entry.level}
-              </span>
-            </li>
-          ))}
-        </ol>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 shadow-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-[10px] font-semibold uppercase tracking-wide text-slate-500 border-b border-slate-800">
+                  <th className="py-3 pl-4 pr-2 w-10">Rank</th>
+                  <th className="py-3 px-2">Player</th>
+                  <th className="py-3 px-2 text-right">XP</th>
+                  <th className="py-3 px-2 text-right">Level</th>
+                  <th className="py-3 pr-4 pl-2 text-right">Badges</th>
+                </tr>
+              </thead>
+              <tbody>
+                {entries.map((entry, index) => {
+                  const isMe = entry.username === currentUsername;
+                  return (
+                    <tr
+                      key={entry.username}
+                      className={`border-b border-slate-800/60 last:border-b-0 ${
+                        isMe
+                          ? "bg-amber-500/10"
+                          : index < 3
+                            ? "bg-amber-500/5"
+                            : ""
+                      }`}
+                    >
+                      <td className="py-3 pl-4 pr-2 text-center text-base" aria-hidden>
+                        {MEDALS[index] ?? index + 1}
+                      </td>
+                      <td className="py-3 px-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span
+                            className="shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-amber-400/20 to-orange-500/20
+                              border border-amber-500/30 text-base flex items-center justify-center"
+                            aria-hidden
+                          >
+                            {avatarEmoji(entry.avatar)}
+                          </span>
+                          <span className="font-semibold text-slate-100 truncate">{entry.username}</span>
+                          {isMe && (
+                            <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-full px-1.5 py-0.5">
+                              You
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-2 text-right font-semibold text-amber-400 whitespace-nowrap">
+                        {entry.xp}
+                      </td>
+                      <td className="py-3 px-2 text-right text-slate-300 whitespace-nowrap">{entry.level}</td>
+                      <td className="py-3 pr-4 pl-2 text-right text-slate-300 whitespace-nowrap">
+                        <span aria-hidden>🎖️</span> {entry.badges}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
     </div>
   );

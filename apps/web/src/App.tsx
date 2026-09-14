@@ -246,7 +246,10 @@ export default function App() {
           )}
           {screen.name === "stats" && <StatsPage onBack={() => setScreen({ name: "categories" })} />}
           {screen.name === "leaderboard" && (
-            <LeaderboardPage onBack={() => setScreen({ name: "categories" })} />
+            <LeaderboardPage
+              onBack={() => setScreen({ name: "categories" })}
+              currentUsername={currentUser?.username}
+            />
           )}
           {screen.name === "profile" && currentUser && (
             <ProfilePage

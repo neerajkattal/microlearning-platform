@@ -8,14 +8,33 @@ describe("LeaderboardPage", () => {
 
   it("renders entries in the order the API returns them", async () => {
     vi.spyOn(api, "getLeaderboard").mockResolvedValue([
-      { username: "high_scorer", avatar: "lion", xp: 500, level: 5 },
-      { username: "mid_scorer", avatar: "fox", xp: 100, level: 2 },
+      { username: "high_scorer", avatar: "lion", xp: 500, level: 5, badges: 2 },
+      { username: "mid_scorer", avatar: "fox", xp: 100, level: 2, badges: 0 },
     ]);
 
     render(<LeaderboardPage onBack={vi.fn()} />);
     await waitFor(() => expect(screen.getByText("high_scorer")).toBeTruthy());
     expect(screen.getByText("mid_scorer")).toBeTruthy();
-    expect(screen.getByText("500 XP · Level 5")).toBeTruthy();
+    expect(screen.getByText("500")).toBeTruthy();
+  });
+
+  it("shows each player's badge count", async () => {
+    vi.spyOn(api, "getLeaderboard").mockResolvedValue([
+      { username: "high_scorer", avatar: "lion", xp: 500, level: 5, badges: 3 },
+    ]);
+
+    render(<LeaderboardPage onBack={vi.fn()} />);
+    await waitFor(() => expect(screen.getByText(/3/)).toBeTruthy());
+  });
+
+  it("marks the current user's row with a 'You' badge", async () => {
+    vi.spyOn(api, "getLeaderboard").mockResolvedValue([
+      { username: "high_scorer", avatar: "lion", xp: 500, level: 5, badges: 0 },
+      { username: "me", avatar: "fox", xp: 100, level: 2, badges: 0 },
+    ]);
+
+    render(<LeaderboardPage onBack={vi.fn()} currentUsername="me" />);
+    await waitFor(() => expect(screen.getByText("You")).toBeTruthy());
   });
 
   it("shows a message when there are no players yet", async () => {
