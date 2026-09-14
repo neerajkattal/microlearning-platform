@@ -155,46 +155,48 @@ export function LaneRush({ session, onComplete }: LaneRushProps) {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between" style={{ width: CANVAS_WIDTH, margin: "0 auto" }}>
+      <div className="space-y-1.5" style={{ width: CANVAS_WIDTH, margin: "0 auto" }}>
         <span className="text-xs text-slate-500">Steer with ◀ ▶ or A/D</span>
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={useHint}
-            disabled={hintLoading || hintedGateId === currentGateId || currentGateId === null}
-            aria-label="Get a hint"
-            title="Eliminate two wrong lanes"
-            className="rounded-full p-1.5 border border-slate-700 text-amber-400 hover:border-amber-500/60
-              hover:bg-amber-500/10 disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-xs"
-          >
-            💡
-          </button>
-          <button
-            onClick={pauseGame}
-            aria-label="Pause"
-            className="rounded-full p-1.5 border border-slate-700 text-slate-300 hover:border-slate-500
-              hover:text-white transition-colors text-xs"
-          >
-            ⏸
-          </button>
-          <button
-            onClick={stopGame}
-            aria-label="Stop"
-            title="End the quiz now"
-            className="rounded-full p-1.5 border border-slate-700 text-red-400 hover:border-red-500/60
-              hover:bg-red-500/10 transition-colors text-xs"
-          >
-            ⏹
-          </button>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={useHint}
+              disabled={hintLoading || hintedGateId === currentGateId || currentGateId === null}
+              aria-label="Get a hint"
+              title="Eliminate two wrong lanes"
+              className="rounded-full p-1.5 border border-slate-700 text-amber-400 hover:border-amber-500/60
+                hover:bg-amber-500/10 disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-xs"
+            >
+              💡
+            </button>
+            <button
+              onClick={pauseGame}
+              aria-label="Pause"
+              className="rounded-full p-1.5 border border-slate-700 text-slate-300 hover:border-slate-500
+                hover:text-white transition-colors text-xs"
+            >
+              ⏸
+            </button>
+            <button
+              onClick={stopGame}
+              aria-label="Stop"
+              title="End the quiz now"
+              className="rounded-full p-1.5 border border-slate-700 text-red-400 hover:border-red-500/60
+                hover:bg-red-500/10 transition-colors text-xs"
+            >
+              ⏹
+            </button>
+          </div>
+          {fullscreenSupported && (
+            <button
+              onClick={toggleFullscreen}
+              className="text-xs px-3 py-1.5 rounded-md border border-slate-700 text-slate-300
+                hover:border-amber-500/50 hover:text-amber-300 transition-colors whitespace-nowrap"
+            >
+              {isFullscreen ? "Exit full screen" : "Full screen"}
+            </button>
+          )}
         </div>
-        {fullscreenSupported && (
-          <button
-            onClick={toggleFullscreen}
-            className="text-xs px-3 py-1.5 rounded-md border border-slate-700 text-slate-300
-              hover:border-amber-500/50 hover:text-amber-300 transition-colors"
-          >
-            {isFullscreen ? "Exit full screen" : "Full screen"}
-          </button>
-        )}
       </div>
       <div
         className="relative mx-auto rounded-xl overflow-hidden border border-slate-800 shadow-card"
