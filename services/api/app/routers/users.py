@@ -22,6 +22,18 @@ def get_my_profile(current_user: models.User = Depends(get_current_user)):
     )
 
 
+@router.patch("/users/me", response_model=schemas.UserOut)
+def update_my_profile(
+    payload: schemas.UpdateProfileRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    current_user.avatar = payload.avatar
+    db.commit()
+    db.refresh(current_user)
+    return schemas.UserOut.model_validate(current_user)
+
+
 @router.get("/leaderboard", response_model=list[schemas.LeaderboardEntryOut])
 def get_leaderboard(
     limit: int = Query(default=10, ge=1, le=100),
@@ -36,7 +48,10 @@ def get_leaderboard(
             .limit(limit)
             .all()
         )
-        return [{"username": user.username, "xp": stats.xp, "level": stats.level} for user, stats in rows]
+        return [
+            {"username": user.username, "avatar": user.avatar, "xp": stats.xp, "level": stats.level}
+            for user, stats in rows
+        ]
 
     # A much shorter TTL than /categories: the leaderboard genuinely
     # changes every time anyone completes a quiz, but it's still fine for

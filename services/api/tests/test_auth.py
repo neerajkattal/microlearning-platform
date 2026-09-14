@@ -27,6 +27,41 @@ def test_register_creates_a_user_and_returns_a_token(db_session):
     assert len(body["access_token"]) > 20
 
 
+def test_register_defaults_to_the_astronaut_avatar_when_none_is_chosen(db_session):
+    app.dependency_overrides[get_db] = _override_get_db(db_session)
+    try:
+        resp = client.post("/auth/register", json={"username": "no_avatar_user", "password": "correct-horse"})
+    finally:
+        app.dependency_overrides.clear()
+
+    assert resp.json()["user"]["avatar"] == "astronaut"
+
+
+def test_register_accepts_a_chosen_avatar(db_session):
+    app.dependency_overrides[get_db] = _override_get_db(db_session)
+    try:
+        resp = client.post(
+            "/auth/register", json={"username": "avatar_picker", "password": "correct-horse", "avatar": "dragon"}
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert resp.json()["user"]["avatar"] == "dragon"
+
+
+def test_register_rejects_an_unknown_avatar(db_session):
+    app.dependency_overrides[get_db] = _override_get_db(db_session)
+    try:
+        resp = client.post(
+            "/auth/register",
+            json={"username": "bad_avatar_user", "password": "correct-horse", "avatar": "not-a-real-avatar"},
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert resp.status_code == 422
+
+
 def test_register_rejects_a_duplicate_username(db_session):
     app.dependency_overrides[get_db] = _override_get_db(db_session)
     try:

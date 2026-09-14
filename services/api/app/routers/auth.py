@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..auth import create_access_token, hash_password, verify_password
+from ..avatars import DEFAULT_AVATAR
 from ..config import settings
 from ..database import get_db
 from ..rate_limit import rate_limit
@@ -25,7 +26,11 @@ def register(payload: schemas.RegisterRequest, db: Session = Depends(get_db)):
     if existing is not None:
         raise HTTPException(status_code=409, detail="Username is already taken")
 
-    user = models.User(username=payload.username, password_hash=hash_password(payload.password))
+    user = models.User(
+        username=payload.username,
+        password_hash=hash_password(payload.password),
+        avatar=payload.avatar or DEFAULT_AVATAR,
+    )
     db.add(user)
     db.flush()
     db.add(models.UserStats(user_id=user.id))

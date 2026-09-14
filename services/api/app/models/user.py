@@ -13,6 +13,10 @@ class User(Base):
     username = Column(String, unique=True, nullable=False, index=True)
     email = Column(String, unique=True, nullable=True)
     password_hash = Column(String, nullable=False)
+    # One of AVATAR_KEYS (services/api/app/avatars.py) - stored as a key,
+    # not the emoji itself, so the actual glyph can be changed later
+    # without a data migration.
+    avatar = Column(String, nullable=False, default="astronaut")
     created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     updated_at = Column(
         DateTime,

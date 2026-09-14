@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from .avatars import AVATAR_KEYS
 
 
 class IngestionRequest(BaseModel):
@@ -126,6 +128,16 @@ class CompleteSessionResult(BaseModel):
 class RegisterRequest(BaseModel):
     username: str = Field(min_length=3, max_length=32, pattern=r"^[a-zA-Z0-9_]+$")
     password: str = Field(min_length=8, max_length=128)
+    # Omit to fall back to DEFAULT_AVATAR - picking a character is a nice
+    # first-run moment, not something registration should hard-require.
+    avatar: Optional[str] = None
+
+    @field_validator("avatar")
+    @classmethod
+    def _avatar_must_be_known(cls, value: Optional[str]) -> Optional[str]:
+        if value is not None and value not in AVATAR_KEYS:
+            raise ValueError(f"avatar must be one of {AVATAR_KEYS}")
+        return value
 
 
 class LoginRequest(BaseModel):
@@ -133,11 +145,23 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class UpdateProfileRequest(BaseModel):
+    avatar: str
+
+    @field_validator("avatar")
+    @classmethod
+    def _avatar_must_be_known(cls, value: str) -> str:
+        if value not in AVATAR_KEYS:
+            raise ValueError(f"avatar must be one of {AVATAR_KEYS}")
+        return value
+
+
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     username: str
+    avatar: str
 
 
 class TokenResponse(BaseModel):
@@ -163,5 +187,6 @@ class UserMeOut(BaseModel):
 
 class LeaderboardEntryOut(BaseModel):
     username: str
+    avatar: str
     xp: int
     level: int

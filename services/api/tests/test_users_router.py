@@ -38,6 +38,54 @@ def test_me_returns_zeroed_stats_and_no_achievements_for_a_fresh_user(db_session
     assert body["achievements"] == []
 
 
+def test_me_returns_the_default_avatar_for_a_fresh_user(db_session):
+    app.dependency_overrides[get_db] = _override_get_db(db_session)
+    try:
+        token = _register("avatar_default_user")
+        resp = client.get("/users/me", headers={"Authorization": f"Bearer {token}"})
+    finally:
+        app.dependency_overrides.clear()
+
+    assert resp.json()["user"]["avatar"] == "astronaut"
+
+
+def test_update_profile_changes_the_avatar(db_session):
+    app.dependency_overrides[get_db] = _override_get_db(db_session)
+    try:
+        token = _register("avatar_change_user")
+        resp = client.patch(
+            "/users/me", json={"avatar": "robot"}, headers={"Authorization": f"Bearer {token}"}
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert resp.status_code == 200
+    assert resp.json()["avatar"] == "robot"
+
+
+def test_update_profile_rejects_an_unknown_avatar(db_session):
+    app.dependency_overrides[get_db] = _override_get_db(db_session)
+    try:
+        token = _register("avatar_reject_user")
+        resp = client.patch(
+            "/users/me", json={"avatar": "not-a-real-avatar"}, headers={"Authorization": f"Bearer {token}"}
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert resp.status_code == 422
+
+
+def test_update_profile_requires_authentication(db_session):
+    app.dependency_overrides[get_db] = _override_get_db(db_session)
+    try:
+        resp = client.patch("/users/me", json={"avatar": "robot"})
+    finally:
+        app.dependency_overrides.clear()
+
+    assert resp.status_code == 403
+
+
 def test_me_requires_authentication(db_session):
     app.dependency_overrides[get_db] = _override_get_db(db_session)
     try:
@@ -65,6 +113,22 @@ def test_leaderboard_orders_users_by_xp_descending(db_session):
     assert resp.status_code == 200
     usernames_in_order = [entry["username"] for entry in resp.json()]
     assert usernames_in_order == ["high_scorer", "mid_scorer", "low_scorer"]
+
+
+def test_leaderboard_includes_each_player_s_avatar(db_session):
+    app.dependency_overrides[get_db] = _override_get_db(db_session)
+    try:
+        user = models.User(username="avatar_lb_user", password_hash="not-a-real-hash", avatar="lion")
+        db_session.add(user)
+        db_session.flush()
+        db_session.add(models.UserStats(user_id=user.id, xp=10, level=1))
+        db_session.commit()
+
+        resp = client.get("/leaderboard")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert resp.json()[0]["avatar"] == "lion"
 
 
 def test_leaderboard_respects_the_limit_query_param(db_session):
