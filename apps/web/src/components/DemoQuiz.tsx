@@ -75,7 +75,7 @@ export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
   function choiceClassName(choiceIndex: number): string {
     const base = "text-left px-3.5 py-2.5 rounded-lg border text-sm font-medium transition-all duration-150";
     if (selected === null) {
-      return `${base} border-slate-700 bg-slate-950/60 hover:border-amber-500/50 hover:bg-slate-800/60`;
+      return `${base} border-slate-700 bg-slate-950/60 hover:border-violet-500/50 hover:bg-slate-800/60`;
     }
     if (choiceIndex === question.correctIndex) {
       return `${base} border-emerald-500 bg-emerald-500/10 text-emerald-300`;
@@ -89,7 +89,7 @@ export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-900/60 shadow-card p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wide text-amber-400">
+        <p className="text-xs font-semibold uppercase tracking-wide text-violet-300">
           🎮 Try it — no account needed
         </p>
         <p className="text-xs text-slate-500">
@@ -120,8 +120,8 @@ export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
             {selected !== null && (
               <button
                 onClick={advance}
-                className="text-sm font-semibold text-slate-950 bg-amber-500 hover:bg-amber-400
-                  rounded-lg px-4 py-1.5 transition-colors"
+                className="text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-fuchsia-500
+                  hover:from-violet-500 hover:to-fuchsia-400 rounded-lg px-4 py-1.5 transition-colors"
               >
                 {isLast ? "See results →" : "Next"}
               </button>
@@ -145,8 +145,8 @@ export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
           <div className="flex items-center justify-center gap-2">
             <button
               onClick={onCreateAccount}
-              className="text-sm font-semibold text-slate-950 bg-amber-500 hover:bg-amber-400
-                rounded-lg px-4 py-2 transition-colors"
+              className="text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-fuchsia-500
+                hover:from-violet-500 hover:to-fuchsia-400 rounded-lg px-4 py-2 transition-colors"
             >
               Create free account
             </button>
