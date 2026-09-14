@@ -14,7 +14,7 @@ describe("LoginScreen", () => {
     vi.spyOn(api, "login").mockResolvedValue({
       access_token: "tok",
       token_type: "bearer",
-      user: { id: 1, username: "alice" },
+      user: { id: 1, username: "alice", avatar: "astronaut" },
     });
     const onAuthenticated = vi.fn();
 
@@ -26,14 +26,14 @@ describe("LoginScreen", () => {
     await waitFor(() =>
       expect(api.login).toHaveBeenCalledWith({ username: "alice", password: "correct-horse" })
     );
-    await waitFor(() => expect(onAuthenticated).toHaveBeenCalledWith({ id: 1, username: "alice" }));
+    await waitFor(() => expect(onAuthenticated).toHaveBeenCalledWith({ id: 1, username: "alice", avatar: "astronaut" }));
   });
 
   it("switches to register mode and calls api.register on submit", async () => {
     vi.spyOn(api, "register").mockResolvedValue({
       access_token: "tok",
       token_type: "bearer",
-      user: { id: 2, username: "bob" },
+      user: { id: 2, username: "bob", avatar: "astronaut" },
     });
     const onAuthenticated = vi.fn();
 
@@ -44,9 +44,33 @@ describe("LoginScreen", () => {
     fireEvent.submit(container.querySelector("form")!);
 
     await waitFor(() =>
-      expect(api.register).toHaveBeenCalledWith({ username: "bob", password: "correct-horse" })
+      expect(api.register).toHaveBeenCalledWith({ username: "bob", password: "correct-horse", avatar: "astronaut" })
     );
-    await waitFor(() => expect(onAuthenticated).toHaveBeenCalledWith({ id: 2, username: "bob" }));
+    await waitFor(() => expect(onAuthenticated).toHaveBeenCalledWith({ id: 2, username: "bob", avatar: "astronaut" }));
+  });
+
+  it("sends the chosen avatar when picked before registering", async () => {
+    vi.spyOn(api, "register").mockResolvedValue({
+      access_token: "tok",
+      token_type: "bearer",
+      user: { id: 3, username: "dave", avatar: "dragon" },
+    });
+
+    const { container } = render(<LoginScreen onAuthenticated={vi.fn()} />);
+    fireEvent.click(screen.getByText("Register"));
+    fireEvent.click(screen.getByLabelText("Dragon"));
+    fireEvent.change(screen.getByLabelText("Username"), { target: { value: "dave" } });
+    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "correct-horse" } });
+    fireEvent.submit(container.querySelector("form")!);
+
+    await waitFor(() =>
+      expect(api.register).toHaveBeenCalledWith({ username: "dave", password: "correct-horse", avatar: "dragon" })
+    );
+  });
+
+  it("does not show the avatar picker in login mode", () => {
+    render(<LoginScreen onAuthenticated={vi.fn()} />);
+    expect(screen.queryByLabelText("Choose your character")).toBeNull();
   });
 
   it("switches to register mode when the demo widget's CTA is clicked", () => {

@@ -2,7 +2,9 @@ import { useRef, useState } from "react";
 import { api } from "../api";
 import { setToken } from "../auth";
 import { Button } from "../components/ui/Button";
+import { AvatarPicker } from "../components/AvatarPicker";
 import { DemoQuiz } from "../components/DemoQuiz";
+import { FloatingBalloons } from "../components/FloatingBalloons";
 import type { User } from "../types";
 
 interface LoginScreenProps {
@@ -25,6 +27,7 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [avatar, setAvatar] = useState("astronaut");
   const formCardRef = useRef<HTMLDivElement>(null);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -34,7 +37,7 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
     try {
       const response = mode === "login"
         ? await api.login({ username, password })
-        : await api.register({ username, password });
+        : await api.register({ username, password, avatar });
       setToken(response.access_token);
       onAuthenticated(response.user);
     } catch {
@@ -55,6 +58,7 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
 
   return (
     <div className="max-w-5xl mx-auto space-y-10">
+      <FloatingBalloons />
       <div className="text-center space-y-4 pt-2 motion-safe:animate-card-in">
         <span
           className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide
@@ -78,7 +82,8 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
             <span
               key={feature}
               className="text-xs font-medium text-slate-300 bg-slate-900/60 border border-slate-800
-                rounded-full px-3 py-1 whitespace-nowrap"
+                rounded-full px-3 py-1 whitespace-nowrap transition-all duration-150 cursor-default
+                hover:border-amber-500/60 hover:text-amber-300 hover:-translate-y-0.5 hover:shadow-glow"
             >
               {feature}
             </span>
@@ -119,6 +124,12 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {mode === "register" && (
+              <div>
+                <p className="block text-sm mb-1.5 text-slate-300">Choose your character</p>
+                <AvatarPicker value={avatar} onChange={setAvatar} />
+              </div>
+            )}
             <div>
               <label htmlFor="username" className="block text-sm mb-1 text-slate-300">
                 Username
