@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import { accentHexFor, ACCENT_CLASSES } from "../accentColors";
 import { categoryIcon } from "../categoryIcons";
 import { groupByCategory } from "../categoryGroups";
 import { CardExpandOverlay } from "../components/CardExpandOverlay";
@@ -12,11 +13,6 @@ interface CategorySelectProps {
   onSelectCategory: (categorySlug: string | null, categoryName: string) => void;
 }
 
-const ACCENTS = ["bg-amber-500", "bg-blue-500", "bg-emerald-500", "bg-rose-500", "bg-violet-500", "bg-cyan-500"];
-// Same colors as ACCENTS above, as real CSS values - the expand overlay
-// is a `position: fixed` element with inline styles, so it needs an
-// actual color, not a Tailwind class name.
-const ACCENT_HEX = ["#f59e0b", "#3b82f6", "#10b981", "#f43f5e", "#8b5cf6", "#06b6d4"];
 const ANY_CATEGORY_COLOR = "#f59e0b";
 const XP_PER_LEVEL = 100;
 const FEATURED_COUNT = 8;
@@ -102,13 +98,7 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
       <FeaturedCarousel
         categories={featured}
         onSelect={(category, e) =>
-          selectWithExpand(
-            e,
-            category.slug,
-            category.name,
-            ACCENT_HEX[category.id % ACCENT_HEX.length],
-            categoryIcon(category.name)
-          )
+          selectWithExpand(e, category.slug, category.name, accentHexFor(category.id), categoryIcon(category.name))
         }
       />
 
@@ -140,13 +130,7 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
                 <button
                   key={category.id}
                   onClick={(e) =>
-                    selectWithExpand(
-                      e,
-                      category.slug,
-                      category.name,
-                      ACCENT_HEX[index % ACCENT_HEX.length],
-                      categoryIcon(category.name)
-                    )
+                    selectWithExpand(e, category.slug, category.name, accentHexFor(category.id), categoryIcon(category.name))
                   }
                   disabled={category.question_count === 0}
                   style={{ animationDelay: `${Math.min(index * 15, 300)}ms` }}
@@ -156,7 +140,7 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
                     disabled:opacity-30 disabled:hover:translate-y-0 disabled:hover:scale-100
                     disabled:hover:border-slate-800 disabled:hover:shadow-card"
                 >
-                  <div className={`absolute left-0 top-0 h-full w-1 ${ACCENTS[index % ACCENTS.length]}`} />
+                  <div className={`absolute left-0 top-0 h-full w-1 ${ACCENT_CLASSES[category.id % ACCENT_CLASSES.length]}`} />
                   <div className="text-2xl mb-1" aria-hidden>
                     {categoryIcon(category.name)}
                   </div>
