@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import { categoryIcon } from "../categoryIcons";
 import type { Category } from "../types";
 
 interface CategorySelectProps {
@@ -38,12 +39,14 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
         <button
           onClick={() => onSelectCategory(null, "Any category")}
           className="group relative overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60
-            p-4 text-left shadow-card hover:border-amber-500/50 hover:-translate-y-0.5 transition-all"
+            p-4 text-left shadow-card hover:border-amber-500/50 hover:shadow-glow hover:-translate-y-0.5
+            hover:scale-[1.02] transition-all motion-safe:animate-card-in"
         >
           <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-amber-400 to-orange-500" />
-          <div className="font-semibold text-slate-100">
-            <span aria-hidden>🎲</span> Any category
+          <div className="text-2xl mb-1" aria-hidden>
+            🎲
           </div>
+          <div className="font-semibold text-slate-100">Any category</div>
           <div className="text-xs text-slate-500 mt-1">Surprise me</div>
         </button>
         {categories.map((category, index) => (
@@ -51,11 +54,17 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
             key={category.id}
             onClick={() => onSelectCategory(category.slug, category.name)}
             disabled={category.question_count === 0}
+            style={{ animationDelay: `${Math.min(index * 15, 300)}ms` }}
             className="group relative overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60
-              p-4 text-left shadow-card hover:border-amber-500/50 hover:-translate-y-0.5 transition-all
-              disabled:opacity-30 disabled:hover:translate-y-0 disabled:hover:border-slate-800"
+              p-4 text-left shadow-card hover:border-amber-500/50 hover:shadow-glow hover:-translate-y-0.5
+              hover:scale-[1.02] transition-all motion-safe:animate-card-in
+              disabled:opacity-30 disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:hover:border-slate-800
+              disabled:hover:shadow-card"
           >
             <div className={`absolute left-0 top-0 h-full w-1 ${ACCENTS[index % ACCENTS.length]}`} />
+            <div className="text-2xl mb-1" aria-hidden>
+              {categoryIcon(category.name)}
+            </div>
             <div className="font-semibold text-slate-100">{category.name}</div>
             <div className="text-xs text-slate-500 mt-1">
               <span className="inline-block rounded-full bg-slate-800 px-2 py-0.5">

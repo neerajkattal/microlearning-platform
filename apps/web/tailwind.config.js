@@ -15,10 +15,15 @@ export default {
         "fill-bar": {
           "0%": { width: "0%" },
         },
+        "card-in": {
+          "0%": { transform: "translateY(10px)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
       },
       animation: {
         "pop-in": "pop-in 0.35s ease-out both",
         "fill-bar": "fill-bar 0.8s ease-out",
+        "card-in": "card-in 0.35s ease-out both",
       },
       boxShadow: {
         glow: "0 0 0 1px rgba(245, 158, 11, 0.4), 0 0 24px -4px rgba(245, 158, 11, 0.45)",
