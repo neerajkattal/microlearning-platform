@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import { avatarEmoji } from "../avatars";
 import type { UserMe } from "../types";
 
 interface StatsPageProps {
@@ -33,9 +34,9 @@ export function StatsPage({ onBack }: StatsPageProps) {
       {me && (
         <div className="space-y-6">
           <div className="rounded-2xl border border-slate-800 bg-slate-900/60 shadow-card p-6 text-center space-y-4">
-            <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-amber-400 to-orange-500
-              text-slate-950 text-2xl font-extrabold flex items-center justify-center">
-              {me.user.username.slice(0, 1).toUpperCase()}
+            <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-amber-400/20 to-orange-500/20
+              border border-amber-500/30 text-3xl flex items-center justify-center">
+              <span aria-hidden>{avatarEmoji(me.user.avatar)}</span>
             </div>
             <h2 className="text-xl font-bold">{me.user.username}</h2>
 

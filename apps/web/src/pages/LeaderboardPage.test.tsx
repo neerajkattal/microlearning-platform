@@ -8,8 +8,8 @@ describe("LeaderboardPage", () => {
 
   it("renders entries in the order the API returns them", async () => {
     vi.spyOn(api, "getLeaderboard").mockResolvedValue([
-      { username: "high_scorer", xp: 500, level: 5 },
-      { username: "mid_scorer", xp: 100, level: 2 },
+      { username: "high_scorer", avatar: "lion", xp: 500, level: 5 },
+      { username: "mid_scorer", avatar: "fox", xp: 100, level: 2 },
     ]);
 
     render(<LeaderboardPage onBack={vi.fn()} />);

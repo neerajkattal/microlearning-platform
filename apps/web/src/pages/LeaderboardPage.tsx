@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import { avatarEmoji } from "../avatars";
 import type { LeaderboardEntry } from "../types";
 
 interface LeaderboardPageProps {
@@ -51,8 +52,15 @@ export function LeaderboardPage({ onBack }: LeaderboardPageProps) {
               }`}
             >
               <span className="flex items-center gap-3 min-w-0 flex-1">
-                <span className="w-7 shrink-0 text-center text-lg" aria-hidden>
+                <span className="w-6 shrink-0 text-center text-lg" aria-hidden>
                   {MEDALS[index] ?? index + 1}
+                </span>
+                <span
+                  className="shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-amber-400/20 to-orange-500/20
+                    border border-amber-500/30 text-base flex items-center justify-center"
+                  aria-hidden
+                >
+                  {avatarEmoji(entry.avatar)}
                 </span>
                 <span className="font-semibold text-slate-100 truncate">{entry.username}</span>
               </span>

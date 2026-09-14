@@ -8,7 +8,7 @@ describe("StatsPage", () => {
 
   it("shows a loading state, then stats and achievements once loaded", async () => {
     vi.spyOn(api, "getMe").mockResolvedValue({
-      user: { id: 1, username: "alice" },
+      user: { id: 1, username: "alice", avatar: "astronaut" },
       stats: { xp: 120, level: 2, current_streak: 3, longest_streak: 5 },
       achievements: [
         { code: "first_win", name: "First Win", description: "Answer one correctly.", icon: "🎯" },
@@ -25,7 +25,7 @@ describe("StatsPage", () => {
 
   it("shows a message when there are no achievements yet", async () => {
     vi.spyOn(api, "getMe").mockResolvedValue({
-      user: { id: 1, username: "bob" },
+      user: { id: 1, username: "bob", avatar: "astronaut" },
       stats: { xp: 0, level: 1, current_streak: 0, longest_streak: 0 },
       achievements: [],
     });
@@ -44,7 +44,7 @@ describe("StatsPage", () => {
 
   it("calls onBack when the back button is clicked", () => {
     vi.spyOn(api, "getMe").mockResolvedValue({
-      user: { id: 1, username: "carol" },
+      user: { id: 1, username: "carol", avatar: "astronaut" },
       stats: { xp: 0, level: 1, current_streak: 0, longest_streak: 0 },
       achievements: [],
     });
