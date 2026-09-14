@@ -132,26 +132,35 @@ export default function App() {
           >
             PlayToLearn
           </button>
-          <div className="flex items-center gap-3 sm:gap-4 text-sm text-slate-400 min-w-0">
-            <p className="flex items-center gap-1.5 whitespace-nowrap">
+          <div className="flex items-center gap-2 sm:gap-4 text-sm text-slate-400 min-w-0">
+            <p
+              className="flex items-center gap-1.5 whitespace-nowrap"
+              title={`API: ${status === "checking" ? "checking..." : status === "ok" ? "connected" : "unreachable"}`}
+            >
               <span className={`inline-block w-2 h-2 rounded-full ${statusDotClass(status)}`} aria-hidden />
-              API: {status === "checking" && "checking..."}
-              {status === "ok" && "connected"}
-              {status === "error" && "unreachable"}
+              <span className="hidden sm:inline">
+                API: {status === "checking" && "checking..."}
+                {status === "ok" && "connected"}
+                {status === "error" && "unreachable"}
+              </span>
             </p>
             {currentUser && isMainAppScreen(screen) && (
               <>
                 <button
                   onClick={() => setScreen({ name: "stats" })}
-                  className="hidden sm:inline whitespace-nowrap rounded-full px-3 py-1 border border-slate-700 hover:border-amber-500/60 hover:text-amber-300 transition-colors"
+                  aria-label="My Stats"
+                  className="whitespace-nowrap rounded-full px-2.5 sm:px-3 py-1 border border-slate-700 hover:border-amber-500/60 hover:text-amber-300 transition-colors"
                 >
-                  My Stats
+                  <span className="sm:hidden" aria-hidden>📊</span>
+                  <span className="hidden sm:inline">My Stats</span>
                 </button>
                 <button
                   onClick={() => setScreen({ name: "leaderboard" })}
-                  className="hidden sm:inline whitespace-nowrap rounded-full px-3 py-1 border border-slate-700 hover:border-amber-500/60 hover:text-amber-300 transition-colors"
+                  aria-label="Leaderboard"
+                  className="whitespace-nowrap rounded-full px-2.5 sm:px-3 py-1 border border-slate-700 hover:border-amber-500/60 hover:text-amber-300 transition-colors"
                 >
-                  Leaderboard
+                  <span className="sm:hidden" aria-hidden>🏆</span>
+                  <span className="hidden sm:inline">Leaderboard</span>
                 </button>
                 <span className="hidden md:flex items-center gap-2 min-w-0">
                   <span className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-slate-950 text-xs font-bold flex items-center justify-center">
@@ -168,7 +177,11 @@ export default function App() {
         </div>
       </header>
 
-      <main className="relative max-w-3xl mx-auto px-4 py-10">
+      <main
+        className={`relative mx-auto px-4 py-10 ${
+          screen.name === "auth" ? "max-w-5xl" : "max-w-3xl"
+        }`}
+      >
         {screen.name === "checking-auth" && (
           <p className="text-center text-slate-500">Loading...</p>
         )}
