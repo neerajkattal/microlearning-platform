@@ -7,6 +7,7 @@ import type {
   LeaderboardEntry,
   QuizSession,
   SubmitAnswerResult,
+  User,
   UserMe,
 } from "./types";
 
@@ -38,13 +39,16 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  register: (params: { username: string; password: string }) =>
+  register: (params: { username: string; password: string; avatar?: string }) =>
     request<AuthResponse>("/auth/register", { method: "POST", body: JSON.stringify(params) }),
 
   login: (params: { username: string; password: string }) =>
     request<AuthResponse>("/auth/login", { method: "POST", body: JSON.stringify(params) }),
 
   getMe: () => request<UserMe>("/users/me"),
+
+  updateProfile: (params: { avatar: string }) =>
+    request<User>("/users/me", { method: "PATCH", body: JSON.stringify(params) }),
 
   getLeaderboard: () => request<LeaderboardEntry[]>("/leaderboard"),
 

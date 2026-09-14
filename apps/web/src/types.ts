@@ -67,6 +67,7 @@ export interface CompleteSessionResult {
 export interface User {
   id: number;
   username: string;
+  avatar: string;
 }
 
 export interface AuthResponse {
@@ -90,6 +91,7 @@ export interface UserMe {
 
 export interface LeaderboardEntry {
   username: string;
+  avatar: string;
   xp: number;
   level: number;
 }
