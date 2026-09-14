@@ -49,7 +49,13 @@ def get_leaderboard(
             .all()
         )
         return [
-            {"username": user.username, "avatar": user.avatar, "xp": stats.xp, "level": stats.level}
+            {
+                "username": user.username,
+                "avatar": user.avatar,
+                "xp": stats.xp,
+                "level": stats.level,
+                "badges": len(user.achievements),
+            }
             for user, stats in rows
         ]
 

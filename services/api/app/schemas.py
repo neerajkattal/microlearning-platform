@@ -190,3 +190,4 @@ class LeaderboardEntryOut(BaseModel):
     avatar: str
     xp: int
     level: int
+    badges: int

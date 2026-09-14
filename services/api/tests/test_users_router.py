@@ -131,6 +131,40 @@ def test_leaderboard_includes_each_player_s_avatar(db_session):
     assert resp.json()[0]["avatar"] == "lion"
 
 
+def test_leaderboard_includes_each_player_s_badge_count(db_session):
+    app.dependency_overrides[get_db] = _override_get_db(db_session)
+    try:
+        achievement = models.Achievement(code="first_win", name="First Win", description="Answer one correctly.")
+        user = models.User(username="badge_lb_user", password_hash="not-a-real-hash")
+        db_session.add_all([achievement, user])
+        db_session.flush()
+        db_session.add(models.UserStats(user_id=user.id, xp=10, level=1))
+        db_session.add(models.UserAchievement(user_id=user.id, achievement_id=achievement.id))
+        db_session.commit()
+
+        resp = client.get("/leaderboard")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert resp.json()[0]["badges"] == 1
+
+
+def test_leaderboard_badge_count_is_zero_for_a_player_with_none(db_session):
+    app.dependency_overrides[get_db] = _override_get_db(db_session)
+    try:
+        user = models.User(username="no_badge_lb_user", password_hash="not-a-real-hash")
+        db_session.add(user)
+        db_session.flush()
+        db_session.add(models.UserStats(user_id=user.id, xp=10, level=1))
+        db_session.commit()
+
+        resp = client.get("/leaderboard")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert resp.json()[0]["badges"] == 0
+
+
 def test_leaderboard_respects_the_limit_query_param(db_session):
     app.dependency_overrides[get_db] = _override_get_db(db_session)
     try:
