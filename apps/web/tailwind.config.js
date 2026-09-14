@@ -19,11 +19,28 @@ export default {
           "0%": { transform: "translateY(10px)", opacity: "0" },
           "100%": { transform: "translateY(0)", opacity: "1" },
         },
+        "float-up": {
+          "0%": { transform: "translateY(0) translateX(0) rotate(0deg)", opacity: "0" },
+          "10%": { opacity: "0.5" },
+          "90%": { opacity: "0.5" },
+          "100%": { transform: "translateY(-640px) translateX(30px) rotate(8deg)", opacity: "0" },
+        },
+        "screen-in": {
+          "0%": { opacity: "0", transform: "translateY(8px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
       },
       animation: {
         "pop-in": "pop-in 0.35s ease-out both",
         "fill-bar": "fill-bar 0.8s ease-out",
         "card-in": "card-in 0.35s ease-out both",
+        "float-up": "float-up linear infinite",
+        "screen-in": "screen-in 0.25s ease-out both",
+        marquee: "marquee linear infinite",
       },
       boxShadow: {
         glow: "0 0 0 1px rgba(245, 158, 11, 0.4), 0 0 24px -4px rgba(245, 158, 11, 0.45)",
