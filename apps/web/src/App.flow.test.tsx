@@ -79,10 +79,10 @@ describe("App — full quiz flow", () => {
   it("goes category select -> mode select -> quiz -> results end to end", async () => {
     render(<App />);
 
-    await waitFor(() => screen.getByText("Math"));
-    fireEvent.click(screen.getByText("Math"));
+    await waitFor(() => expect(screen.getAllByRole("button", { name: /Math/ }).length).toBeGreaterThan(0));
+    fireEvent.click(screen.getAllByRole("button", { name: /Math/ })[0]);
 
-    await waitFor(() => screen.getByText("Continue"));
+    await waitFor(() => screen.getByText("Continue"), { timeout: 1500 });
     fireEvent.click(screen.getByText("Continue"));
 
     await waitFor(() => screen.getByText("Classic"));
@@ -101,9 +101,9 @@ describe("App — full quiz flow", () => {
   it("'back to categories' returns to the category list", async () => {
     render(<App />);
 
-    await waitFor(() => screen.getByText("Math"));
-    fireEvent.click(screen.getByText("Math"));
-    await waitFor(() => screen.getByText("Continue"));
+    await waitFor(() => expect(screen.getAllByRole("button", { name: /Math/ }).length).toBeGreaterThan(0));
+    fireEvent.click(screen.getAllByRole("button", { name: /Math/ })[0]);
+    await waitFor(() => screen.getByText("Continue"), { timeout: 1500 });
     fireEvent.click(screen.getByText("Continue"));
     await waitFor(() => screen.getByText("Classic"));
     fireEvent.click(screen.getByText("Classic"));

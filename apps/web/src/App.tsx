@@ -7,6 +7,8 @@ import { GameModeSelect, type GameMode } from "./pages/GameModeSelect";
 import { LoginScreen } from "./pages/LoginScreen";
 import { StatsPage } from "./pages/StatsPage";
 import { LeaderboardPage } from "./pages/LeaderboardPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { avatarEmoji } from "./avatars";
 import { QuizOptionsModal } from "./components/QuizOptionsModal";
 import { QuizQuestion } from "./components/QuizQuestion";
 import { LaneRush } from "./components/LaneRush";
@@ -25,7 +27,8 @@ type Screen =
   | { name: "quiz"; session: QuizSession; mode: GameMode }
   | { name: "results"; result: CompleteSessionResult }
   | { name: "stats" }
-  | { name: "leaderboard" };
+  | { name: "leaderboard" }
+  | { name: "profile" };
 
 /** Screens that count as "logged in and browsing" — used to decide when
  * the header's nav links (Stats/Leaderboard) make sense to show. */
@@ -162,12 +165,17 @@ export default function App() {
                   <span className="sm:hidden" aria-hidden>🏆</span>
                   <span className="hidden sm:inline">Leaderboard</span>
                 </button>
-                <span className="hidden md:flex items-center gap-2 min-w-0">
-                  <span className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-slate-950 text-xs font-bold flex items-center justify-center">
-                    {currentUser.username.slice(0, 1).toUpperCase()}
+                <button
+                  onClick={() => setScreen({ name: "profile" })}
+                  aria-label="Edit profile"
+                  className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity"
+                >
+                  <span className="shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-amber-400/20 to-orange-500/20
+                    border border-amber-500/30 text-base flex items-center justify-center">
+                    <span aria-hidden>{avatarEmoji(currentUser.avatar)}</span>
                   </span>
-                  <span className="truncate max-w-[8rem]">{currentUser.username}</span>
-                </span>
+                  <span className="hidden md:inline truncate max-w-[8rem]">{currentUser.username}</span>
+                </button>
                 <button onClick={logOut} className="whitespace-nowrap hover:text-white transition-colors">
                   Log out
                 </button>
@@ -182,26 +190,75 @@ export default function App() {
           screen.name === "auth" ? "max-w-5xl" : "max-w-3xl"
         }`}
       >
-        {screen.name === "checking-auth" && (
-          <p className="text-center text-slate-500">Loading...</p>
-        )}
+        <div key={screen.name} className="motion-safe:animate-screen-in">
+          {screen.name === "checking-auth" && (
+            <p className="text-center text-slate-500">Loading...</p>
+          )}
 
-        {screen.name === "auth" && <LoginScreen onAuthenticated={handleAuthenticated} />}
+          {screen.name === "auth" && <LoginScreen onAuthenticated={handleAuthenticated} />}
 
-        {screen.name === "categories" && (
-          <div className="space-y-4">
-            {startError && (
-              <p className="text-red-400 text-center bg-red-500/10 border border-red-500/30 rounded-lg py-2 px-3">
-                {startError}
-              </p>
-            )}
-            <CategorySelect
-              onSelectCategory={(categorySlug, categoryName) =>
-                setPendingCategory({ slug: categorySlug, name: categoryName })
-              }
+          {screen.name === "categories" && (
+            <div className="space-y-4">
+              {startError && (
+                <p className="text-red-400 text-center bg-red-500/10 border border-red-500/30 rounded-lg py-2 px-3">
+                  {startError}
+                </p>
+              )}
+              <CategorySelect
+                onSelectCategory={(categorySlug, categoryName) =>
+                  setPendingCategory({ slug: categorySlug, name: categoryName })
+                }
+              />
+            </div>
+          )}
+          {screen.name === "mode-select" && (
+            <GameModeSelect
+              onSelectMode={(mode) => startQuiz(screen.categorySlug, mode, screen.difficulty, screen.questionCount)}
             />
-          </div>
-        )}
+          )}
+          {screen.name === "quiz" && screen.mode === "classic" && (
+            <QuizQuestion
+              key={screen.session.id}
+              session={screen.session}
+              onComplete={(result) => setScreen({ name: "results", result })}
+            />
+          )}
+          {screen.name === "quiz" && screen.mode === "lane-rush" && (
+            <LaneRush
+              key={screen.session.id}
+              session={screen.session}
+              onComplete={(result) => setScreen({ name: "results", result })}
+            />
+          )}
+          {screen.name === "quiz" && screen.mode === "balloon-pop" && (
+            <BalloonPop
+              key={screen.session.id}
+              session={screen.session}
+              onComplete={(result) => setScreen({ name: "results", result })}
+            />
+          )}
+          {screen.name === "results" && (
+            <ResultsScreen
+              result={screen.result}
+              onPlayAgain={() => startQuiz(lastCategory, lastMode, lastDifficulty, lastQuestionCount)}
+              onBackToCategories={() => setScreen({ name: "categories" })}
+            />
+          )}
+          {screen.name === "stats" && <StatsPage onBack={() => setScreen({ name: "categories" })} />}
+          {screen.name === "leaderboard" && (
+            <LeaderboardPage onBack={() => setScreen({ name: "categories" })} />
+          )}
+          {screen.name === "profile" && currentUser && (
+            <ProfilePage
+              user={currentUser}
+              onUpdated={(user) => {
+                setCurrentUser(user);
+                setScreen({ name: "categories" });
+              }}
+              onBack={() => setScreen({ name: "categories" })}
+            />
+          )}
+        </div>
         {pendingCategory && (
           <QuizOptionsModal
             categoryName={pendingCategory.name}
@@ -211,43 +268,6 @@ export default function App() {
               setPendingCategory(null);
             }}
           />
-        )}
-        {screen.name === "mode-select" && (
-          <GameModeSelect
-            onSelectMode={(mode) => startQuiz(screen.categorySlug, mode, screen.difficulty, screen.questionCount)}
-          />
-        )}
-        {screen.name === "quiz" && screen.mode === "classic" && (
-          <QuizQuestion
-            key={screen.session.id}
-            session={screen.session}
-            onComplete={(result) => setScreen({ name: "results", result })}
-          />
-        )}
-        {screen.name === "quiz" && screen.mode === "lane-rush" && (
-          <LaneRush
-            key={screen.session.id}
-            session={screen.session}
-            onComplete={(result) => setScreen({ name: "results", result })}
-          />
-        )}
-        {screen.name === "quiz" && screen.mode === "balloon-pop" && (
-          <BalloonPop
-            key={screen.session.id}
-            session={screen.session}
-            onComplete={(result) => setScreen({ name: "results", result })}
-          />
-        )}
-        {screen.name === "results" && (
-          <ResultsScreen
-            result={screen.result}
-            onPlayAgain={() => startQuiz(lastCategory, lastMode, lastDifficulty, lastQuestionCount)}
-            onBackToCategories={() => setScreen({ name: "categories" })}
-          />
-        )}
-        {screen.name === "stats" && <StatsPage onBack={() => setScreen({ name: "categories" })} />}
-        {screen.name === "leaderboard" && (
-          <LeaderboardPage onBack={() => setScreen({ name: "categories" })} />
         )}
       </main>
     </div>
