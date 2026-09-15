@@ -9,7 +9,7 @@ import { StatsPage } from "./pages/StatsPage";
 import { LeaderboardPage } from "./pages/LeaderboardPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { avatarEmoji } from "./avatars";
-import { QuizOptionsModal } from "./components/QuizOptionsModal";
+import { QuizOptionsPage } from "./pages/QuizOptionsPage";
 import { QuizQuestion } from "./components/QuizQuestion";
 import { LaneRush } from "./components/LaneRush";
 import { BalloonPop } from "./components/BalloonPop";
@@ -19,11 +19,19 @@ const API_BASE = import.meta.env.VITE_API_BASE ?? "/api";
 
 type HealthStatus = "checking" | "ok" | "error";
 
+interface CategoryContext {
+  categorySlug: string | null;
+  categoryName: string;
+  color: string;
+  icon: string;
+}
+
 type Screen =
   | { name: "checking-auth" }
   | { name: "auth" }
   | { name: "categories" }
-  | { name: "mode-select"; categorySlug: string | null; difficulty: Difficulty; questionCount: number }
+  | ({ name: "quiz-options" } & CategoryContext)
+  | ({ name: "mode-select"; difficulty: Difficulty; questionCount: number } & CategoryContext)
   | { name: "quiz"; session: QuizSession; mode: GameMode }
   | { name: "results"; result: CompleteSessionResult }
   | { name: "stats" }
@@ -53,7 +61,6 @@ export default function App() {
   const [lastDifficulty, setLastDifficulty] = useState<Difficulty>(null);
   const [lastQuestionCount, setLastQuestionCount] = useState(5);
   const [startError, setStartError] = useState<string | null>(null);
-  const [pendingCategory, setPendingCategory] = useState<{ slug: string | null; name: string } | null>(null);
 
   useEffect(() => {
     fetch(`${API_BASE}/health`)
@@ -121,7 +128,7 @@ export default function App() {
         className="pointer-events-none fixed inset-0 opacity-40"
         style={{
           background:
-            "radial-gradient(60rem 30rem at 15% -10%, rgba(245,158,11,0.12), transparent), radial-gradient(50rem 30rem at 100% 0%, rgba(37,99,235,0.14), transparent)",
+            "radial-gradient(60rem 30rem at 15% -10%, rgba(168,85,247,0.16), transparent), radial-gradient(50rem 30rem at 100% 0%, rgba(56,189,248,0.14), transparent)",
         }}
       />
       <header className="sticky top-0 z-10 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur">
@@ -130,7 +137,7 @@ export default function App() {
             onClick={() => currentUser && setScreen({ name: "categories" })}
             aria-label="Go to home"
             className="whitespace-nowrap text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r
-              from-amber-400 to-orange-300 bg-clip-text text-transparent disabled:cursor-default"
+              from-violet-400 to-fuchsia-300 bg-clip-text text-transparent disabled:cursor-default"
             disabled={!currentUser}
           >
             PlayToLearn
@@ -152,7 +159,7 @@ export default function App() {
                 <button
                   onClick={() => setScreen({ name: "stats" })}
                   aria-label="My Stats"
-                  className="whitespace-nowrap rounded-full px-2.5 sm:px-3 py-1 border border-slate-700 hover:border-amber-500/60 hover:text-amber-300 transition-colors"
+                  className="whitespace-nowrap rounded-full px-2.5 sm:px-3 py-1 border border-slate-700 hover:border-violet-500/60 hover:text-violet-300 transition-colors"
                 >
                   <span className="sm:hidden" aria-hidden>📊</span>
                   <span className="hidden sm:inline">My Stats</span>
@@ -160,7 +167,7 @@ export default function App() {
                 <button
                   onClick={() => setScreen({ name: "leaderboard" })}
                   aria-label="Leaderboard"
-                  className="whitespace-nowrap rounded-full px-2.5 sm:px-3 py-1 border border-slate-700 hover:border-amber-500/60 hover:text-amber-300 transition-colors"
+                  className="whitespace-nowrap rounded-full px-2.5 sm:px-3 py-1 border border-slate-700 hover:border-violet-500/60 hover:text-violet-300 transition-colors"
                 >
                   <span className="sm:hidden" aria-hidden>🏆</span>
                   <span className="hidden sm:inline">Leaderboard</span>
@@ -187,7 +194,7 @@ export default function App() {
 
       <main
         className={`relative mx-auto px-4 py-10 ${
-          screen.name === "auth" ? "max-w-5xl" : "max-w-3xl"
+          screen.name === "auth" ? "max-w-7xl" : "max-w-3xl"
         }`}
       >
         <div key={screen.name} className="motion-safe:animate-screen-in">
@@ -205,14 +212,37 @@ export default function App() {
                 </p>
               )}
               <CategorySelect
-                onSelectCategory={(categorySlug, categoryName) =>
-                  setPendingCategory({ slug: categorySlug, name: categoryName })
+                onSelectCategory={(categorySlug, categoryName, color, icon) =>
+                  setScreen({ name: "quiz-options", categorySlug, categoryName, color, icon })
                 }
               />
             </div>
           )}
+          {screen.name === "quiz-options" && (
+            <QuizOptionsPage
+              categoryName={screen.categoryName}
+              color={screen.color}
+              icon={screen.icon}
+              onBack={() => setScreen({ name: "categories" })}
+              onStart={(difficulty, questionCount) =>
+                setScreen({ ...screen, name: "mode-select", difficulty, questionCount })
+              }
+            />
+          )}
           {screen.name === "mode-select" && (
             <GameModeSelect
+              categoryName={screen.categoryName}
+              color={screen.color}
+              icon={screen.icon}
+              onBack={() =>
+                setScreen({
+                  name: "quiz-options",
+                  categorySlug: screen.categorySlug,
+                  categoryName: screen.categoryName,
+                  color: screen.color,
+                  icon: screen.icon,
+                })
+              }
               onSelectMode={(mode) => startQuiz(screen.categorySlug, mode, screen.difficulty, screen.questionCount)}
             />
           )}
@@ -262,16 +292,6 @@ export default function App() {
             />
           )}
         </div>
-        {pendingCategory && (
-          <QuizOptionsModal
-            categoryName={pendingCategory.name}
-            onCancel={() => setPendingCategory(null)}
-            onStart={(difficulty, questionCount) => {
-              setScreen({ name: "mode-select", categorySlug: pendingCategory.slug, difficulty, questionCount });
-              setPendingCategory(null);
-            }}
-          />
-        )}
       </main>
     </div>
   );

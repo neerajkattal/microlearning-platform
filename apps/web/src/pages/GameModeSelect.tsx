@@ -1,32 +1,61 @@
+import { CategoryBackdrop } from "../components/CategoryBackdrop";
+
 export type GameMode = "classic" | "lane-rush" | "balloon-pop";
 
 interface GameModeSelectProps {
+  categoryName: string;
+  color: string;
+  icon: string;
   onSelectMode: (mode: GameMode) => void;
+  onBack: () => void;
 }
 
-const MODES: { mode: GameMode; label: string; desc: string; emoji: string; wide?: boolean }[] = [
-  { mode: "classic", label: "Classic", desc: "Answer buttons", emoji: "📝" },
-  { mode: "lane-rush", label: "Lane Rush", desc: "Steer into an answer", emoji: "🏎️" },
-  { mode: "balloon-pop", label: "Balloon Pop", desc: "Pop the right answer", emoji: "🎈", wide: true },
+const MODES: { mode: GameMode; label: string; desc: string; emoji: string }[] = [
+  { mode: "classic", label: "Classic", desc: "Tap the right answer button", emoji: "📝" },
+  { mode: "lane-rush", label: "Lane Rush", desc: "Steer your car into the right lane", emoji: "🏎️" },
+  { mode: "balloon-pop", label: "Balloon Pop", desc: "Pop the balloon with the right answer", emoji: "🎈" },
 ];
 
-export function GameModeSelect({ onSelectMode }: GameModeSelectProps) {
+export function GameModeSelect({ categoryName, color, icon, onSelectMode, onBack }: GameModeSelectProps) {
   return (
-    <div className="max-w-md mx-auto space-y-4">
-      <h2 className="text-lg font-bold text-center text-slate-200">Choose your mode</h2>
-      <div className="grid grid-cols-2 gap-3">
-        {MODES.map(({ mode, label, desc, emoji, wide }) => (
+    <div className="max-w-3xl mx-auto space-y-6">
+      <CategoryBackdrop categoryName={categoryName} color={color} />
+
+      <button onClick={onBack} className="text-sm text-slate-400 hover:text-white transition-colors">
+        ← Back
+      </button>
+
+      <div className="text-center space-y-2 motion-safe:animate-card-in">
+        <span
+          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide rounded-full px-3 py-1"
+          style={{ color, backgroundColor: `${color}1a`, borderColor: `${color}55`, borderWidth: 1 }}
+        >
+          <span aria-hidden>{icon}</span> {categoryName}
+        </span>
+        <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-100">
+          Choose your mode
+        </h2>
+      </div>
+
+      <div className="grid sm:grid-cols-3 gap-4">
+        {MODES.map(({ mode, label, desc, emoji }, index) => (
           <button
             key={mode}
             onClick={() => onSelectMode(mode)}
-            className={`rounded-xl border border-slate-800 bg-slate-900/60 p-5 text-center shadow-card
-              hover:border-amber-500/50 hover:-translate-y-0.5 transition-all ${wide ? "col-span-2" : ""}`}
+            style={{ animationDelay: `${index * 60}ms` }}
+            className="group rounded-2xl border-2 border-slate-800 bg-slate-900/70 p-6 text-center shadow-card
+              hover:border-violet-500/60 hover:shadow-glow hover:-translate-y-1.5 transition-all
+              motion-safe:animate-card-in"
           >
-            <div className="text-2xl mb-1" aria-hidden>
+            <div
+              className="mx-auto mb-3 w-16 h-16 rounded-2xl flex items-center justify-center text-3xl
+                bg-slate-800/80 border border-slate-700 group-hover:border-violet-500/50 transition-colors"
+              aria-hidden
+            >
               {emoji}
             </div>
-            <div className="font-semibold text-slate-100">{label}</div>
-            <div className="text-xs text-slate-500 mt-1">{desc}</div>
+            <div className="font-bold text-slate-100 text-lg">{label}</div>
+            <div className="text-sm text-slate-500 mt-1.5">{desc}</div>
           </button>
         ))}
       </div>

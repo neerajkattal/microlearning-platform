@@ -1,11 +1,14 @@
 import { useState } from "react";
 import type { Difficulty } from "../types";
-import { Button } from "./ui/Button";
+import { Button } from "../components/ui/Button";
+import { CategoryBackdrop } from "../components/CategoryBackdrop";
 
-interface QuizOptionsModalProps {
+interface QuizOptionsPageProps {
   categoryName: string;
+  color: string;
+  icon: string;
   onStart: (difficulty: Difficulty, questionCount: number) => void;
-  onCancel: () => void;
+  onBack: () => void;
 }
 
 const DIFFICULTIES: { value: Difficulty; label: string }[] = [
@@ -17,28 +20,33 @@ const DIFFICULTIES: { value: Difficulty; label: string }[] = [
 
 const QUESTION_COUNTS = [5, 10, 15, 20];
 
-export function QuizOptionsModal({ categoryName, onStart, onCancel }: QuizOptionsModalProps) {
+export function QuizOptionsPage({ categoryName, color, icon, onStart, onBack }: QuizOptionsPageProps) {
   const [difficulty, setDifficulty] = useState<Difficulty>(null);
   const [questionCount, setQuestionCount] = useState(5);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm px-4"
-      onClick={onCancel}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="quiz-options-heading"
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm rounded-2xl border border-slate-800 bg-slate-900 shadow-card p-6 space-y-6
-          animate-pop-in"
+    <div className="max-w-lg mx-auto space-y-6">
+      <CategoryBackdrop categoryName={categoryName} color={color} />
+
+      <button onClick={onBack} className="text-sm text-slate-400 hover:text-white transition-colors">
+        ← Back
+      </button>
+
+      <div className="relative rounded-2xl border-2 bg-slate-900/80 shadow-card p-6 sm:p-8 space-y-6
+        motion-safe:animate-card-in" style={{ borderColor: `${color}55` }}
       >
-        <div>
-          <h2 id="quiz-options-heading" className="text-lg font-bold text-slate-100">
-            {categoryName}
-          </h2>
-          <p className="text-sm text-slate-500">Set up your quiz</p>
+        <div className="flex items-center gap-3">
+          <div
+            className="text-3xl w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
+            style={{ backgroundColor: `${color}22`, border: `1px solid ${color}55` }}
+            aria-hidden
+          >
+            {icon}
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-slate-100">{categoryName}</h2>
+            <p className="text-sm text-slate-500">Set up your quiz</p>
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -51,7 +59,7 @@ export function QuizOptionsModal({ categoryName, onStart, onCancel }: QuizOption
                 aria-pressed={difficulty === value}
                 className={`flex-1 rounded-full px-3 py-1.5 text-sm font-medium border transition-colors ${
                   difficulty === value
-                    ? "border-amber-500 bg-amber-500/15 text-amber-300"
+                    ? "border-violet-500 bg-violet-500/15 text-violet-300"
                     : "border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
                 }`}
               >
@@ -71,7 +79,7 @@ export function QuizOptionsModal({ categoryName, onStart, onCancel }: QuizOption
                 aria-pressed={questionCount === count}
                 className={`flex-1 rounded-full px-3 py-1.5 text-sm font-medium border transition-colors ${
                   questionCount === count
-                    ? "border-amber-500 bg-amber-500/15 text-amber-300"
+                    ? "border-violet-500 bg-violet-500/15 text-violet-300"
                     : "border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
                 }`}
               >
@@ -82,7 +90,7 @@ export function QuizOptionsModal({ categoryName, onStart, onCancel }: QuizOption
         </div>
 
         <div className="flex gap-3">
-          <Button variant="secondary" onClick={onCancel} className="flex-1">
+          <Button variant="secondary" onClick={onBack} className="flex-1">
             Back
           </Button>
           <Button onClick={() => onStart(difficulty, questionCount)} className="flex-1">
