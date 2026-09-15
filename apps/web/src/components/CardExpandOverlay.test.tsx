@@ -13,8 +13,11 @@ describe("CardExpandOverlay", () => {
   });
 
   it("sizes itself to the card's rect when not expanded", () => {
-    const { container } = render(<CardExpandOverlay target={TARGET} expanded={false} />);
-    const el = container.firstElementChild as HTMLElement;
+    // Rendered through a portal straight into <body> (see the
+    // component's own comment for why), so it won't show up under
+    // render()'s own container - queried off document.body instead.
+    render(<CardExpandOverlay target={TARGET} expanded={false} />);
+    const el = document.body.querySelector("[aria-hidden]") as HTMLElement;
     expect(el.style.top).toBe("10px");
     expect(el.style.left).toBe("20px");
     expect(el.style.width).toBe("30px");
@@ -22,8 +25,8 @@ describe("CardExpandOverlay", () => {
   });
 
   it("fills the viewport when expanded", () => {
-    const { container } = render(<CardExpandOverlay target={TARGET} expanded={true} />);
-    const el = container.firstElementChild as HTMLElement;
+    render(<CardExpandOverlay target={TARGET} expanded={true} />);
+    const el = document.body.querySelector("[aria-hidden]") as HTMLElement;
     expect(el.style.top).toBe("0px");
     expect(el.style.left).toBe("0px");
     expect(el.style.width).toBe("100vw");
