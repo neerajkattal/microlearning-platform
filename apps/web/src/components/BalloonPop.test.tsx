@@ -246,4 +246,16 @@ describe("BalloonPop", () => {
     fireEvent.click(screen.getByLabelText("Stop"));
     expect(stopGameMock).not.toHaveBeenCalled();
   });
+
+  it("pauses on Space and resumes on Space again", () => {
+    render(<BalloonPop session={session} onComplete={vi.fn()} />);
+
+    fireEvent.keyDown(window, { code: "Space" });
+    expect(pauseGameMock).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("Paused")).toBeTruthy();
+
+    fireEvent.keyDown(window, { code: "Space" });
+    expect(resumeGameMock).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("Paused")).toBeNull();
+  });
 });

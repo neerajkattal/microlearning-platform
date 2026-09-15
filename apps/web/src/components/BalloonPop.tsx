@@ -139,6 +139,27 @@ export function BalloonPop({ session, onComplete }: BalloonPopProps) {
     setPaused(false);
   }
 
+  // Spacebar toggles pause/resume from anywhere while the game is
+  // mounted - preventDefault stops both page-scroll and the browser's
+  // own "activate the focused button" behavior for Space, which would
+  // otherwise double-toggle if a control button happens to have focus.
+  useEffect(() => {
+    function handleKeydown(e: KeyboardEvent) {
+      if (e.code !== "Space") return;
+      e.preventDefault();
+      if (paused) {
+        resumeGame();
+      } else {
+        pauseGame();
+      }
+    }
+    window.addEventListener("keydown", handleKeydown);
+    return () => window.removeEventListener("keydown", handleKeydown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pauseGame/
+    // resumeGame close over refs, not state, so they don't need to be
+    // dependencies; only `paused` itself determines which one to call.
+  }, [paused]);
+
   function stopGame() {
     if (window.confirm("Stop this quiz? You'll see results for what you've answered so far.")) {
       getScene()?.stopGame();
@@ -162,35 +183,36 @@ export function BalloonPop({ session, onComplete }: BalloonPopProps) {
   return (
     <div className="space-y-3">
       <div className="space-y-1.5" style={{ width: CANVAS_WIDTH, margin: "0 auto" }}>
-        <span className="text-xs text-slate-500">Tap a balloon, or press 1-4</span>
+        <span className="text-xs text-slate-500">Tap a balloon, or press 1-4 &middot; Space to pause</span>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <button
               onClick={useHint}
               disabled={hintLoading || hintedQuestionId === currentQuestionId || currentQuestionId === null}
               aria-label="Get a hint"
               title="Eliminate two wrong balloons"
-              className="rounded-full p-1.5 border border-slate-700 text-amber-400 hover:border-amber-500/60
-                hover:bg-amber-500/10 disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-xs"
+              className="rounded-full p-2 border border-slate-700 text-amber-400 hover:border-amber-500/60
+                hover:bg-amber-500/10 disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-sm"
             >
               💡
             </button>
             <button
               onClick={pauseGame}
               aria-label="Pause"
-              className="rounded-full p-1.5 border border-slate-700 text-slate-300 hover:border-slate-500
-                hover:text-white transition-colors text-xs"
+              title="Pause the game (or press Space)"
+              className="flex items-center gap-1.5 rounded-full px-4 py-2 border border-slate-600
+                text-slate-100 hover:border-slate-400 hover:bg-slate-800 transition-colors text-sm font-semibold"
             >
-              ⏸
+              <span aria-hidden>⏸</span> Pause
             </button>
             <button
               onClick={stopGame}
               aria-label="Stop"
               title="End the quiz now"
-              className="rounded-full p-1.5 border border-slate-700 text-red-400 hover:border-red-500/60
-                hover:bg-red-500/10 transition-colors text-xs"
+              className="flex items-center gap-1.5 rounded-full px-4 py-2 border border-red-500/50
+                text-red-300 hover:border-red-500 hover:bg-red-500/10 transition-colors text-sm font-semibold"
             >
-              ⏹
+              <span aria-hidden>⏹</span> Stop
             </button>
           </div>
           {fullscreenSupported && (
@@ -210,8 +232,11 @@ export function BalloonPop({ session, onComplete }: BalloonPopProps) {
       >
         <div ref={containerRef} className="w-full h-full" />
         {paused && (
-          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4
-            bg-slate-950/90 backdrop-blur-sm">
+          <div
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4
+              bg-slate-950/90 backdrop-blur-sm motion-safe:animate-card-in"
+            style={{ animationDuration: "150ms" }}
+          >
             <p className="text-2xl font-extrabold text-slate-100">Paused</p>
             <Button onClick={resumeGame}>Resume</Button>
           </div>
