@@ -50,7 +50,7 @@ describe("CategorySelect", () => {
     fireEvent.click(screen.getAllByRole("button", { name: /Math/ })[0]);
 
     await waitFor(
-      () => expect(onSelect).toHaveBeenCalledWith("math", "Math"),
+      () => expect(onSelect).toHaveBeenCalledWith("math", "Math", "#3b82f6", "❔"),
       EXPAND_TRANSITION_TIMEOUT
     );
   });
@@ -64,7 +64,7 @@ describe("CategorySelect", () => {
     fireEvent.click(screen.getByText("Any category"));
 
     await waitFor(
-      () => expect(onSelect).toHaveBeenCalledWith(null, "Any category"),
+      () => expect(onSelect).toHaveBeenCalledWith(null, "Any category", "#a855f7", "🎲"),
       EXPAND_TRANSITION_TIMEOUT
     );
   });
@@ -73,17 +73,19 @@ describe("CategorySelect", () => {
     mockFetchOnce([{ id: 1, name: "Empty", slug: "empty", question_count: 0 }]);
     render(<CategorySelect onSelectCategory={vi.fn()} />);
 
-    await waitFor(() => screen.getByText("Empty"));
-    const button = screen.getByText("Empty").closest("button");
-    expect(button?.disabled).toBe(true);
+    await waitFor(() => expect(screen.getAllByText("Empty").length).toBeGreaterThan(0));
+    const buttons = screen.getAllByRole("button", { name: /Empty/ });
+    expect(buttons.every((button) => (button as HTMLButtonElement).disabled)).toBe(true);
   });
 
   it("excludes zero-question categories from the featured carousel", async () => {
     mockFetchOnce([{ id: 1, name: "Empty", slug: "empty", question_count: 0 }]);
     render(<CategorySelect onSelectCategory={vi.fn()} />);
 
-    await waitFor(() => screen.getByText("Empty"));
-    expect(screen.getAllByText("Empty").length).toBe(1); // only the grid, not also the carousel
+    // Only ever reachable via its category row (duplicated for the
+    // scrolling loop) - the featured carousel excludes it entirely, so
+    // it never contributes a third/fourth copy.
+    await waitFor(() => expect(screen.getAllByText("Empty").length).toBe(2));
   });
 
   it("shows an error message when the fetch fails", async () => {
@@ -127,5 +129,40 @@ describe("CategorySelect", () => {
 
     await waitFor(() => expect(screen.getAllByText("Math").length).toBeGreaterThan(0));
     expect(screen.queryByText(/Welcome back/)).toBeNull();
+  });
+
+  it("filters the category grid as the user types a search", async () => {
+    mockFetchOnce([
+      { id: 1, name: "Geography", slug: "geography", question_count: 5 },
+      { id: 2, name: "Math", slug: "math", question_count: 5 },
+    ]);
+    render(<CategorySelect onSelectCategory={vi.fn()} />);
+
+    await waitFor(() => expect(screen.getAllByText("Geography").length).toBeGreaterThan(0));
+    fireEvent.change(screen.getByLabelText("Search categories"), { target: { value: "geo" } });
+
+    expect(screen.getAllByText("Geography").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Math")).toBeNull();
+  });
+
+  it("shows a message when a search matches nothing", async () => {
+    mockFetchOnce([{ id: 1, name: "Geography", slug: "geography", question_count: 5 }]);
+    render(<CategorySelect onSelectCategory={vi.fn()} />);
+
+    await waitFor(() => expect(screen.getAllByText("Geography").length).toBeGreaterThan(0));
+    fireEvent.change(screen.getByLabelText("Search categories"), { target: { value: "zzz" } });
+
+    expect(screen.getByText('No categories match "zzz".')).toBeTruthy();
+  });
+
+  it("hides the featured carousel and 'any category' option while searching", async () => {
+    mockFetchOnce([{ id: 1, name: "Geography", slug: "geography", question_count: 5 }]);
+    render(<CategorySelect onSelectCategory={vi.fn()} />);
+
+    await waitFor(() => expect(screen.getByText("Any category")).toBeTruthy());
+    fireEvent.change(screen.getByLabelText("Search categories"), { target: { value: "geo" } });
+
+    expect(screen.queryByText("Any category")).toBeNull();
+    expect(screen.queryByText("✨ Featured")).toBeNull();
   });
 });

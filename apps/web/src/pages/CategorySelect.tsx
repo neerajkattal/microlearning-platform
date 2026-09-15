@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import { accentHexFor, ACCENT_CLASSES } from "../accentColors";
+import { accentHexFor } from "../accentColors";
 import { categoryIcon } from "../categoryIcons";
 import { groupByCategory } from "../categoryGroups";
 import { CardExpandOverlay } from "../components/CardExpandOverlay";
+import { CategoryRow } from "../components/CategoryRow";
 import { FeaturedCarousel } from "../components/FeaturedCarousel";
 import { ProgressRing } from "../components/ProgressRing";
 import { useCardExpand } from "../useCardExpand";
 import type { Category, UserMe } from "../types";
 
 interface CategorySelectProps {
-  onSelectCategory: (categorySlug: string | null, categoryName: string) => void;
+  onSelectCategory: (categorySlug: string | null, categoryName: string, color: string, icon: string) => void;
 }
 
-const ANY_CATEGORY_COLOR = "#f59e0b";
+const ANY_CATEGORY_COLOR = "#a855f7";
 const XP_PER_LEVEL = 100;
 const FEATURED_COUNT = 8;
 
@@ -21,6 +22,7 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
   const [categories, setCategories] = useState<Category[] | null>(null);
   const [error, setError] = useState(false);
   const [me, setMe] = useState<UserMe | null>(null);
+  const [search, setSearch] = useState("");
   const { target, expanded, trigger } = useCardExpand();
 
   useEffect(() => {
@@ -47,13 +49,17 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
     return <p className="text-slate-500 text-center">Loading categories...</p>;
   }
 
-  const grouped = groupByCategory(categories, (category) => category.name);
+  const trimmedSearch = search.trim().toLowerCase();
+  const isSearching = trimmedSearch.length > 0;
+  const searchResults = isSearching
+    ? categories.filter((category) => category.name.toLowerCase().includes(trimmedSearch))
+    : categories;
+  const grouped = groupByCategory(searchResults, (category) => category.name);
   const featured = categories
     .filter((category) => category.question_count > 0)
     .sort((a, b) => b.question_count - a.question_count)
     .slice(0, FEATURED_COUNT);
   const xpIntoLevel = me ? me.stats.xp % XP_PER_LEVEL : 0;
-  let cardIndex = 0;
 
   function selectWithExpand(
     e: React.MouseEvent<HTMLButtonElement>,
@@ -64,7 +70,7 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
   ) {
     const rect = e.currentTarget.getBoundingClientRect();
     trigger({ top: rect.top, left: rect.left, width: rect.width, height: rect.height, color, icon }, () =>
-      onSelectCategory(slug, name)
+      onSelectCategory(slug, name, color, icon)
     );
   }
 
@@ -95,66 +101,66 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
         </div>
       )}
 
-      <FeaturedCarousel
-        categories={featured}
-        onSelect={(category, e) =>
-          selectWithExpand(e, category.slug, category.name, accentHexFor(category.id), categoryIcon(category.name))
-        }
-      />
+      <div className="relative motion-safe:animate-card-in">
+        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden>
+          🔍
+        </span>
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search categories..."
+          aria-label="Search categories"
+          className="w-full rounded-full border border-slate-800 bg-slate-900/60 py-3 pl-11 pr-4 text-sm
+            text-slate-100 placeholder:text-slate-500 shadow-card outline-none transition-colors
+            focus:border-violet-500/50"
+        />
+      </div>
 
-      <h2 className="text-lg font-bold text-center text-slate-200">Pick a category</h2>
+      {!isSearching && (
+        <FeaturedCarousel
+          categories={featured}
+          onSelect={(category, e) =>
+            selectWithExpand(e, category.slug, category.name, accentHexFor(category.id), categoryIcon(category.name))
+          }
+        />
+      )}
 
-      <button
-        onClick={(e) => selectWithExpand(e, null, "Any category", ANY_CATEGORY_COLOR, "🎲")}
-        className="group relative w-full overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60
-          p-4 text-left shadow-card hover:border-amber-500/50 hover:shadow-glow hover:-translate-y-0.5
-          transition-all motion-safe:animate-card-in flex items-center gap-3"
-      >
-        <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-amber-400 to-orange-500" />
-        <div className="text-2xl" aria-hidden>
-          🎲
-        </div>
-        <div>
-          <div className="font-semibold text-slate-100">Any category</div>
-          <div className="text-xs text-slate-500 mt-0.5">Surprise me</div>
-        </div>
-      </button>
+      <h2 className="text-lg font-bold text-center text-slate-200">
+        {isSearching ? `Results for "${search.trim()}"` : "Pick a category"}
+      </h2>
+
+      {!isSearching && (
+        <button
+          onClick={(e) => selectWithExpand(e, null, "Any category", ANY_CATEGORY_COLOR, "🎲")}
+          className="group relative w-full overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60
+            p-4 text-left shadow-card hover:border-violet-500/50 hover:shadow-glow hover:-translate-y-0.5
+            transition-all motion-safe:animate-card-in flex items-center gap-3"
+        >
+          <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-violet-500 to-fuchsia-400" />
+          <div className="text-2xl" aria-hidden>
+            🎲
+          </div>
+          <div>
+            <div className="font-semibold text-slate-100">Any category</div>
+            <div className="text-xs text-slate-500 mt-0.5">Surprise me</div>
+          </div>
+        </button>
+      )}
+
+      {isSearching && grouped.length === 0 && (
+        <p className="text-slate-500 text-center">No categories match "{search.trim()}".</p>
+      )}
 
       {grouped.map(([label, groupCategories]) => (
-        <div key={label} className="space-y-2">
-          <h3 className="text-sm font-semibold text-slate-400">{label}</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {groupCategories.map((category) => {
-              const index = cardIndex++;
-              return (
-                <button
-                  key={category.id}
-                  onClick={(e) =>
-                    selectWithExpand(e, category.slug, category.name, accentHexFor(category.id), categoryIcon(category.name))
-                  }
-                  disabled={category.question_count === 0}
-                  style={{ animationDelay: `${Math.min(index * 15, 300)}ms` }}
-                  className="group relative overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60
-                    p-4 text-left shadow-card hover:border-amber-500/50 hover:shadow-glow hover:-translate-y-0.5
-                    hover:scale-[1.02] transition-all motion-safe:animate-card-in
-                    disabled:opacity-30 disabled:hover:translate-y-0 disabled:hover:scale-100
-                    disabled:hover:border-slate-800 disabled:hover:shadow-card"
-                >
-                  <div className={`absolute left-0 top-0 h-full w-1 ${ACCENT_CLASSES[category.id % ACCENT_CLASSES.length]}`} />
-                  <div className="text-2xl mb-1" aria-hidden>
-                    {categoryIcon(category.name)}
-                  </div>
-                  <div className="font-semibold text-slate-100">{category.name}</div>
-                  <div className="text-xs text-slate-500 mt-1">
-                    <span className="inline-block rounded-full bg-slate-800 px-2 py-0.5">
-                      {category.question_count} questions
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <CategoryRow
+          key={label}
+          label={label}
+          categories={groupCategories}
+          onSelect={(category, e) =>
+            selectWithExpand(e, category.slug, category.name, accentHexFor(category.id), categoryIcon(category.name))
+          }
+        />
       ))}
     </div>
   );
