@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import { accentHexFor } from "../accentColors";
 import { categoryIcon } from "../categoryIcons";
+import { categoryPhoto } from "../categoryPhotos";
 import { groupByCategory } from "../categoryGroups";
 import { CardExpandOverlay } from "../components/CardExpandOverlay";
 import { CategoryRow } from "../components/CategoryRow";
@@ -69,8 +70,9 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
     icon: string
   ) {
     const rect = e.currentTarget.getBoundingClientRect();
-    trigger({ top: rect.top, left: rect.left, width: rect.width, height: rect.height, color, icon }, () =>
-      onSelectCategory(slug, name, color, icon)
+    trigger(
+      { top: rect.top, left: rect.left, width: rect.width, height: rect.height, color, icon, photo: categoryPhoto(name) },
+      () => onSelectCategory(slug, name, color, icon)
     );
   }
 

@@ -2,7 +2,15 @@ import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useCardExpand } from "./useCardExpand";
 
-const RECT = { top: 10, left: 20, width: 30, height: 40, color: "#f59e0b", icon: "🎲" };
+const RECT = {
+  top: 10,
+  left: 20,
+  width: 30,
+  height: 40,
+  color: "#f59e0b",
+  icon: "🎲",
+  photo: "https://upload.wikimedia.org/wikipedia/commons/example.jpg",
+};
 
 describe("useCardExpand", () => {
   beforeEach(() => {
@@ -59,7 +67,7 @@ describe("useCardExpand", () => {
       vi.advanceTimersByTime(200);
     });
 
-    const secondRect = { ...RECT, color: "#3b82f6", icon: "🎬" };
+    const secondRect = { ...RECT, color: "#3b82f6", icon: "🎬", photo: "https://upload.wikimedia.org/wikipedia/commons/example2.jpg" };
     act(() => {
       result.current.trigger(secondRect, secondComplete);
     });

@@ -2,7 +2,15 @@ import { cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { CardExpandOverlay } from "./CardExpandOverlay";
 
-const TARGET = { top: 10, left: 20, width: 30, height: 40, color: "#f59e0b", icon: "🎲" };
+const TARGET = {
+  top: 10,
+  left: 20,
+  width: 30,
+  height: 40,
+  color: "#f59e0b",
+  icon: "🎲",
+  photo: "https://upload.wikimedia.org/wikipedia/commons/example.jpg",
+};
 
 describe("CardExpandOverlay", () => {
   afterEach(cleanup);
@@ -31,5 +39,11 @@ describe("CardExpandOverlay", () => {
     expect(el.style.left).toBe("0px");
     expect(el.style.width).toBe("100vw");
     expect(el.style.height).toBe("100vh");
+  });
+
+  it("fills the growing card with the category's own photo, not just a flat color", () => {
+    render(<CardExpandOverlay target={TARGET} expanded={false} />);
+    const el = document.body.querySelector("[aria-hidden]") as HTMLElement;
+    expect(el.style.backgroundImage).toContain(TARGET.photo);
   });
 });

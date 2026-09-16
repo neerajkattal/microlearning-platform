@@ -7,6 +7,7 @@ export interface ExpandTarget {
   height: number;
   color: string;
   icon: string;
+  photo: string;
 }
 
 /** Drives the "card grows to fill the screen" transition: capture the

@@ -27,20 +27,22 @@ export function CardExpandOverlay({ target, expanded }: CardExpandOverlayProps) 
   return createPortal(
     <div
       aria-hidden
-      className="fixed z-40 flex items-center justify-center overflow-hidden pointer-events-none
-        transition-all duration-500 ease-in-out"
+      className="fixed z-40 overflow-hidden pointer-events-none transition-all duration-500 ease-in-out"
       style={{
         top: expanded ? 0 : target.top,
         left: expanded ? 0 : target.left,
         width: expanded ? "100vw" : target.width,
         height: expanded ? "100vh" : target.height,
         borderRadius: expanded ? 0 : 12,
-        backgroundColor: target.color,
+        backgroundImage: `linear-gradient(${target.color}4d, rgba(2,6,23,0.75)), url("${target.photo}")`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
     >
       <span
-        className="text-5xl transition-transform duration-500 ease-in-out"
-        style={{ transform: expanded ? "scale(2.2)" : "scale(1)", opacity: expanded ? 0.9 : 1 }}
+        className="absolute top-3 left-3 text-2xl bg-slate-950/60 rounded-lg w-9 h-9 flex items-center
+          justify-center transition-opacity duration-300 ease-in-out"
+        style={{ opacity: expanded ? 0 : 1 }}
       >
         {target.icon}
       </span>
