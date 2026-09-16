@@ -24,6 +24,7 @@ export function LaneRush({ session, onComplete }: LaneRushProps) {
   const [fullscreenSupported, setFullscreenSupported] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [confirmingStop, setConfirmingStop] = useState(false);
   const [hintLoading, setHintLoading] = useState(false);
   const [hintedGateId, setHintedGateId] = useState<number | null>(null);
   const [currentGateId, setCurrentGateId] = useState<number | null>(null);
@@ -44,7 +45,7 @@ export function LaneRush({ session, onComplete }: LaneRushProps) {
       width: CANVAS_WIDTH,
       height: CANVAS_HEIGHT,
       parent: containerRef.current,
-      backgroundColor: "#111827",
+      backgroundColor: "#1c1917",
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -154,10 +155,22 @@ export function LaneRush({ session, onComplete }: LaneRushProps) {
     setPaused(false);
   }
 
+  // A browser confirm() dialog is unstyled system chrome that blocks the
+  // whole page - this asks the same question as an in-app message
+  // instead, so stopping mid-race never leaves the game's own look.
   function stopGame() {
-    if (window.confirm("Stop this quiz? You'll see results for what you've answered so far.")) {
-      getScene()?.stopGame();
-    }
+    pauseGame();
+    setConfirmingStop(true);
+  }
+
+  function cancelStop() {
+    setConfirmingStop(false);
+    resumeGame();
+  }
+
+  function confirmStop() {
+    setConfirmingStop(false);
+    getScene()?.stopGame();
   }
 
   async function useHint() {
@@ -177,7 +190,7 @@ export function LaneRush({ session, onComplete }: LaneRushProps) {
   return (
     <div className="space-y-3">
       <div className="space-y-1.5" style={{ width: CANVAS_WIDTH, margin: "0 auto" }}>
-        <span className="text-xs text-slate-500">Steer with ◀ ▶ or A/D &middot; Space to pause</span>
+        <span className="text-xs text-stone-500">Steer with ◀ ▶ or A/D &middot; Space to pause</span>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <button
@@ -185,7 +198,7 @@ export function LaneRush({ session, onComplete }: LaneRushProps) {
               disabled={hintLoading || hintedGateId === currentGateId || currentGateId === null}
               aria-label="Get a hint"
               title="Eliminate two wrong lanes"
-              className="rounded-full p-2 border border-slate-700 text-amber-400 hover:border-amber-500/60
+              className="rounded-full p-2 border border-stone-700 text-amber-400 hover:border-amber-500/60
                 hover:bg-amber-500/10 disabled:opacity-30 disabled:hover:bg-transparent transition-colors text-sm"
             >
               💡
@@ -194,8 +207,8 @@ export function LaneRush({ session, onComplete }: LaneRushProps) {
               onClick={pauseGame}
               aria-label="Pause"
               title="Pause the game (or press Space)"
-              className="flex items-center gap-1.5 rounded-full px-4 py-2 border border-slate-600
-                text-slate-100 hover:border-slate-400 hover:bg-slate-800 transition-colors text-sm font-semibold"
+              className="flex items-center gap-1.5 rounded-full px-4 py-2 border border-stone-600
+                text-stone-100 hover:border-stone-400 hover:bg-stone-800 transition-colors text-sm font-semibold"
             >
               <span aria-hidden>⏸</span> Pause
             </button>
@@ -212,7 +225,7 @@ export function LaneRush({ session, onComplete }: LaneRushProps) {
           {fullscreenSupported && (
             <button
               onClick={toggleFullscreen}
-              className="text-xs px-3 py-1.5 rounded-md border border-slate-700 text-slate-300
+              className="text-xs px-3 py-1.5 rounded-md border border-stone-700 text-stone-300
                 hover:border-amber-500/50 hover:text-amber-300 transition-colors whitespace-nowrap"
             >
               {isFullscreen ? "Exit full screen" : "Full screen"}
@@ -221,28 +234,56 @@ export function LaneRush({ session, onComplete }: LaneRushProps) {
         </div>
       </div>
       <div
-        className="relative mx-auto rounded-xl overflow-hidden border border-slate-800 shadow-card"
+        className="relative mx-auto rounded-xl overflow-hidden border border-stone-800 shadow-card"
         style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT, maxWidth: "100%" }}
       >
         <div ref={containerRef} className="w-full h-full" />
-        {paused && (
+        {paused && !confirmingStop && (
           <div
             className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4
-              bg-slate-950/90 backdrop-blur-sm motion-safe:animate-card-in"
+              bg-stone-950/90 backdrop-blur-sm motion-safe:animate-card-in"
             style={{ animationDuration: "150ms" }}
           >
-            <p className="text-2xl font-extrabold text-slate-100">Paused</p>
+            <p className="text-2xl font-extrabold text-stone-100">Paused</p>
             <Button onClick={resumeGame}>Resume</Button>
           </div>
         )}
       </div>
+      {confirmingStop && (
+        <div
+          role="alert"
+          className="rounded-xl border border-red-500/40 bg-red-500/10 p-4 space-y-3
+            motion-safe:animate-card-in"
+          style={{ width: CANVAS_WIDTH, margin: "0 auto" }}
+        >
+          <p className="text-sm text-red-200">
+            Stop this quiz? You'll see results for what you've answered so far.
+          </p>
+          <div className="flex gap-2 justify-end">
+            <button
+              onClick={cancelStop}
+              className="rounded-full px-4 py-1.5 text-sm font-semibold border border-stone-600
+                text-stone-100 hover:border-stone-400 hover:bg-stone-800 transition-colors"
+            >
+              Keep playing
+            </button>
+            <button
+              onClick={confirmStop}
+              className="rounded-full px-4 py-1.5 text-sm font-semibold bg-red-500/90 text-white
+                hover:bg-red-500 transition-colors"
+            >
+              Yes, stop
+            </button>
+          </div>
+        </div>
+      )}
       <div className="flex justify-between sm:hidden" style={{ width: CANVAS_WIDTH, margin: "0 auto" }}>
         <button
           onClick={() => getScene()?.pressLeft()}
           disabled={paused}
           aria-label="Move left"
-          className="px-6 py-3 rounded-lg border border-slate-700 bg-slate-900 text-lg text-slate-200
-            active:bg-slate-800 disabled:opacity-30"
+          className="px-6 py-3 rounded-lg border border-stone-700 bg-stone-900 text-lg text-stone-200
+            active:bg-stone-800 disabled:opacity-30"
         >
           ◀
         </button>
@@ -250,8 +291,8 @@ export function LaneRush({ session, onComplete }: LaneRushProps) {
           onClick={() => getScene()?.pressRight()}
           disabled={paused}
           aria-label="Move right"
-          className="px-6 py-3 rounded-lg border border-slate-700 bg-slate-900 text-lg text-slate-200
-            active:bg-slate-800 disabled:opacity-30"
+          className="px-6 py-3 rounded-lg border border-stone-700 bg-stone-900 text-lg text-stone-200
+            active:bg-stone-800 disabled:opacity-30"
         >
           ▶
         </button>

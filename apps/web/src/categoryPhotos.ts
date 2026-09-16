@@ -51,6 +51,19 @@ const KEYWORDS: [RegExp, string][] = [
 
 const DEFAULT_PHOTO = EXACT["general knowledge"];
 
+// A curated, visually varied spread across different topics - used by
+// the landing page's rotating hero backdrop, not by category lookup
+// itself, so this is a fixed handful rather than every entry above.
+export const HERO_PHOTOS: string[] = [
+  EXACT.history,
+  EXACT["science & nature"],
+  EXACT.art,
+  EXACT.sports,
+  EXACT.geography,
+  EXACT["entertainment: film"],
+  EXACT["entertainment: music"],
+];
+
 export function categoryPhoto(name: string): string {
   const exact = EXACT[name.trim().toLowerCase()];
   if (exact) return exact;

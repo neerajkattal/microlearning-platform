@@ -233,18 +233,20 @@ describe("BalloonPop", () => {
     expect((screen.getByLabelText("Get a hint") as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it("stops the round when Stop is clicked and confirmed", () => {
-    vi.spyOn(window, "confirm").mockReturnValue(true);
+  it("stops the round when Stop is clicked and confirmed via the in-app message", () => {
     render(<BalloonPop session={session} onComplete={vi.fn()} />);
     fireEvent.click(screen.getByLabelText("Stop"));
+    expect(screen.getByRole("alert").textContent).toContain("Stop this quiz?");
+    fireEvent.click(screen.getByText("Yes, stop"));
     expect(stopGameMock).toHaveBeenCalledTimes(1);
   });
 
-  it("does not stop the round if the confirmation is declined", () => {
-    vi.spyOn(window, "confirm").mockReturnValue(false);
+  it("does not stop the round if the in-app confirmation is declined", () => {
     render(<BalloonPop session={session} onComplete={vi.fn()} />);
     fireEvent.click(screen.getByLabelText("Stop"));
+    fireEvent.click(screen.getByText("Keep playing"));
     expect(stopGameMock).not.toHaveBeenCalled();
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 
   it("pauses on Space and resumes on Space again", () => {

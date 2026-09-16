@@ -125,8 +125,7 @@ describe("QuizQuestion", () => {
     expect(options.method).toBe("POST");
   });
 
-  it("stops the quiz early and completes the session when confirmed", async () => {
-    vi.spyOn(window, "confirm").mockReturnValue(true);
+  it("stops the quiz early and completes the session when confirmed via the in-app message", async () => {
     mockFetchOnce({
       session_id: 1, score: 0, total_questions: 2, xp_earned: 0, total_xp: 0, level: 1, streak: 0,
     });
@@ -134,6 +133,8 @@ describe("QuizQuestion", () => {
     render(<QuizQuestion session={twoQuestionSession} onComplete={onComplete} />);
 
     fireEvent.click(screen.getByLabelText("Stop"));
+    expect(screen.getByRole("alert").textContent).toContain("Stop this quiz?");
+    fireEvent.click(screen.getByText("Yes, stop"));
 
     await waitFor(() => expect(onComplete).toHaveBeenCalledWith(
       expect.objectContaining({ session_id: 1 })
@@ -143,14 +144,15 @@ describe("QuizQuestion", () => {
     expect(options.method).toBe("POST");
   });
 
-  it("does not stop the quiz if the confirmation is declined", () => {
-    vi.spyOn(window, "confirm").mockReturnValue(false);
+  it("does not stop the quiz if the in-app confirmation is declined", () => {
     render(<QuizQuestion session={twoQuestionSession} onComplete={vi.fn()} />);
 
     fireEvent.click(screen.getByLabelText("Stop"));
+    fireEvent.click(screen.getByText("Keep playing"));
 
     expect(fetch).not.toHaveBeenCalled();
     expect(screen.getByText("2 + 2?")).toBeTruthy();
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 
   it("uses a hint to disable the eliminated choices", async () => {

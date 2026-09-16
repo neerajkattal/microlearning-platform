@@ -41,6 +41,7 @@ describe("LoginScreen", () => {
     fireEvent.click(screen.getByText("Register"));
     fireEvent.change(screen.getByLabelText("Username"), { target: { value: "bob" } });
     fireEvent.change(screen.getByLabelText("Password"), { target: { value: "correct-horse" } });
+    fireEvent.change(screen.getByLabelText("Confirm password"), { target: { value: "correct-horse" } });
     fireEvent.submit(container.querySelector("form")!);
 
     await waitFor(() =>
@@ -61,11 +62,26 @@ describe("LoginScreen", () => {
     fireEvent.click(screen.getByLabelText("Dragon"));
     fireEvent.change(screen.getByLabelText("Username"), { target: { value: "dave" } });
     fireEvent.change(screen.getByLabelText("Password"), { target: { value: "correct-horse" } });
+    fireEvent.change(screen.getByLabelText("Confirm password"), { target: { value: "correct-horse" } });
     fireEvent.submit(container.querySelector("form")!);
 
     await waitFor(() =>
       expect(api.register).toHaveBeenCalledWith({ username: "dave", password: "correct-horse", avatar: "dragon" })
     );
+  });
+
+  it("shows an error and does not call api.register when the passwords don't match", () => {
+    const registerSpy = vi.spyOn(api, "register");
+    registerSpy.mockClear();
+    const { container } = render(<LoginScreen onAuthenticated={vi.fn()} />);
+    fireEvent.click(screen.getByText("Register"));
+    fireEvent.change(screen.getByLabelText("Username"), { target: { value: "bob" } });
+    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "correct-horse" } });
+    fireEvent.change(screen.getByLabelText("Confirm password"), { target: { value: "different" } });
+    fireEvent.submit(container.querySelector("form")!);
+
+    expect(screen.getByText("Passwords don't match.")).toBeTruthy();
+    expect(registerSpy).not.toHaveBeenCalled();
   });
 
   it("does not show the avatar picker in login mode", () => {
