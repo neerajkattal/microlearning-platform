@@ -65,28 +65,28 @@ function CategoryInfo({ category, color, onPlay }: CategoryInfoProps) {
           Featured
         </div>
       </div>
-      <h4 className="font-bold text-slate-100 leading-tight">{category.name}</h4>
-      <p className="text-xs text-slate-400">
+      <h4 className="font-bold text-stone-100 leading-tight">{category.name}</h4>
+      <p className="text-xs text-stone-400">
         Test your knowledge of {shortName(category.name)} with real trivia questions, easy to hard.
       </p>
 
-      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800">
+      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-stone-800">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Questions</p>
-          <p className="font-bold text-slate-100">🎯 {category.question_count}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Questions</p>
+          <p className="font-bold text-stone-100">🎯 {category.question_count}</p>
         </div>
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Max XP</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Max XP</p>
           <p className="font-bold text-amber-300">⚡ {MAX_XP_PER_QUESTION}</p>
         </div>
       </div>
 
-      <div className="space-y-1.5 pt-2 border-t border-slate-800">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">How to play</p>
-        <ol className="space-y-1 text-xs text-slate-300">
+      <div className="space-y-1.5 pt-2 border-t border-stone-800">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">How to play</p>
+        <ol className="space-y-1 text-xs text-stone-300">
           {HOW_TO_PLAY.map((tip, i) => (
             <li key={tip} className="flex gap-1.5">
-              <span className="text-slate-600">{i + 1}.</span>
+              <span className="text-stone-600">{i + 1}.</span>
               {tip}
             </li>
           ))}
@@ -120,7 +120,7 @@ export function FeaturedCarousel({ categories, onSelect }: FeaturedCarouselProps
 
   return (
     <div className="space-y-3 motion-safe:animate-card-in">
-      <h3 className="text-sm font-semibold text-slate-400">✨ Featured</h3>
+      <h3 className="text-sm font-semibold text-stone-400">✨ Featured</h3>
 
       {/* -my-3 cancels out py-3 in the flow (so this doesn't push later
           content down) while still giving overflow-hidden's clip
@@ -143,19 +143,19 @@ export function FeaturedCarousel({ categories, onSelect }: FeaturedCarouselProps
       </div>
 
       {previewing && (
-        <div className="md:hidden fixed inset-0 z-50 bg-slate-950/98 backdrop-blur-sm overflow-y-auto motion-safe:animate-card-in">
+        <div className="md:hidden fixed inset-0 z-50 bg-stone-950/98 backdrop-blur-sm overflow-y-auto motion-safe:animate-card-in">
           <div className="max-w-md mx-auto min-h-full p-5 pt-16 relative flex flex-col">
             <button
               onClick={() => setPreviewing(null)}
               aria-label="Close"
-              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-800/80 border border-slate-700
-                flex items-center justify-center text-slate-300 text-lg leading-none hover:text-white
-                hover:bg-slate-700 transition-colors"
+              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-stone-800/80 border border-stone-700
+                flex items-center justify-center text-stone-300 text-lg leading-none hover:text-white
+                hover:bg-stone-700 transition-colors"
             >
               ✕
             </button>
             <div
-              className="flex flex-col rounded-2xl border-2 bg-slate-900/80 shadow-card p-5 space-y-3"
+              className="flex flex-col rounded-2xl border-2 bg-stone-900/80 shadow-card p-5 space-y-3"
               style={{
                 borderColor: accentHexFor(previewing.id),
                 boxShadow: `0 0 32px -6px ${accentHexFor(previewing.id)}`,

@@ -53,7 +53,7 @@ export default {
         drift: "drift 16s ease-in-out infinite",
       },
       boxShadow: {
-        glow: "0 0 0 1px rgba(168, 85, 247, 0.45), 0 0 26px -4px rgba(168, 85, 247, 0.55)",
+        glow: "0 0 0 1px rgba(244, 63, 94, 0.4), 0 0 26px -4px rgba(245, 158, 11, 0.55)",
         card: "0 1px 0 0 rgba(255,255,255,0.04) inset, 0 8px 24px -12px rgba(0,0,0,0.6)",
       },
     },

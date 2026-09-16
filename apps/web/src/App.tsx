@@ -47,7 +47,7 @@ function isMainAppScreen(screen: Screen): boolean {
 function statusDotClass(status: HealthStatus): string {
   if (status === "ok") return "bg-emerald-400";
   if (status === "error") return "bg-red-500";
-  return "bg-slate-500 animate-pulse";
+  return "bg-stone-500 animate-pulse";
 }
 
 export default function App() {
@@ -123,26 +123,26 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans">
+    <div className="min-h-screen bg-stone-950 text-stone-100 font-sans">
       <div
         className="pointer-events-none fixed inset-0 opacity-40"
         style={{
           background:
-            "radial-gradient(60rem 30rem at 15% -10%, rgba(168,85,247,0.16), transparent), radial-gradient(50rem 30rem at 100% 0%, rgba(56,189,248,0.14), transparent)",
+            "radial-gradient(60rem 30rem at 15% -10%, rgba(245,158,11,0.16), transparent), radial-gradient(50rem 30rem at 100% 0%, rgba(244,63,94,0.14), transparent)",
         }}
       />
-      <header className="sticky top-0 z-10 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur">
+      <header className="sticky top-0 z-10 border-b border-stone-800/80 bg-stone-950/80 backdrop-blur">
         <div className="max-w-5xl mx-auto flex justify-between items-center gap-3 px-4 py-4">
           <button
             onClick={() => currentUser && setScreen({ name: "categories" })}
             aria-label="Go to home"
             className="whitespace-nowrap text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r
-              from-violet-400 to-fuchsia-300 bg-clip-text text-transparent disabled:cursor-default"
+              from-amber-400 to-rose-300 bg-clip-text text-transparent disabled:cursor-default"
             disabled={!currentUser}
           >
             PlayToLearn
           </button>
-          <div className="flex items-center gap-2 sm:gap-4 text-sm text-slate-400 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-4 text-sm text-stone-400 min-w-0">
             <p
               className="flex items-center gap-1.5 whitespace-nowrap"
               title={`API: ${status === "checking" ? "checking..." : status === "ok" ? "connected" : "unreachable"}`}
@@ -159,7 +159,7 @@ export default function App() {
                 <button
                   onClick={() => setScreen({ name: "stats" })}
                   aria-label="My Stats"
-                  className="whitespace-nowrap rounded-full px-2.5 sm:px-3 py-1 border border-slate-700 hover:border-violet-500/60 hover:text-violet-300 transition-colors"
+                  className="whitespace-nowrap rounded-full px-2.5 sm:px-3 py-1 border border-stone-700 hover:border-amber-500/60 hover:text-amber-300 transition-colors"
                 >
                   <span className="sm:hidden" aria-hidden>📊</span>
                   <span className="hidden sm:inline">My Stats</span>
@@ -167,7 +167,7 @@ export default function App() {
                 <button
                   onClick={() => setScreen({ name: "leaderboard" })}
                   aria-label="Leaderboard"
-                  className="whitespace-nowrap rounded-full px-2.5 sm:px-3 py-1 border border-slate-700 hover:border-violet-500/60 hover:text-violet-300 transition-colors"
+                  className="whitespace-nowrap rounded-full px-2.5 sm:px-3 py-1 border border-stone-700 hover:border-amber-500/60 hover:text-amber-300 transition-colors"
                 >
                   <span className="sm:hidden" aria-hidden>🏆</span>
                   <span className="hidden sm:inline">Leaderboard</span>
@@ -199,7 +199,7 @@ export default function App() {
       >
         <div key={screen.name} className="motion-safe:animate-screen-in">
           {screen.name === "checking-auth" && (
-            <p className="text-center text-slate-500">Loading...</p>
+            <p className="text-center text-stone-500">Loading...</p>
           )}
 
           {screen.name === "auth" && <LoginScreen onAuthenticated={handleAuthenticated} />}

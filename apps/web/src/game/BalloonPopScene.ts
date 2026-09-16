@@ -31,12 +31,12 @@ const CELL_HEIGHT = (GRID_BOTTOM - GRID_TOP) / ROW_COUNT;
 const BALLOON_COLORS = ["#ef4444", "#3b82f6", "#22c55e", "#f59e0b"];
 
 const PALETTE = {
-  sky: "#0b1220",
-  string: "#94a3b8",
-  answerText: "#0f172a",
-  bannerBg: "#111827",
+  sky: "#150f0c",
+  string: "#a8a29e",
+  answerText: "#1c1917",
+  bannerBg: "#1c1917",
   bannerBorder: "#f59e0b",
-  hudText: "#cbd5e1",
+  hudText: "#d6d3d1",
 };
 
 function fontSizeFor(text: string): number {
@@ -122,7 +122,7 @@ export class BalloonPopScene extends Phaser.Scene {
         this.add
           .text(x, y, "", {
             fontFamily: "system-ui, sans-serif",
-            color: "#0f172a",
+            color: "#1c1917",
             fontStyle: "600",
             align: "center",
             wordWrap: { width: BALLOON_RADIUS_X * 1.6 },
@@ -134,7 +134,7 @@ export class BalloonPopScene extends Phaser.Scene {
           .text(x - BALLOON_RADIUS_X + 10, y - BALLOON_RADIUS_Y + 8, String(i + 1), {
             fontFamily: "system-ui, sans-serif",
             fontSize: "11px",
-            color: "#0f172a",
+            color: "#1c1917",
           })
           .setOrigin(0.5)
       );

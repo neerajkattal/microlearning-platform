@@ -4,6 +4,7 @@ import { setToken } from "../auth";
 import { Button } from "../components/ui/Button";
 import { AvatarPicker } from "../components/AvatarPicker";
 import { DemoQuiz } from "../components/DemoQuiz";
+import { HeroBackdrop } from "../components/HeroBackdrop";
 import type { User } from "../types";
 
 interface LoginScreenProps {
@@ -24,6 +25,7 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
   const [mode, setMode] = useState<Mode>("login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [avatar, setAvatar] = useState("astronaut");
@@ -32,6 +34,10 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (mode === "register" && password !== confirmPassword) {
+      setError("Passwords don't match.");
+      return;
+    }
     setSubmitting(true);
     try {
       const response = mode === "login"
@@ -50,13 +56,22 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
     }
   }
 
+  // Clearing confirmPassword and any old error on every mode switch means
+  // a stale mismatch from a previous attempt can never silently block a
+  // later, unrelated submit.
+  function switchMode(next: Mode) {
+    setMode(next);
+    setConfirmPassword("");
+    setError(null);
+  }
+
   function goToRegister() {
-    setMode("register");
+    switchMode("register");
     formCardRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" });
   }
 
   function goToLogin() {
-    setMode("login");
+    switchMode("login");
     formCardRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" });
   }
 
@@ -65,37 +80,28 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
       {/* Hero: full-bleed, no card frame around it - big left-aligned
           headline on desktop with the demo quiz floating on the right
           (stacks below on mobile, per the brief - headline -> CTA ->
-          feature pills -> one quiz card, no squeezed desktop layout). A
-          slow-drifting purple/blue glow sits directly on the page
-          background instead of being boxed in, motion-safe gated same
-          as everything else on this page. */}
+          feature pills -> one quiz card, no squeezed desktop layout).
+          HeroBackdrop crossfades through real photos from a spread of
+          quiz topics behind a warm scrim, instead of a flat color
+          gradient - it's what this app's questions are actually about. */}
       <div className="relative -mx-4 px-4 overflow-hidden">
-        <div
-          className="pointer-events-none absolute inset-0 motion-safe:animate-drift"
-          aria-hidden
-          style={{
-            background:
-              "radial-gradient(44rem 30rem at 8% 10%, rgba(168,85,247,0.30), transparent 62%), " +
-              "radial-gradient(36rem 28rem at 95% 0%, rgba(56,189,248,0.20), transparent 65%), " +
-              "radial-gradient(30rem 26rem at 60% 100%, rgba(217,70,239,0.16), transparent 60%)",
-          }}
-        />
+        <HeroBackdrop />
         <div className="relative max-w-7xl mx-auto grid lg:grid-cols-[1.15fr_0.85fr] gap-12 items-center pt-6 pb-4 sm:pt-14 sm:pb-10">
           <div className="text-center lg:text-left space-y-6 motion-safe:animate-card-in">
             <span
               className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide
-                text-violet-300 bg-violet-500/10 border border-violet-500/30 rounded-full px-3 py-1"
+                text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-full px-3 py-1"
             >
               🎮 Gamified Trivia
             </span>
             <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-white text-balance leading-[1.05]">
               Trivia that plays{" "}
-              <span className="bg-gradient-to-r from-violet-400 via-fuchsia-300 to-sky-300 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-amber-300 via-orange-400 to-rose-400 bg-clip-text text-transparent">
                 like a game
               </span>
               .
             </h1>
-            <p className="text-lg text-slate-300 max-w-xl mx-auto lg:mx-0">
+            <p className="text-lg text-stone-300 max-w-xl mx-auto lg:mx-0">
               Dodge into the right lane. Pop the right balloon. Real XP, streaks, and a leaderboard —
               powered by real trivia questions.
             </p>
@@ -109,9 +115,9 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
               {FEATURES.map((feature) => (
                 <span
                   key={feature}
-                  className="text-xs font-medium text-slate-300 bg-slate-900/60 border border-slate-800
+                  className="text-xs font-medium text-stone-300 bg-stone-900/60 border border-stone-800
                     rounded-full px-3 py-1 whitespace-nowrap transition-all duration-150 cursor-default
-                    hover:border-violet-500/60 hover:text-violet-300 hover:-translate-y-0.5 hover:shadow-glow"
+                    hover:border-amber-500/60 hover:text-amber-300 hover:-translate-y-0.5 hover:shadow-glow"
                 >
                   {feature}
                 </span>
@@ -130,29 +136,29 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
 
       <div
         ref={formCardRef}
-        className="max-w-md mx-auto rounded-2xl border border-slate-800 bg-slate-900/60 shadow-card p-6 space-y-5
+        className="max-w-md mx-auto rounded-2xl border border-stone-800 bg-stone-900/60 shadow-card p-6 space-y-5
           motion-safe:animate-card-in scroll-mt-6"
         style={{ animationDelay: "140ms" }}
       >
-        <div className="flex gap-1 p-1 rounded-xl bg-slate-800/70 text-sm font-medium">
+        <div className="flex gap-1 p-1 rounded-xl bg-stone-800/70 text-sm font-medium">
           <button
             type="button"
-            onClick={() => setMode("login")}
+            onClick={() => switchMode("login")}
             className={`flex-1 rounded-lg py-1.5 transition-colors ${
               mode === "login"
-                ? "bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white"
-                : "text-slate-300 hover:text-white"
+                ? "bg-gradient-to-r from-amber-600 to-rose-500 text-white"
+                : "text-stone-300 hover:text-white"
             }`}
           >
             Log in
           </button>
           <button
             type="button"
-            onClick={() => setMode("register")}
+            onClick={() => switchMode("register")}
             className={`flex-1 rounded-lg py-1.5 transition-colors ${
               mode === "register"
-                ? "bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white"
-                : "text-slate-300 hover:text-white"
+                ? "bg-gradient-to-r from-amber-600 to-rose-500 text-white"
+                : "text-stone-300 hover:text-white"
             }`}
           >
             Register
@@ -162,12 +168,12 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === "register" && (
             <div>
-              <p className="block text-sm mb-1.5 text-slate-300">Choose your character</p>
+              <p className="block text-sm mb-1.5 text-stone-300">Choose your character</p>
               <AvatarPicker value={avatar} onChange={setAvatar} />
             </div>
           )}
           <div>
-            <label htmlFor="username" className="block text-sm mb-1 text-slate-300">
+            <label htmlFor="username" className="block text-sm mb-1 text-stone-300">
               Username
             </label>
             <input
@@ -176,12 +182,12 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
               onChange={(e) => setUsername(e.target.value)}
               required
               autoComplete="username"
-              className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-100
-                placeholder:text-slate-600 focus:border-violet-500 transition-colors"
+              className="w-full p-2.5 rounded-lg bg-stone-950 border border-stone-700 text-stone-100
+                placeholder:text-stone-600 focus:border-amber-500 transition-colors"
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm mb-1 text-slate-300">
+            <label htmlFor="password" className="block text-sm mb-1 text-stone-300">
               Password
             </label>
             <input
@@ -192,10 +198,28 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
               required
               minLength={mode === "register" ? 8 : undefined}
               autoComplete={mode === "login" ? "current-password" : "new-password"}
-              className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-100
-                placeholder:text-slate-600 focus:border-violet-500 transition-colors"
+              className="w-full p-2.5 rounded-lg bg-stone-950 border border-stone-700 text-stone-100
+                placeholder:text-stone-600 focus:border-amber-500 transition-colors"
             />
           </div>
+          {mode === "register" && (
+            <div>
+              <label htmlFor="confirm-password" className="block text-sm mb-1 text-stone-300">
+                Confirm password
+              </label>
+              <input
+                id="confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={8}
+                autoComplete="new-password"
+                className="w-full p-2.5 rounded-lg bg-stone-950 border border-stone-700 text-stone-100
+                  placeholder:text-stone-600 focus:border-amber-500 transition-colors"
+              />
+            </div>
+          )}
           {error && (
             <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/30 rounded-lg py-2 px-3">
               {error}

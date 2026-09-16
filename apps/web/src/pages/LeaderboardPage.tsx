@@ -23,7 +23,7 @@ export function LeaderboardPage({ onBack, currentUsername }: LeaderboardPageProp
 
   return (
     <div className="max-w-3xl mx-auto space-y-5">
-      <button onClick={onBack} className="text-sm text-slate-400 hover:text-white transition-colors">
+      <button onClick={onBack} className="text-sm text-stone-400 hover:text-white transition-colors">
         ← Back
       </button>
 
@@ -36,17 +36,17 @@ export function LeaderboardPage({ onBack, currentUsername }: LeaderboardPageProp
           Couldn't load the leaderboard. Check that the backend is running.
         </p>
       )}
-      {!error && entries === null && <p className="text-slate-500 text-center">Loading...</p>}
+      {!error && entries === null && <p className="text-stone-500 text-center">Loading...</p>}
       {entries !== null && entries.length === 0 && (
-        <p className="text-slate-500 text-center">No players yet.</p>
+        <p className="text-stone-500 text-center">No players yet.</p>
       )}
 
       {entries && entries.length > 0 && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 shadow-card overflow-hidden">
+        <div className="rounded-2xl border border-stone-800 bg-stone-900/60 shadow-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-[10px] font-semibold uppercase tracking-wide text-slate-500 border-b border-slate-800">
+                <tr className="text-left text-[10px] font-semibold uppercase tracking-wide text-stone-500 border-b border-stone-800">
                   <th className="py-3 pl-4 pr-2 w-10">Rank</th>
                   <th className="py-3 px-2">Player</th>
                   <th className="py-3 px-2 text-right">XP</th>
@@ -60,7 +60,7 @@ export function LeaderboardPage({ onBack, currentUsername }: LeaderboardPageProp
                   return (
                     <tr
                       key={entry.username}
-                      className={`border-b border-slate-800/60 last:border-b-0 ${
+                      className={`border-b border-stone-800/60 last:border-b-0 ${
                         isMe
                           ? "bg-amber-500/10"
                           : index < 3
@@ -80,7 +80,7 @@ export function LeaderboardPage({ onBack, currentUsername }: LeaderboardPageProp
                           >
                             {avatarEmoji(entry.avatar)}
                           </span>
-                          <span className="font-semibold text-slate-100 truncate">{entry.username}</span>
+                          <span className="font-semibold text-stone-100 truncate">{entry.username}</span>
                           {isMe && (
                             <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-full px-1.5 py-0.5">
                               You
@@ -91,8 +91,8 @@ export function LeaderboardPage({ onBack, currentUsername }: LeaderboardPageProp
                       <td className="py-3 px-2 text-right font-semibold text-amber-400 whitespace-nowrap">
                         {entry.xp}
                       </td>
-                      <td className="py-3 px-2 text-right text-slate-300 whitespace-nowrap">{entry.level}</td>
-                      <td className="py-3 pr-4 pl-2 text-right text-slate-300 whitespace-nowrap">
+                      <td className="py-3 px-2 text-right text-stone-300 whitespace-nowrap">{entry.level}</td>
+                      <td className="py-3 pr-4 pl-2 text-right text-stone-300 whitespace-nowrap">
                         <span aria-hidden>🎖️</span> {entry.badges}
                       </td>
                     </tr>

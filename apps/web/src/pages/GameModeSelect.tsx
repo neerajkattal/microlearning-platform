@@ -21,7 +21,7 @@ export function GameModeSelect({ categoryName, color, icon, onSelectMode, onBack
     <div className="max-w-3xl mx-auto space-y-6">
       <CategoryBackdrop categoryName={categoryName} color={color} />
 
-      <button onClick={onBack} className="text-sm text-slate-400 hover:text-white transition-colors">
+      <button onClick={onBack} className="text-sm text-stone-400 hover:text-white transition-colors">
         ← Back
       </button>
 
@@ -32,7 +32,7 @@ export function GameModeSelect({ categoryName, color, icon, onSelectMode, onBack
         >
           <span aria-hidden>{icon}</span> {categoryName}
         </span>
-        <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-100">
+        <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-100">
           Choose your mode
         </h2>
       </div>
@@ -43,19 +43,19 @@ export function GameModeSelect({ categoryName, color, icon, onSelectMode, onBack
             key={mode}
             onClick={() => onSelectMode(mode)}
             style={{ animationDelay: `${index * 60}ms` }}
-            className="group rounded-2xl border-2 border-slate-800 bg-slate-900/70 p-6 text-center shadow-card
-              hover:border-violet-500/60 hover:shadow-glow hover:-translate-y-1.5 transition-all
+            className="group rounded-2xl border-2 border-stone-800 bg-stone-900/70 p-6 text-center shadow-card
+              hover:border-amber-500/60 hover:shadow-glow hover:-translate-y-1.5 transition-all
               motion-safe:animate-card-in"
           >
             <div
               className="mx-auto mb-3 w-16 h-16 rounded-2xl flex items-center justify-center text-3xl
-                bg-slate-800/80 border border-slate-700 group-hover:border-violet-500/50 transition-colors"
+                bg-stone-800/80 border border-stone-700 group-hover:border-amber-500/50 transition-colors"
               aria-hidden
             >
               {emoji}
             </div>
-            <div className="font-bold text-slate-100 text-lg">{label}</div>
-            <div className="text-sm text-slate-500 mt-1.5">{desc}</div>
+            <div className="font-bold text-stone-100 text-lg">{label}</div>
+            <div className="text-sm text-stone-500 mt-1.5">{desc}</div>
           </button>
         ))}
       </div>

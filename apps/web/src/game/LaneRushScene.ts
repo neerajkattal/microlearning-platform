@@ -31,21 +31,21 @@ const DASH_LENGTH = 16;
 const DASH_GAP = 12;
 
 const PALETTE = {
-  sky: "#0b1220",
+  sky: "#150f0c",
   grass: "#14532d",
-  roadDark: "#1f2937",
-  roadLight: "#273449",
-  laneLine: "#64748b",
-  car: "#2563eb",
-  carAccent: "#1d4ed8",
-  carWindow: "#0f172a",
+  roadDark: "#292524",
+  roadLight: "#44403c",
+  laneLine: "#a8a29e",
+  car: "#f97316",
+  carAccent: "#c2410c",
+  carWindow: "#1c1917",
   headlight: "#fde68a",
-  gateA: "#111827",
+  gateA: "#1c1917",
   gateB: "#f59e0b",
   answerText: "#f9fafb",
-  bannerBg: "#111827",
+  bannerBg: "#1c1917",
   bannerBorder: "#f59e0b",
-  hudText: "#cbd5e1",
+  hudText: "#d6d3d1",
 };
 
 function fontSizeFor(text: string): number {
@@ -359,7 +359,7 @@ export class LaneRushScene extends Phaser.Scene {
         // physically blocked), just visually marked as ruled-out - same
         // "disabled but not removed" treatment as the Classic mode choices.
         const eliminated = this.state.eliminatedAnswerIds.includes(choice.id);
-        text.setColor(eliminated ? "#64748b" : PALETTE.answerText);
+        text.setColor(eliminated ? "#78716c" : PALETTE.answerText);
         text.setAlpha(eliminated ? 0.5 : 1);
       }
     }

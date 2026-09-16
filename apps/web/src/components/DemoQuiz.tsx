@@ -75,7 +75,7 @@ export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
   function choiceClassName(choiceIndex: number): string {
     const base = "text-left px-3.5 py-2.5 rounded-lg border text-sm font-medium transition-all duration-150";
     if (selected === null) {
-      return `${base} border-slate-700 bg-slate-950/60 hover:border-violet-500/50 hover:bg-slate-800/60`;
+      return `${base} border-stone-700 bg-stone-950/60 hover:border-amber-500/50 hover:bg-stone-800/60`;
     }
     if (choiceIndex === question.correctIndex) {
       return `${base} border-emerald-500 bg-emerald-500/10 text-emerald-300`;
@@ -83,23 +83,23 @@ export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
     if (choiceIndex === selected) {
       return `${base} border-red-500 bg-red-500/10 text-red-300`;
     }
-    return `${base} border-slate-800 bg-slate-900/30 opacity-40`;
+    return `${base} border-stone-800 bg-stone-900/30 opacity-40`;
   }
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 shadow-card p-5 space-y-4">
+    <div className="rounded-2xl border border-stone-800 bg-stone-900/60 shadow-card p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wide text-violet-300">
+        <p className="text-xs font-semibold uppercase tracking-wide text-amber-300">
           🎮 Try it — no account needed
         </p>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-stone-500">
           Question {Math.min(index + 1, DEMO_QUESTIONS.length)}/{DEMO_QUESTIONS.length}
         </p>
       </div>
 
       {!finished && (
         <>
-          <h3 className="text-base font-bold text-slate-100">{question.prompt}</h3>
+          <h3 className="text-base font-bold text-stone-100">{question.prompt}</h3>
           <div className="grid grid-cols-2 gap-2">
             {question.choices.map((choice, choiceIndex) => (
               <button
@@ -120,8 +120,8 @@ export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
             {selected !== null && (
               <button
                 onClick={advance}
-                className="text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-fuchsia-500
-                  hover:from-violet-500 hover:to-fuchsia-400 rounded-lg px-4 py-1.5 transition-colors"
+                className="text-sm font-semibold text-white bg-gradient-to-r from-amber-600 to-rose-500
+                  hover:from-amber-500 hover:to-rose-400 rounded-lg px-4 py-1.5 transition-colors"
               >
                 {isLast ? "See results →" : "Next"}
               </button>
@@ -135,25 +135,25 @@ export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
           <p className="text-2xl" aria-hidden>
             {correctCount === DEMO_QUESTIONS.length ? "🏆" : "🎉"}
           </p>
-          <p className="font-bold text-slate-100">
+          <p className="font-bold text-stone-100">
             Demo complete — {correctCount}/{DEMO_QUESTIONS.length} correct, {demoXp} XP
           </p>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-stone-400">
             Create a free account to save real progress, unlock achievements, and play the actual
             games.
           </p>
           <div className="flex items-center justify-center gap-2">
             <button
               onClick={onCreateAccount}
-              className="text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-fuchsia-500
-                hover:from-violet-500 hover:to-fuchsia-400 rounded-lg px-4 py-2 transition-colors"
+              className="text-sm font-semibold text-white bg-gradient-to-r from-amber-600 to-rose-500
+                hover:from-amber-500 hover:to-rose-400 rounded-lg px-4 py-2 transition-colors"
             >
               Create free account
             </button>
             <button
               onClick={playAgain}
-              className="text-sm font-semibold text-slate-300 hover:text-white
-                border border-slate-700 rounded-lg px-4 py-2 transition-colors"
+              className="text-sm font-semibold text-stone-300 hover:text-white
+                border border-stone-700 rounded-lg px-4 py-2 transition-colors"
             >
               Play again
             </button>

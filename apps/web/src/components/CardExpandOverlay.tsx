@@ -34,13 +34,13 @@ export function CardExpandOverlay({ target, expanded }: CardExpandOverlayProps) 
         width: expanded ? "100vw" : target.width,
         height: expanded ? "100vh" : target.height,
         borderRadius: expanded ? 0 : 12,
-        backgroundImage: `linear-gradient(${target.color}4d, rgba(2,6,23,0.75)), url("${target.photo}")`,
+        backgroundImage: `linear-gradient(${target.color}4d, rgba(12,10,9,0.75)), url("${target.photo}")`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
     >
       <span
-        className="absolute top-3 left-3 text-2xl bg-slate-950/60 rounded-lg w-9 h-9 flex items-center
+        className="absolute top-3 left-3 text-2xl bg-stone-950/60 rounded-lg w-9 h-9 flex items-center
           justify-center transition-opacity duration-300 ease-in-out"
         style={{ opacity: expanded ? 0 : 1 }}
       >

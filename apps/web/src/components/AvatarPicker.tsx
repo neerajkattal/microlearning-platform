@@ -20,7 +20,7 @@ export function AvatarPicker({ value, onChange }: AvatarPickerProps) {
             transition-all duration-150 hover:-translate-y-0.5 ${
               value === option.key
                 ? "border-amber-500 bg-amber-500/15 shadow-glow"
-                : "border-slate-700 bg-slate-950/60 hover:border-slate-600"
+                : "border-stone-700 bg-stone-950/60 hover:border-stone-600"
             }`}
         >
           <span aria-hidden>{option.emoji}</span>

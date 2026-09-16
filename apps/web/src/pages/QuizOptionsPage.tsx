@@ -28,11 +28,11 @@ export function QuizOptionsPage({ categoryName, color, icon, onStart, onBack }: 
     <div className="max-w-lg mx-auto space-y-6">
       <CategoryBackdrop categoryName={categoryName} color={color} />
 
-      <button onClick={onBack} className="text-sm text-slate-400 hover:text-white transition-colors">
+      <button onClick={onBack} className="text-sm text-stone-400 hover:text-white transition-colors">
         ← Back
       </button>
 
-      <div className="relative rounded-2xl border-2 bg-slate-900/80 shadow-card p-6 sm:p-8 space-y-6
+      <div className="relative rounded-2xl border-2 bg-stone-900/80 shadow-card p-6 sm:p-8 space-y-6
         motion-safe:animate-card-in" style={{ borderColor: `${color}55` }}
       >
         <div className="flex items-center gap-3">
@@ -44,13 +44,13 @@ export function QuizOptionsPage({ categoryName, color, icon, onStart, onBack }: 
             {icon}
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-100">{categoryName}</h2>
-            <p className="text-sm text-slate-500">Set up your quiz</p>
+            <h2 className="text-xl font-bold text-stone-100">{categoryName}</h2>
+            <p className="text-sm text-stone-500">Set up your quiz</p>
           </div>
         </div>
 
         <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-slate-400">Difficulty</h3>
+          <h3 className="text-sm font-semibold text-stone-400">Difficulty</h3>
           <div className="flex gap-2" role="group" aria-label="Select difficulty">
             {DIFFICULTIES.map(({ value, label }) => (
               <button
@@ -59,8 +59,8 @@ export function QuizOptionsPage({ categoryName, color, icon, onStart, onBack }: 
                 aria-pressed={difficulty === value}
                 className={`flex-1 rounded-full px-3 py-1.5 text-sm font-medium border transition-colors ${
                   difficulty === value
-                    ? "border-violet-500 bg-violet-500/15 text-violet-300"
-                    : "border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                    ? "border-amber-500 bg-amber-500/15 text-amber-300"
+                    : "border-stone-800 text-stone-400 hover:border-stone-700 hover:text-stone-200"
                 }`}
               >
                 {label}
@@ -70,7 +70,7 @@ export function QuizOptionsPage({ categoryName, color, icon, onStart, onBack }: 
         </div>
 
         <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-slate-400">Number of questions</h3>
+          <h3 className="text-sm font-semibold text-stone-400">Number of questions</h3>
           <div className="flex gap-2" role="group" aria-label="Select number of questions">
             {QUESTION_COUNTS.map((count) => (
               <button
@@ -79,8 +79,8 @@ export function QuizOptionsPage({ categoryName, color, icon, onStart, onBack }: 
                 aria-pressed={questionCount === count}
                 className={`flex-1 rounded-full px-3 py-1.5 text-sm font-medium border transition-colors ${
                   questionCount === count
-                    ? "border-violet-500 bg-violet-500/15 text-violet-300"
-                    : "border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                    ? "border-amber-500 bg-amber-500/15 text-amber-300"
+                    : "border-stone-800 text-stone-400 hover:border-stone-700 hover:text-stone-200"
                 }`}
               >
                 {count}

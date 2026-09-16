@@ -32,19 +32,19 @@ export function ProfilePage({ user, onUpdated, onBack }: ProfilePageProps) {
 
   return (
     <div className="max-w-md mx-auto space-y-5">
-      <button onClick={onBack} className="text-sm text-slate-400 hover:text-white transition-colors">
+      <button onClick={onBack} className="text-sm text-stone-400 hover:text-white transition-colors">
         ← Back
       </button>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 shadow-card p-6 text-center space-y-2">
+      <div className="rounded-2xl border border-stone-800 bg-stone-900/60 shadow-card p-6 text-center space-y-2">
         <div className="text-6xl motion-safe:animate-pop-in" key={avatar} aria-hidden>
           {avatarEmoji(avatar)}
         </div>
-        <h2 className="text-xl font-bold text-slate-100">{user.username}</h2>
+        <h2 className="text-xl font-bold text-stone-100">{user.username}</h2>
       </div>
 
       <div>
-        <p className="text-sm mb-1.5 text-slate-300">Choose your character</p>
+        <p className="text-sm mb-1.5 text-stone-300">Choose your character</p>
         <AvatarPicker value={avatar} onChange={setAvatar} />
       </div>
 

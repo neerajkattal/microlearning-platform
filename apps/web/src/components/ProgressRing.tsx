@@ -20,7 +20,7 @@ export function ProgressRing({ percent, size = 64, strokeWidth = 6, children }: 
           r={radius}
           fill="none"
           stroke="currentColor"
-          className="text-slate-800"
+          className="text-stone-800"
           strokeWidth={strokeWidth}
         />
         <circle

@@ -15,7 +15,7 @@ interface CategorySelectProps {
   onSelectCategory: (categorySlug: string | null, categoryName: string, color: string, icon: string) => void;
 }
 
-const ANY_CATEGORY_COLOR = "#a855f7";
+const ANY_CATEGORY_COLOR = "#fb923c";
 const XP_PER_LEVEL = 100;
 const FEATURED_COUNT = 8;
 
@@ -47,7 +47,7 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
   }
 
   if (categories === null) {
-    return <p className="text-slate-500 text-center">Loading categories...</p>;
+    return <p className="text-stone-500 text-center">Loading categories...</p>;
   }
 
   const trimmedSearch = search.trim().toLowerCase();
@@ -82,17 +82,17 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
 
       {me && (
         <div
-          className="rounded-2xl border border-slate-800 bg-slate-900/60 shadow-card p-4 flex items-center
+          className="rounded-2xl border border-stone-800 bg-stone-900/60 shadow-card p-4 flex items-center
             gap-4 motion-safe:animate-card-in"
         >
           <ProgressRing percent={xpIntoLevel}>
-            <span className="text-sm font-extrabold text-slate-100">{me.stats.level}</span>
+            <span className="text-sm font-extrabold text-stone-100">{me.stats.level}</span>
           </ProgressRing>
           <div className="min-w-0 flex-1">
-            <p className="font-semibold text-slate-100 truncate">
+            <p className="font-semibold text-stone-100 truncate">
               Welcome back, {me.user.username}
             </p>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-stone-500 mt-0.5">
               {xpIntoLevel}/{XP_PER_LEVEL} XP to level {me.stats.level + 1}
             </p>
           </div>
@@ -104,7 +104,7 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
       )}
 
       <div className="relative motion-safe:animate-card-in">
-        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden>
+        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-stone-500" aria-hidden>
           🔍
         </span>
         <input
@@ -113,9 +113,9 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search categories..."
           aria-label="Search categories"
-          className="w-full rounded-full border border-slate-800 bg-slate-900/60 py-3 pl-11 pr-4 text-sm
-            text-slate-100 placeholder:text-slate-500 shadow-card outline-none transition-colors
-            focus:border-violet-500/50"
+          className="w-full rounded-full border border-stone-800 bg-stone-900/60 py-3 pl-11 pr-4 text-sm
+            text-stone-100 placeholder:text-stone-500 shadow-card outline-none transition-colors
+            focus:border-amber-500/50"
         />
       </div>
 
@@ -128,30 +128,30 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
         />
       )}
 
-      <h2 className="text-lg font-bold text-center text-slate-200">
+      <h2 className="text-lg font-bold text-center text-stone-200">
         {isSearching ? `Results for "${search.trim()}"` : "Pick a category"}
       </h2>
 
       {!isSearching && (
         <button
           onClick={(e) => selectWithExpand(e, null, "Any category", ANY_CATEGORY_COLOR, "🎲")}
-          className="group relative w-full overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60
-            p-4 text-left shadow-card hover:border-violet-500/50 hover:shadow-glow hover:-translate-y-0.5
+          className="group relative w-full overflow-hidden rounded-xl border border-stone-800 bg-stone-900/60
+            p-4 text-left shadow-card hover:border-amber-500/50 hover:shadow-glow hover:-translate-y-0.5
             transition-all motion-safe:animate-card-in flex items-center gap-3"
         >
-          <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-violet-500 to-fuchsia-400" />
+          <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-amber-500 to-rose-400" />
           <div className="text-2xl" aria-hidden>
             🎲
           </div>
           <div>
-            <div className="font-semibold text-slate-100">Any category</div>
-            <div className="text-xs text-slate-500 mt-0.5">Surprise me</div>
+            <div className="font-semibold text-stone-100">Any category</div>
+            <div className="text-xs text-stone-500 mt-0.5">Surprise me</div>
           </div>
         </button>
       )}
 
       {isSearching && grouped.length === 0 && (
-        <p className="text-slate-500 text-center">No categories match "{search.trim()}".</p>
+        <p className="text-stone-500 text-center">No categories match "{search.trim()}".</p>
       )}
 
       {grouped.map(([label, groupCategories]) => (

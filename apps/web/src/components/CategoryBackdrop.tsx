@@ -25,7 +25,7 @@ export function CategoryBackdrop({ categoryName, color }: CategoryBackdropProps)
       <div
         className="absolute inset-0"
         style={{
-          background: `linear-gradient(180deg, rgba(2,6,23,0.65), rgba(2,6,23,0.92)),
+          background: `linear-gradient(180deg, rgba(12,10,9,0.65), rgba(12,10,9,0.92)),
             radial-gradient(46rem 32rem at 12% 0%, ${color}22, transparent 62%)`,
         }}
       />

@@ -23,7 +23,7 @@ export function StatsPage({ onBack }: StatsPageProps) {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <button onClick={onBack} className="text-sm text-slate-400 hover:text-white transition-colors">
+      <button onClick={onBack} className="text-sm text-stone-400 hover:text-white transition-colors">
         ← Back
       </button>
 
@@ -32,20 +32,20 @@ export function StatsPage({ onBack }: StatsPageProps) {
           Couldn't load your stats. Check that the backend is running.
         </p>
       )}
-      {!error && me === null && <p className="text-slate-500 text-center">Loading your stats...</p>}
+      {!error && me === null && <p className="text-stone-500 text-center">Loading your stats...</p>}
 
       {me && (
         <div className="space-y-6">
           <div className="text-center space-y-1 motion-safe:animate-card-in">
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-100">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-100">
               Welcome back, {me.user.username}!
             </h2>
-            <p className="text-slate-500 text-sm">Your gamified learning journey</p>
+            <p className="text-stone-500 text-sm">Your gamified learning journey</p>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-4">
             <div
-              className="rounded-2xl border border-slate-800 bg-slate-900/60 shadow-card p-5 text-center
+              className="rounded-2xl border border-stone-800 bg-stone-900/60 shadow-card p-5 text-center
                 space-y-2 motion-safe:animate-card-in"
             >
               <div
@@ -54,46 +54,46 @@ export function StatsPage({ onBack }: StatsPageProps) {
               >
                 <span aria-hidden>{avatarEmoji(me.user.avatar)}</span>
               </div>
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Total XP</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Total XP</p>
               <p className="text-2xl font-extrabold text-amber-400">{me.stats.xp}</p>
             </div>
 
             <div
-              className="rounded-2xl border border-slate-800 bg-slate-900/60 shadow-card p-5 flex flex-col
+              className="rounded-2xl border border-stone-800 bg-stone-900/60 shadow-card p-5 flex flex-col
                 items-center justify-center gap-2 motion-safe:animate-card-in"
               style={{ animationDelay: "60ms" }}
             >
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">
                 Progress to level {me.stats.level + 1}
               </p>
               <ProgressRing percent={me.stats.xp % XP_PER_LEVEL} size={80}>
-                <span className="text-lg font-extrabold text-slate-100">{me.stats.level}</span>
+                <span className="text-lg font-extrabold text-stone-100">{me.stats.level}</span>
               </ProgressRing>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-stone-500">
                 {me.stats.xp % XP_PER_LEVEL}/{XP_PER_LEVEL} XP
               </p>
             </div>
 
             <div
-              className="rounded-2xl border border-slate-800 bg-slate-900/60 shadow-card p-5 text-center
+              className="rounded-2xl border border-stone-800 bg-stone-900/60 shadow-card p-5 text-center
                 space-y-2 motion-safe:animate-card-in"
               style={{ animationDelay: "120ms" }}
             >
               <p className="text-4xl" aria-hidden>
                 🔥
               </p>
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Current streak</p>
-              <p className="text-2xl font-extrabold text-slate-100">{me.stats.current_streak} day(s)</p>
-              <p className="text-xs text-slate-500">Longest: {me.stats.longest_streak} day(s)</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Current streak</p>
+              <p className="text-2xl font-extrabold text-stone-100">{me.stats.current_streak} day(s)</p>
+              <p className="text-xs text-stone-500">Longest: {me.stats.longest_streak} day(s)</p>
             </div>
           </div>
 
           <div>
-            <h3 className="font-semibold mb-3 text-slate-200">
+            <h3 className="font-semibold mb-3 text-stone-200">
               {`Achievements (${me.achievements.length})`}
             </h3>
             {me.achievements.length === 0 && (
-              <p className="text-sm text-slate-500">None yet — play a quiz to start earning some.</p>
+              <p className="text-sm text-stone-500">None yet — play a quiz to start earning some.</p>
             )}
             {me.achievements.length > 0 && (
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
@@ -107,7 +107,7 @@ export function StatsPage({ onBack }: StatsPageProps) {
                     >
                       <span aria-hidden>{achievement.icon}</span>
                     </div>
-                    <p className="text-xs font-medium text-slate-300 leading-tight">{achievement.name}</p>
+                    <p className="text-xs font-medium text-stone-300 leading-tight">{achievement.name}</p>
                   </div>
                 ))}
               </div>

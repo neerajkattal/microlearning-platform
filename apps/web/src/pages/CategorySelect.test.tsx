@@ -64,7 +64,7 @@ describe("CategorySelect", () => {
     fireEvent.click(screen.getByText("Any category"));
 
     await waitFor(
-      () => expect(onSelect).toHaveBeenCalledWith(null, "Any category", "#a855f7", "🎲"),
+      () => expect(onSelect).toHaveBeenCalledWith(null, "Any category", "#fb923c", "🎲"),
       EXPAND_TRANSITION_TIMEOUT
     );
   });
