@@ -65,25 +65,25 @@ function CategoryInfo({ category, color, onPlay }: CategoryInfoProps) {
           Featured
         </div>
       </div>
-      <h4 className="font-bold text-stone-100 leading-tight">{category.name}</h4>
-      <p className="text-xs text-stone-400">
+      <h4 className="font-bold text-ink leading-tight">{category.name}</h4>
+      <p className="text-xs text-stone-600">
         Test your knowledge of {shortName(category.name)} with real trivia questions, easy to hard.
       </p>
 
-      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-stone-800">
+      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-ink">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Questions</p>
-          <p className="font-bold text-stone-100">🎯 {category.question_count}</p>
+          <p className="font-bold text-ink">🎯 {category.question_count}</p>
         </div>
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Max XP</p>
-          <p className="font-bold text-amber-300">⚡ {MAX_XP_PER_QUESTION}</p>
+          <p className="font-bold text-amber-700">⚡ {MAX_XP_PER_QUESTION}</p>
         </div>
       </div>
 
-      <div className="space-y-1.5 pt-2 border-t border-stone-800">
+      <div className="space-y-1.5 pt-2 border-t border-ink">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">How to play</p>
-        <ol className="space-y-1 text-xs text-stone-300">
+        <ol className="space-y-1 text-xs text-stone-700">
           {HOW_TO_PLAY.map((tip, i) => (
             <li key={tip} className="flex gap-1.5">
               <span className="text-stone-600">{i + 1}.</span>
@@ -120,7 +120,7 @@ export function FeaturedCarousel({ categories, onSelect }: FeaturedCarouselProps
 
   return (
     <div className="space-y-3 motion-safe:animate-card-in">
-      <h3 className="text-sm font-semibold text-stone-400">✨ Featured</h3>
+      <h3 className="text-sm font-semibold text-stone-600">✨ Featured</h3>
 
       {/* -my-3 cancels out py-3 in the flow (so this doesn't push later
           content down) while still giving overflow-hidden's clip
@@ -143,19 +143,19 @@ export function FeaturedCarousel({ categories, onSelect }: FeaturedCarouselProps
       </div>
 
       {previewing && (
-        <div className="md:hidden fixed inset-0 z-50 bg-stone-950/98 backdrop-blur-sm overflow-y-auto motion-safe:animate-card-in">
+        <div className="md:hidden fixed inset-0 z-50 bg-paper/98 backdrop-blur-sm overflow-y-auto motion-safe:animate-card-in">
           <div className="max-w-md mx-auto min-h-full p-5 pt-16 relative flex flex-col">
             <button
               onClick={() => setPreviewing(null)}
               aria-label="Close"
-              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-stone-800/80 border border-stone-700
-                flex items-center justify-center text-stone-300 text-lg leading-none hover:text-white
-                hover:bg-stone-700 transition-colors"
+              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-stone-100/80 border border-ink
+                flex items-center justify-center text-stone-700 text-lg leading-none hover:text-ink
+                hover:bg-stone-200 transition-colors"
             >
               ✕
             </button>
             <div
-              className="flex flex-col rounded-2xl border-2 bg-stone-900/80 shadow-card p-5 space-y-3"
+              className="flex flex-col rounded-2xl border-2 bg-white/80 shadow-card p-5 space-y-3"
               style={{
                 borderColor: accentHexFor(previewing.id),
                 boxShadow: `0 0 32px -6px ${accentHexFor(previewing.id)}`,

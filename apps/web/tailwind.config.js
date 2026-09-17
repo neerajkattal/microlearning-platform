@@ -4,7 +4,17 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Sora", "system-ui", "sans-serif"],
+        sans: ["Work Sans", "system-ui", "sans-serif"],
+        display: ["Archivo Black", "system-ui", "sans-serif"],
+        mono: ["Space Mono", "ui-monospace", "monospace"],
+      },
+      colors: {
+        paper: "#faf3df",
+        ink: "#141110",
+        accent: {
+          yellow: "#ffd23f",
+          coral: "#ff5a5f",
+        },
       },
       keyframes: {
         "pop-in": {
@@ -53,8 +63,12 @@ export default {
         drift: "drift 16s ease-in-out infinite",
       },
       boxShadow: {
-        glow: "0 0 0 1px rgba(244, 63, 94, 0.4), 0 0 26px -4px rgba(245, 158, 11, 0.55)",
-        card: "0 1px 0 0 rgba(255,255,255,0.04) inset, 0 8px 24px -12px rgba(0,0,0,0.6)",
+        // Neubrutalism's signature: a hard, unblurred offset shadow
+        // instead of a soft drop shadow - "card" is the resting state,
+        // "glow" is the bigger hover/selected one every hover:shadow-glow
+        // site already reaches for.
+        card: "3px 3px 0 0 #141110",
+        glow: "5px 5px 0 0 #141110",
       },
     },
   },

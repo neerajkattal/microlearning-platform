@@ -7,28 +7,25 @@ interface CategoryBackdropProps {
 
 // A category-themed backdrop for the quiz-setup and mode-select screens,
 // so picking "History" vs "Science" actually feels different instead of
-// both landing on the same plain dark page - a real photo (see
-// categoryPhotos.ts) instead of an abstract color, dimmed heavily and
-// blurred so foreground text stays legible over any photo.
+// both landing on the same plain page - a real photo (see
+// categoryPhotos.ts), not an abstract color. Grayscale + high contrast
+// instead of a soft blur - a flat, printed-poster treatment rather than
+// the blurred/glowing photo wash that doesn't fit this theme's flat,
+// hard-edged look. The category's own accent tints it via a multiply
+// blend, not a radial gradient glow.
 export function CategoryBackdrop({ categoryName, color }: CategoryBackdropProps) {
   return (
-    <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden>
+    <div className="pointer-events-none fixed inset-0 overflow-hidden bg-paper" aria-hidden>
       <div
-        className="absolute inset-0 opacity-25 motion-safe:animate-drift"
+        className="absolute inset-0 opacity-[0.16]"
         style={{
           backgroundImage: `url("${categoryPhoto(categoryName)}")`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          filter: "blur(2px) saturate(0.9)",
+          filter: "grayscale(1) contrast(1.25)",
         }}
       />
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(180deg, rgba(12,10,9,0.65), rgba(12,10,9,0.92)),
-            radial-gradient(46rem 32rem at 12% 0%, ${color}22, transparent 62%)`,
-        }}
-      />
+      <div className="absolute inset-0" style={{ backgroundColor: color, opacity: 0.1, mixBlendMode: "multiply" }} />
     </div>
   );
 }

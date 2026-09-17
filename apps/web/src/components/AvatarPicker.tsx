@@ -19,8 +19,8 @@ export function AvatarPicker({ value, onChange }: AvatarPickerProps) {
           className={`aspect-square rounded-xl border text-2xl flex items-center justify-center
             transition-all duration-150 hover:-translate-y-0.5 ${
               value === option.key
-                ? "border-amber-500 bg-amber-500/15 shadow-glow"
-                : "border-stone-700 bg-stone-950/60 hover:border-stone-600"
+                ? "border-ink bg-accent-yellow shadow-glow"
+                : "border-ink bg-paper/60 hover:border-ink"
             }`}
         >
           <span aria-hidden>{option.emoji}</span>

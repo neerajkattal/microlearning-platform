@@ -31,8 +31,8 @@ const CELL_HEIGHT = (GRID_BOTTOM - GRID_TOP) / ROW_COUNT;
 const BALLOON_COLORS = ["#ef4444", "#3b82f6", "#22c55e", "#f59e0b"];
 
 const PALETTE = {
-  sky: "#150f0c",
-  string: "#a8a29e",
+  sky: "#faf3df",
+  string: "#1c1917",
   answerText: "#1c1917",
   bannerBg: "#1c1917",
   bannerBorder: "#f59e0b",

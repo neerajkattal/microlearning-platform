@@ -123,26 +123,19 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-950 text-stone-100 font-sans">
-      <div
-        className="pointer-events-none fixed inset-0 opacity-40"
-        style={{
-          background:
-            "radial-gradient(60rem 30rem at 15% -10%, rgba(245,158,11,0.16), transparent), radial-gradient(50rem 30rem at 100% 0%, rgba(244,63,94,0.14), transparent)",
-        }}
-      />
-      <header className="sticky top-0 z-10 border-b border-stone-800/80 bg-stone-950/80 backdrop-blur">
+    <div className="min-h-screen bg-paper text-ink font-sans">
+      <header className="sticky top-0 z-10 border-b-2 border-ink bg-paper/80 backdrop-blur">
         <div className="max-w-5xl mx-auto flex justify-between items-center gap-3 px-4 py-4">
           <button
             onClick={() => currentUser && setScreen({ name: "categories" })}
             aria-label="Go to home"
-            className="whitespace-nowrap text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r
-              from-amber-400 to-rose-300 bg-clip-text text-transparent disabled:cursor-default"
+            className="whitespace-nowrap text-xl sm:text-2xl font-extrabold tracking-tight font-mono text-ink
+              disabled:cursor-default"
             disabled={!currentUser}
           >
             PlayToLearn
           </button>
-          <div className="flex items-center gap-2 sm:gap-4 text-sm text-stone-400 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-4 text-sm text-stone-600 min-w-0">
             <p
               className="flex items-center gap-1.5 whitespace-nowrap"
               title={`API: ${status === "checking" ? "checking..." : status === "ok" ? "connected" : "unreachable"}`}
@@ -159,7 +152,7 @@ export default function App() {
                 <button
                   onClick={() => setScreen({ name: "stats" })}
                   aria-label="My Stats"
-                  className="whitespace-nowrap rounded-full px-2.5 sm:px-3 py-1 border border-stone-700 hover:border-amber-500/60 hover:text-amber-300 transition-colors"
+                  className="whitespace-nowrap rounded-full px-2.5 sm:px-3 py-1 border border-ink hover:border-ink hover:text-amber-700 transition-colors"
                 >
                   <span className="sm:hidden" aria-hidden>📊</span>
                   <span className="hidden sm:inline">My Stats</span>
@@ -167,7 +160,7 @@ export default function App() {
                 <button
                   onClick={() => setScreen({ name: "leaderboard" })}
                   aria-label="Leaderboard"
-                  className="whitespace-nowrap rounded-full px-2.5 sm:px-3 py-1 border border-stone-700 hover:border-amber-500/60 hover:text-amber-300 transition-colors"
+                  className="whitespace-nowrap rounded-full px-2.5 sm:px-3 py-1 border border-ink hover:border-ink hover:text-amber-700 transition-colors"
                 >
                   <span className="sm:hidden" aria-hidden>🏆</span>
                   <span className="hidden sm:inline">Leaderboard</span>
@@ -177,13 +170,12 @@ export default function App() {
                   aria-label="Edit profile"
                   className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity"
                 >
-                  <span className="shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-amber-400/20 to-orange-500/20
-                    border border-amber-500/30 text-base flex items-center justify-center">
+                  <span className="shrink-0 w-7 h-7 rounded-full bg-accent-yellow border-2 border-ink text-base flex items-center justify-center">
                     <span aria-hidden>{avatarEmoji(currentUser.avatar)}</span>
                   </span>
                   <span className="hidden md:inline truncate max-w-[8rem]">{currentUser.username}</span>
                 </button>
-                <button onClick={logOut} className="whitespace-nowrap hover:text-white transition-colors">
+                <button onClick={logOut} className="whitespace-nowrap hover:text-ink transition-colors">
                   Log out
                 </button>
               </>

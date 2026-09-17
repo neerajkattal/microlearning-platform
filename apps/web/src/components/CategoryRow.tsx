@@ -26,10 +26,10 @@ export function CategoryRow({ label, categories, onSelect }: CategoryRowProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-stone-400">{label}</h3>
+        <h3 className="text-sm font-semibold text-stone-600">{label}</h3>
         <button
           onClick={() => setExpanded((value) => !value)}
-          className="text-xs font-semibold text-amber-300 hover:text-amber-200 transition-colors"
+          className="text-xs font-semibold text-amber-700 hover:text-ink transition-colors"
         >
           {expanded ? "Show less ↑" : "See more →"}
         </button>
@@ -43,11 +43,11 @@ export function CategoryRow({ label, categories, onSelect }: CategoryRowProps) {
               onClick={(e) => onSelect(category, e)}
               disabled={category.question_count === 0}
               style={{ animationDelay: `${Math.min(index * 15, 300)}ms` }}
-              className="group relative overflow-hidden rounded-xl border border-stone-800 bg-stone-900/60
-                p-4 text-left shadow-card hover:border-amber-500/50 hover:shadow-glow hover:-translate-y-0.5
+              className="group relative overflow-hidden rounded-xl border border-ink bg-white/60
+                p-4 text-left shadow-card hover:border-ink hover:shadow-glow hover:-translate-y-0.5
                 hover:scale-[1.02] transition-all motion-safe:animate-card-in
                 disabled:opacity-30 disabled:hover:translate-y-0 disabled:hover:scale-100
-                disabled:hover:border-stone-800 disabled:hover:shadow-card"
+                disabled:hover:border-ink disabled:hover:shadow-card"
             >
               <div
                 className="absolute left-0 top-0 h-full w-1"
@@ -56,9 +56,9 @@ export function CategoryRow({ label, categories, onSelect }: CategoryRowProps) {
               <div className="text-2xl mb-1" aria-hidden>
                 {categoryIcon(category.name)}
               </div>
-              <div className="font-semibold text-stone-100">{category.name}</div>
+              <div className="font-semibold text-ink">{category.name}</div>
               <div className="text-xs text-stone-500 mt-1">
-                <span className="inline-block rounded-full bg-stone-800 px-2 py-0.5">
+                <span className="inline-block rounded-full bg-stone-100 px-2 py-0.5">
                   {category.question_count} questions
                 </span>
               </div>

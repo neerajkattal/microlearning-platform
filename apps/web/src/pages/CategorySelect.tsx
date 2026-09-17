@@ -82,21 +82,21 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
 
       {me && (
         <div
-          className="rounded-2xl border border-stone-800 bg-stone-900/60 shadow-card p-4 flex items-center
+          className="rounded-2xl border border-ink bg-white/60 shadow-card p-4 flex items-center
             gap-4 motion-safe:animate-card-in"
         >
           <ProgressRing percent={xpIntoLevel}>
-            <span className="text-sm font-extrabold text-stone-100">{me.stats.level}</span>
+            <span className="text-sm font-extrabold text-ink">{me.stats.level}</span>
           </ProgressRing>
           <div className="min-w-0 flex-1">
-            <p className="font-semibold text-stone-100 truncate">
+            <p className="font-semibold text-ink truncate">
               Welcome back, {me.user.username}
             </p>
             <p className="text-xs text-stone-500 mt-0.5">
               {xpIntoLevel}/{XP_PER_LEVEL} XP to level {me.stats.level + 1}
             </p>
           </div>
-          <p className="shrink-0 text-sm font-semibold text-amber-300 flex items-center gap-1 whitespace-nowrap">
+          <p className="shrink-0 text-sm font-semibold text-amber-700 flex items-center gap-1 whitespace-nowrap">
             <span aria-hidden>🔥</span>
             {me.stats.current_streak}
           </p>
@@ -113,9 +113,9 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search categories..."
           aria-label="Search categories"
-          className="w-full rounded-full border border-stone-800 bg-stone-900/60 py-3 pl-11 pr-4 text-sm
-            text-stone-100 placeholder:text-stone-500 shadow-card outline-none transition-colors
-            focus:border-amber-500/50"
+          className="w-full rounded-full border border-ink bg-white/60 py-3 pl-11 pr-4 text-sm
+            text-ink placeholder:text-stone-500 shadow-card outline-none transition-colors
+            focus:border-ink"
         />
       </div>
 
@@ -128,23 +128,23 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
         />
       )}
 
-      <h2 className="text-lg font-bold text-center text-stone-200">
+      <h2 className="text-lg font-bold text-center text-stone-800">
         {isSearching ? `Results for "${search.trim()}"` : "Pick a category"}
       </h2>
 
       {!isSearching && (
         <button
           onClick={(e) => selectWithExpand(e, null, "Any category", ANY_CATEGORY_COLOR, "🎲")}
-          className="group relative w-full overflow-hidden rounded-xl border border-stone-800 bg-stone-900/60
-            p-4 text-left shadow-card hover:border-amber-500/50 hover:shadow-glow hover:-translate-y-0.5
+          className="group relative w-full overflow-hidden rounded-xl border border-ink bg-white/60
+            p-4 text-left shadow-card hover:border-ink hover:shadow-glow hover:-translate-y-0.5
             transition-all motion-safe:animate-card-in flex items-center gap-3"
         >
-          <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-amber-500 to-rose-400" />
+          <div className="absolute left-0 top-0 h-full w-1.5 bg-accent-coral" />
           <div className="text-2xl" aria-hidden>
             🎲
           </div>
           <div>
-            <div className="font-semibold text-stone-100">Any category</div>
+            <div className="font-semibold text-ink">Any category</div>
             <div className="text-xs text-stone-500 mt-0.5">Surprise me</div>
           </div>
         </button>

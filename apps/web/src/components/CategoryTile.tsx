@@ -20,26 +20,35 @@ export function CategoryTile({ category, onClick }: CategoryTileProps) {
       onClick={onClick}
       disabled={category.question_count === 0}
       className="relative shrink-0 w-72 h-40 flex flex-col justify-end overflow-hidden
-        rounded-xl border-2 bg-stone-900/60 text-left shadow-card transition-all duration-200
-        hover:-translate-y-2 hover:scale-105 hover:z-10 hover:shadow-glow
+        rounded-xl border-2 border-ink bg-white text-left shadow-card transition-all duration-200
+        hover:-translate-y-1 hover:z-10 hover:shadow-glow
         disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:translate-y-0
-        disabled:hover:scale-100 disabled:hover:shadow-card"
-      style={{
-        borderColor: `${color}55`,
-        backgroundImage: `linear-gradient(${color}4d, rgba(12,10,9,0.6)), url("${categoryPhoto(category.name)}")`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
+        disabled:hover:shadow-card"
     >
+      {/* Grayscale + high-contrast instead of a soft blur/gradient wash -
+          a flat, printed-poster treatment that fits this theme's hard
+          edges, tinted by the category's own accent via a multiply
+          blend rather than a color gradient overlay. */}
       <div
-        className="absolute top-3 left-3 text-2xl bg-stone-950/60 rounded-lg w-9 h-9 flex items-center justify-center"
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `url("${categoryPhoto(category.name)}")`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "grayscale(1) contrast(1.2)",
+        }}
+      />
+      <div className="absolute inset-0" style={{ backgroundColor: color, opacity: 0.35, mixBlendMode: "multiply" }} />
+      <div
+        className="absolute top-3 left-3 text-2xl bg-accent-yellow border-2 border-ink rounded-lg w-9 h-9
+          flex items-center justify-center"
         aria-hidden
       >
         {categoryIcon(category.name)}
       </div>
-      <div className="bg-gradient-to-t from-stone-950/95 via-stone-950/60 to-transparent px-3.5 pt-8 pb-3 space-y-1.5">
-        <div className="font-semibold text-stone-100 text-base leading-tight line-clamp-2">{category.name}</div>
-        <span className="inline-block text-[11px] font-medium text-stone-300 bg-stone-800/80 rounded-full px-2 py-0.5">
+      <div className="relative bg-paper border-t-2 border-ink px-3.5 pt-2.5 pb-3 space-y-1.5">
+        <div className="font-semibold text-ink text-base leading-tight line-clamp-2">{category.name}</div>
+        <span className="inline-block text-[11px] font-bold text-ink bg-white border border-ink rounded-full px-2 py-0.5">
           {category.question_count} questions
         </span>
       </div>

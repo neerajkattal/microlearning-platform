@@ -75,7 +75,7 @@ export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
   function choiceClassName(choiceIndex: number): string {
     const base = "text-left px-3.5 py-2.5 rounded-lg border text-sm font-medium transition-all duration-150";
     if (selected === null) {
-      return `${base} border-stone-700 bg-stone-950/60 hover:border-amber-500/50 hover:bg-stone-800/60`;
+      return `${base} border-ink bg-paper/60 hover:border-ink hover:bg-stone-100/60`;
     }
     if (choiceIndex === question.correctIndex) {
       return `${base} border-emerald-500 bg-emerald-500/10 text-emerald-300`;
@@ -83,13 +83,13 @@ export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
     if (choiceIndex === selected) {
       return `${base} border-red-500 bg-red-500/10 text-red-300`;
     }
-    return `${base} border-stone-800 bg-stone-900/30 opacity-40`;
+    return `${base} border-ink bg-white/30 opacity-40`;
   }
 
   return (
-    <div className="rounded-2xl border border-stone-800 bg-stone-900/60 shadow-card p-5 space-y-4">
+    <div className="rounded-2xl border border-ink bg-white/60 shadow-card p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wide text-amber-300">
+        <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
           🎮 Try it — no account needed
         </p>
         <p className="text-xs text-stone-500">
@@ -99,7 +99,7 @@ export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
 
       {!finished && (
         <>
-          <h3 className="text-base font-bold text-stone-100">{question.prompt}</h3>
+          <h3 className="text-base font-bold text-ink">{question.prompt}</h3>
           <div className="grid grid-cols-2 gap-2">
             {question.choices.map((choice, choiceIndex) => (
               <button
@@ -114,14 +114,14 @@ export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
           </div>
 
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-amber-300 animate-pop-in" key={demoXp}>
+            <p className="text-sm font-semibold text-amber-700 animate-pop-in" key={demoXp}>
               ⚡ {demoXp} XP
             </p>
             {selected !== null && (
               <button
                 onClick={advance}
-                className="text-sm font-semibold text-white bg-gradient-to-r from-amber-600 to-rose-500
-                  hover:from-amber-500 hover:to-rose-400 rounded-lg px-4 py-1.5 transition-colors"
+                className="text-sm font-semibold text-ink bg-accent-yellow border-2 border-ink shadow-card
+                  hover:shadow-glow hover:-translate-y-0.5 active:shadow-none active:translate-y-0 rounded-lg px-4 py-1.5 transition-all"
               >
                 {isLast ? "See results →" : "Next"}
               </button>
@@ -135,25 +135,25 @@ export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
           <p className="text-2xl" aria-hidden>
             {correctCount === DEMO_QUESTIONS.length ? "🏆" : "🎉"}
           </p>
-          <p className="font-bold text-stone-100">
+          <p className="font-bold text-ink">
             Demo complete — {correctCount}/{DEMO_QUESTIONS.length} correct, {demoXp} XP
           </p>
-          <p className="text-sm text-stone-400">
+          <p className="text-sm text-stone-600">
             Create a free account to save real progress, unlock achievements, and play the actual
             games.
           </p>
           <div className="flex items-center justify-center gap-2">
             <button
               onClick={onCreateAccount}
-              className="text-sm font-semibold text-white bg-gradient-to-r from-amber-600 to-rose-500
-                hover:from-amber-500 hover:to-rose-400 rounded-lg px-4 py-2 transition-colors"
+              className="text-sm font-semibold text-ink bg-accent-yellow border-2 border-ink shadow-card
+                hover:shadow-glow hover:-translate-y-0.5 active:shadow-none active:translate-y-0 rounded-lg px-4 py-2 transition-all"
             >
               Create free account
             </button>
             <button
               onClick={playAgain}
-              className="text-sm font-semibold text-stone-300 hover:text-white
-                border border-stone-700 rounded-lg px-4 py-2 transition-colors"
+              className="text-sm font-semibold text-stone-700 hover:text-ink
+                border border-ink rounded-lg px-4 py-2 transition-colors"
             >
               Play again
             </button>

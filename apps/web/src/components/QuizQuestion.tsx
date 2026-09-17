@@ -100,9 +100,9 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
       "text-left px-4 py-3.5 rounded-xl border transition-all duration-150 font-medium";
     if (!result) {
       if (eliminatedIds.includes(choiceId)) {
-        return `${base} border-stone-800 bg-stone-900/30 opacity-30 line-through`;
+        return `${base} border-ink bg-white/30 opacity-30 line-through`;
       }
-      return `${base} border-stone-700 bg-stone-900/60 hover:border-amber-500/50 hover:bg-stone-800/60`;
+      return `${base} border-ink bg-white/60 hover:border-ink hover:bg-stone-100/60`;
     }
     if (choiceId === result.correct_answer_id) {
       return `${base} border-emerald-500 bg-emerald-500/10 text-emerald-300`;
@@ -110,15 +110,15 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
     if (choiceId === selectedAnswerId) {
       return `${base} border-red-500 bg-red-500/10 text-red-300`;
     }
-    return `${base} border-stone-800 bg-stone-900/30 opacity-40`;
+    return `${base} border-ink bg-white/30 opacity-40`;
   }
 
   return (
     <div className="max-w-xl mx-auto space-y-5 relative">
       {paused && !confirmingStop && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 rounded-2xl
-          bg-stone-950/90 backdrop-blur-sm">
-          <p className="text-2xl font-extrabold text-stone-100">Paused</p>
+          bg-paper/90 backdrop-blur-sm">
+          <p className="text-2xl font-extrabold text-ink">Paused</p>
           <Button onClick={resumeQuiz}>Resume</Button>
         </div>
       )}
@@ -131,15 +131,15 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
           <div className="flex gap-2 justify-end">
             <button
               onClick={cancelStop}
-              className="rounded-full px-4 py-1.5 text-sm font-semibold border border-stone-600
-                text-stone-100 hover:border-stone-400 hover:bg-stone-800 transition-colors"
+              className="rounded-full px-4 py-1.5 text-sm font-semibold border border-ink
+                text-ink hover:border-ink hover:bg-stone-100 transition-colors"
             >
               Keep playing
             </button>
             <button
               onClick={confirmStop}
-              className="rounded-full px-4 py-1.5 text-sm font-semibold bg-red-500/90 text-white
-                hover:bg-red-500 transition-colors"
+              className="rounded-full px-4 py-1.5 text-sm font-semibold bg-accent-coral text-ink border-2 border-ink shadow-card
+                hover:shadow-glow hover:-translate-y-0.5 active:shadow-none active:translate-y-0 transition-all"
             >
               Yes, stop
             </button>
@@ -158,8 +158,8 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
               disabled={result !== null || hintLoading || eliminatedIds.length > 0}
               aria-label="Get a hint"
               title="Eliminate two wrong answers"
-              className="rounded-full p-1.5 border border-stone-800 text-amber-400 hover:border-amber-500/60
-                hover:bg-amber-500/10 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+              className="rounded-full p-1.5 border border-ink text-amber-700 hover:border-ink
+                hover:bg-accent-yellow disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
             >
               💡
             </button>
@@ -167,8 +167,8 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
               onClick={pauseQuiz}
               disabled={result !== null}
               aria-label="Pause"
-              className="rounded-full p-1.5 border border-stone-800 text-stone-400 hover:border-stone-600
-                hover:text-stone-200 disabled:opacity-30 transition-colors"
+              className="rounded-full p-1.5 border border-ink text-stone-600 hover:border-ink
+                hover:text-stone-800 disabled:opacity-30 transition-colors"
             >
               ⏸
             </button>
@@ -177,22 +177,22 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
               disabled={finishing}
               aria-label="Stop"
               title="End the quiz now"
-              className="rounded-full p-1.5 border border-stone-800 text-red-400 hover:border-red-500/60
+              className="rounded-full p-1.5 border border-ink text-red-400 hover:border-red-500/60
                 hover:bg-red-500/10 disabled:opacity-30 transition-colors"
             >
               ⏹
             </button>
           </div>
         </div>
-        <div className="h-1.5 rounded-full bg-stone-800 overflow-hidden">
+        <div className="h-1.5 rounded-full bg-stone-100 border-2 border-ink overflow-hidden">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-500"
+            className="h-full rounded-full bg-accent-yellow transition-all duration-500"
             style={{ width: `${progressPct}%` }}
           />
         </div>
       </div>
 
-      <h2 className="text-xl font-bold text-stone-100">{current.prompt}</h2>
+      <h2 className="text-xl font-bold text-ink">{current.prompt}</h2>
 
       <div className="grid gap-2.5">
         {current.choices.map((choice) => (
@@ -218,7 +218,7 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
           <p className={`font-semibold ${result.is_correct ? "text-emerald-300" : "text-red-300"}`}>
             {result.is_correct ? "Correct!" : "Not quite."} +{result.xp_earned} XP
           </p>
-          {result.explanation && <p className="text-sm text-stone-400">{result.explanation}</p>}
+          {result.explanation && <p className="text-sm text-stone-600">{result.explanation}</p>}
           {!isLastQuestion && <Button onClick={goToNextQuestion}>Next question</Button>}
           {isLastQuestion && (
             <Button onClick={finishQuiz} disabled={finishing}>

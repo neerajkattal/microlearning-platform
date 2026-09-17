@@ -23,7 +23,7 @@ export function LeaderboardPage({ onBack, currentUsername }: LeaderboardPageProp
 
   return (
     <div className="max-w-3xl mx-auto space-y-5">
-      <button onClick={onBack} className="text-sm text-stone-400 hover:text-white transition-colors">
+      <button onClick={onBack} className="text-sm text-stone-600 hover:text-ink transition-colors">
         ← Back
       </button>
 
@@ -42,11 +42,11 @@ export function LeaderboardPage({ onBack, currentUsername }: LeaderboardPageProp
       )}
 
       {entries && entries.length > 0 && (
-        <div className="rounded-2xl border border-stone-800 bg-stone-900/60 shadow-card overflow-hidden">
+        <div className="rounded-2xl border border-ink bg-white/60 shadow-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-[10px] font-semibold uppercase tracking-wide text-stone-500 border-b border-stone-800">
+                <tr className="text-left text-[10px] font-semibold uppercase tracking-wide text-stone-500 border-b border-ink">
                   <th className="py-3 pl-4 pr-2 w-10">Rank</th>
                   <th className="py-3 px-2">Player</th>
                   <th className="py-3 px-2 text-right">XP</th>
@@ -60,11 +60,11 @@ export function LeaderboardPage({ onBack, currentUsername }: LeaderboardPageProp
                   return (
                     <tr
                       key={entry.username}
-                      className={`border-b border-stone-800/60 last:border-b-0 ${
+                      className={`border-b border-ink last:border-b-0 ${
                         isMe
-                          ? "bg-amber-500/10"
+                          ? "bg-accent-yellow"
                           : index < 3
-                            ? "bg-amber-500/5"
+                            ? "bg-accent-yellow"
                             : ""
                       }`}
                     >
@@ -74,25 +74,24 @@ export function LeaderboardPage({ onBack, currentUsername }: LeaderboardPageProp
                       <td className="py-3 px-2">
                         <div className="flex items-center gap-2.5 min-w-0">
                           <span
-                            className="shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-amber-400/20 to-orange-500/20
-                              border border-amber-500/30 text-base flex items-center justify-center"
+                            className="shrink-0 w-8 h-8 rounded-full bg-accent-yellow border-2 border-ink text-base flex items-center justify-center"
                             aria-hidden
                           >
                             {avatarEmoji(entry.avatar)}
                           </span>
-                          <span className="font-semibold text-stone-100 truncate">{entry.username}</span>
+                          <span className="font-semibold text-ink truncate">{entry.username}</span>
                           {isMe && (
-                            <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-full px-1.5 py-0.5">
+                            <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-ink bg-accent-yellow border border-ink rounded-full px-1.5 py-0.5">
                               You
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-2 text-right font-semibold text-amber-400 whitespace-nowrap">
+                      <td className="py-3 px-2 text-right font-semibold text-amber-700 whitespace-nowrap">
                         {entry.xp}
                       </td>
-                      <td className="py-3 px-2 text-right text-stone-300 whitespace-nowrap">{entry.level}</td>
-                      <td className="py-3 pr-4 pl-2 text-right text-stone-300 whitespace-nowrap">
+                      <td className="py-3 px-2 text-right text-stone-700 whitespace-nowrap">{entry.level}</td>
+                      <td className="py-3 pr-4 pl-2 text-right text-stone-700 whitespace-nowrap">
                         <span aria-hidden>🎖️</span> {entry.badges}
                       </td>
                     </tr>

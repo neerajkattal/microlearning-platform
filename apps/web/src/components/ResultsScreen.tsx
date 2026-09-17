@@ -18,19 +18,19 @@ export function ResultsScreen({ result, onPlayAgain, onBackToCategories }: Resul
           {pct === 100 ? "🏆" : pct >= 50 ? "🎉" : "💪"}
         </div>
         <h2 className="text-2xl font-extrabold tracking-tight">Quiz complete</h2>
-        <p className="text-lg text-stone-300">
+        <p className="text-lg text-stone-700">
           {result.score} / {result.total_questions} correct
         </p>
       </div>
 
-      <div className="rounded-2xl border border-stone-800 bg-stone-900/60 shadow-card p-5 space-y-4">
+      <div className="rounded-2xl border border-ink bg-white/60 shadow-card p-5 space-y-4">
         <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="rounded-xl bg-stone-950/60 border border-stone-800 py-3">
-            <p className="text-amber-400 font-bold text-lg">+{result.xp_earned} XP</p>
+          <div className="rounded-xl bg-paper/60 border border-ink py-3">
+            <p className="text-amber-700 font-bold text-lg">+{result.xp_earned} XP</p>
             <p className="text-stone-500 text-xs mt-0.5">Total XP: {result.total_xp}</p>
           </div>
-          <div className="rounded-xl bg-stone-950/60 border border-stone-800 py-3">
-            <p className="font-bold text-lg text-stone-100">Level {result.level}</p>
+          <div className="rounded-xl bg-paper/60 border border-ink py-3">
+            <p className="font-bold text-lg text-ink">Level {result.level}</p>
             <p className="text-stone-500 text-xs mt-0.5">Streak: {result.streak} day(s)</p>
           </div>
         </div>
@@ -40,9 +40,9 @@ export function ResultsScreen({ result, onPlayAgain, onBackToCategories }: Resul
             <span>Progress to next level</span>
             <span>{xpIntoLevel} / 100 XP</span>
           </div>
-          <div className="h-2 rounded-full bg-stone-800 overflow-hidden">
+          <div className="h-2 rounded-full bg-stone-100 border-2 border-ink overflow-hidden">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500 animate-fill-bar"
+              className="h-full rounded-full bg-accent-yellow animate-fill-bar"
               style={{ width: `${xpIntoLevel}%` }}
             />
           </div>
@@ -51,18 +51,18 @@ export function ResultsScreen({ result, onPlayAgain, onBackToCategories }: Resul
 
       {result.achievements_earned.length > 0 && (
         <div className="space-y-2">
-          <p className="font-semibold text-sm text-amber-300">Achievement unlocked!</p>
+          <p className="font-semibold text-sm text-amber-700">Achievement unlocked!</p>
           <ul className="space-y-2">
             {result.achievements_earned.map((achievement) => (
               <li
                 key={achievement.code}
-                className="animate-pop-in flex items-center gap-3 rounded-xl border border-amber-500/30
-                  bg-amber-500/10 px-4 py-2.5 text-left"
+                className="animate-pop-in flex items-center gap-3 rounded-xl border border-ink
+                  bg-accent-yellow px-4 py-2.5 text-left"
               >
                 <span className="text-xl" aria-hidden>
                   {achievement.icon}
                 </span>
-                <span className="font-medium text-stone-100">{achievement.name}</span>
+                <span className="font-medium text-ink">{achievement.name}</span>
               </li>
             ))}
           </ul>
@@ -71,7 +71,7 @@ export function ResultsScreen({ result, onPlayAgain, onBackToCategories }: Resul
 
       {result.review.length > 0 && (
         <div className="text-left space-y-2">
-          <p className="font-semibold text-sm text-stone-300">Question review</p>
+          <p className="font-semibold text-sm text-stone-700">Question review</p>
           <ul className="space-y-2">
             {result.review.map((item, index) => (
               <li
@@ -83,7 +83,7 @@ export function ResultsScreen({ result, onPlayAgain, onBackToCategories }: Resul
                 }`}
               >
                 <p className="text-xs text-stone-500">Question {index + 1}</p>
-                <p className="text-sm text-stone-100 font-medium">{item.prompt}</p>
+                <p className="text-sm text-ink font-medium">{item.prompt}</p>
                 <p className="text-sm">
                   <span className="text-stone-500">Your answer: </span>
                   <span className={item.is_correct ? "text-emerald-400" : "text-rose-400"}>

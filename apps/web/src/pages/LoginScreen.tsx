@@ -4,7 +4,6 @@ import { setToken } from "../auth";
 import { Button } from "../components/ui/Button";
 import { AvatarPicker } from "../components/AvatarPicker";
 import { DemoQuiz } from "../components/DemoQuiz";
-import { HeroBackdrop } from "../components/HeroBackdrop";
 import type { User } from "../types";
 
 interface LoginScreenProps {
@@ -81,27 +80,26 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
           headline on desktop with the demo quiz floating on the right
           (stacks below on mobile, per the brief - headline -> CTA ->
           feature pills -> one quiz card, no squeezed desktop layout).
-          HeroBackdrop crossfades through real photos from a spread of
-          quiz topics behind a warm scrim, instead of a flat color
-          gradient - it's what this app's questions are actually about. */}
+          Flat cream, no backdrop photo or glow - neubrutalism keeps the
+          page quiet everywhere except the few spots (the yellow sticker,
+          the buttons) that are meant to grab you. */}
       <div className="relative -mx-4 px-4 overflow-hidden">
-        <HeroBackdrop />
         <div className="relative max-w-7xl mx-auto grid lg:grid-cols-[1.15fr_0.85fr] gap-12 items-center pt-6 pb-4 sm:pt-14 sm:pb-10">
           <div className="text-center lg:text-left space-y-6 motion-safe:animate-card-in">
             <span
               className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide
-                text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-full px-3 py-1"
+                text-ink bg-accent-yellow border border-ink rounded-full px-3 py-1"
             >
               🎮 Gamified Trivia
             </span>
-            <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-white text-balance leading-[1.05]">
+            <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-ink text-balance leading-[1.05]">
               Trivia that plays{" "}
-              <span className="bg-gradient-to-r from-amber-300 via-orange-400 to-rose-400 bg-clip-text text-transparent">
+              <span className="inline-block bg-accent-yellow border-2 border-ink px-2 -rotate-1 shadow-card">
                 like a game
               </span>
               .
             </h1>
-            <p className="text-lg text-stone-300 max-w-xl mx-auto lg:mx-0">
+            <p className="text-lg text-stone-700 max-w-xl mx-auto lg:mx-0">
               Dodge into the right lane. Pop the right balloon. Real XP, streaks, and a leaderboard —
               powered by real trivia questions.
             </p>
@@ -115,9 +113,9 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
               {FEATURES.map((feature) => (
                 <span
                   key={feature}
-                  className="text-xs font-medium text-stone-300 bg-stone-900/60 border border-stone-800
+                  className="text-xs font-medium text-stone-700 bg-white/60 border border-ink
                     rounded-full px-3 py-1 whitespace-nowrap transition-all duration-150 cursor-default
-                    hover:border-amber-500/60 hover:text-amber-300 hover:-translate-y-0.5 hover:shadow-glow"
+                    hover:border-ink hover:text-amber-700 hover:-translate-y-0.5 hover:shadow-glow"
                 >
                   {feature}
                 </span>
@@ -136,18 +134,18 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
 
       <div
         ref={formCardRef}
-        className="max-w-md mx-auto rounded-2xl border border-stone-800 bg-stone-900/60 shadow-card p-6 space-y-5
+        className="max-w-md mx-auto rounded-2xl border border-ink bg-white/60 shadow-card p-6 space-y-5
           motion-safe:animate-card-in scroll-mt-6"
         style={{ animationDelay: "140ms" }}
       >
-        <div className="flex gap-1 p-1 rounded-xl bg-stone-800/70 text-sm font-medium">
+        <div className="flex gap-1 p-1 rounded-xl bg-stone-100/70 text-sm font-medium">
           <button
             type="button"
             onClick={() => switchMode("login")}
             className={`flex-1 rounded-lg py-1.5 transition-colors ${
               mode === "login"
-                ? "bg-gradient-to-r from-amber-600 to-rose-500 text-white"
-                : "text-stone-300 hover:text-white"
+                ? "bg-accent-yellow text-ink border-2 border-ink"
+                : "text-stone-700 hover:text-ink"
             }`}
           >
             Log in
@@ -157,8 +155,8 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
             onClick={() => switchMode("register")}
             className={`flex-1 rounded-lg py-1.5 transition-colors ${
               mode === "register"
-                ? "bg-gradient-to-r from-amber-600 to-rose-500 text-white"
-                : "text-stone-300 hover:text-white"
+                ? "bg-accent-yellow text-ink border-2 border-ink"
+                : "text-stone-700 hover:text-ink"
             }`}
           >
             Register
@@ -168,12 +166,12 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === "register" && (
             <div>
-              <p className="block text-sm mb-1.5 text-stone-300">Choose your character</p>
+              <p className="block text-sm mb-1.5 text-stone-700">Choose your character</p>
               <AvatarPicker value={avatar} onChange={setAvatar} />
             </div>
           )}
           <div>
-            <label htmlFor="username" className="block text-sm mb-1 text-stone-300">
+            <label htmlFor="username" className="block text-sm mb-1 text-stone-700">
               Username
             </label>
             <input
@@ -182,12 +180,12 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
               onChange={(e) => setUsername(e.target.value)}
               required
               autoComplete="username"
-              className="w-full p-2.5 rounded-lg bg-stone-950 border border-stone-700 text-stone-100
-                placeholder:text-stone-600 focus:border-amber-500 transition-colors"
+              className="w-full p-2.5 rounded-lg bg-paper border border-ink text-ink
+                placeholder:text-stone-600 focus:border-ink transition-colors"
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm mb-1 text-stone-300">
+            <label htmlFor="password" className="block text-sm mb-1 text-stone-700">
               Password
             </label>
             <input
@@ -198,13 +196,13 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
               required
               minLength={mode === "register" ? 8 : undefined}
               autoComplete={mode === "login" ? "current-password" : "new-password"}
-              className="w-full p-2.5 rounded-lg bg-stone-950 border border-stone-700 text-stone-100
-                placeholder:text-stone-600 focus:border-amber-500 transition-colors"
+              className="w-full p-2.5 rounded-lg bg-paper border border-ink text-ink
+                placeholder:text-stone-600 focus:border-ink transition-colors"
             />
           </div>
           {mode === "register" && (
             <div>
-              <label htmlFor="confirm-password" className="block text-sm mb-1 text-stone-300">
+              <label htmlFor="confirm-password" className="block text-sm mb-1 text-stone-700">
                 Confirm password
               </label>
               <input
@@ -215,8 +213,8 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
                 required
                 minLength={8}
                 autoComplete="new-password"
-                className="w-full p-2.5 rounded-lg bg-stone-950 border border-stone-700 text-stone-100
-                  placeholder:text-stone-600 focus:border-amber-500 transition-colors"
+                className="w-full p-2.5 rounded-lg bg-paper border border-ink text-ink
+                  placeholder:text-stone-600 focus:border-ink transition-colors"
               />
             </div>
           )}

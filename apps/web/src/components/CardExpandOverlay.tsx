@@ -40,7 +40,7 @@ export function CardExpandOverlay({ target, expanded }: CardExpandOverlayProps) 
       }}
     >
       <span
-        className="absolute top-3 left-3 text-2xl bg-stone-950/60 rounded-lg w-9 h-9 flex items-center
+        className="absolute top-3 left-3 text-2xl bg-paper/60 rounded-lg w-9 h-9 flex items-center
           justify-center transition-opacity duration-300 ease-in-out"
         style={{ opacity: expanded ? 0 : 1 }}
       >

@@ -6,13 +6,18 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
 }
 
+// Neubrutalism's physical-button trick: a hard offset shadow at rest
+// that grows on hover (lifting the button up and away from its
+// shadow) and disappears entirely on press (the button "meets" its
+// shadow, reading as pushed flat) - shadow-card/shadow-glow are the
+// two hard-shadow sizes defined in tailwind.config.js.
+const PRESSABLE = "border-2 border-ink shadow-card hover:shadow-glow hover:-translate-y-0.5 active:shadow-none active:translate-y-0";
+
 const VARIANT_CLASSES: Record<Variant, string> = {
-  primary:
-    "bg-gradient-to-r from-amber-600 to-rose-500 text-white hover:from-amber-500 hover:to-rose-400 shadow-glow disabled:opacity-40 disabled:shadow-none",
-  secondary:
-    "bg-stone-800 text-stone-100 border border-stone-700 hover:bg-stone-700 disabled:opacity-40",
-  ghost: "text-stone-300 hover:text-white hover:bg-stone-800/60 disabled:opacity-40",
-  danger: "bg-red-500/90 text-white hover:bg-red-500 disabled:opacity-40",
+  primary: `bg-accent-yellow text-ink ${PRESSABLE} disabled:opacity-40 disabled:shadow-none disabled:translate-y-0`,
+  secondary: `bg-white text-ink ${PRESSABLE} disabled:opacity-40 disabled:shadow-none disabled:translate-y-0`,
+  ghost: "text-ink hover:bg-stone-100 disabled:opacity-40",
+  danger: `bg-accent-coral text-ink ${PRESSABLE} disabled:opacity-40 disabled:shadow-none disabled:translate-y-0`,
 };
 
 export function Button({ variant = "primary", className = "", ...props }: ButtonProps) {

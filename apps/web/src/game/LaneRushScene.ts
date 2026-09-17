@@ -31,11 +31,11 @@ const DASH_LENGTH = 16;
 const DASH_GAP = 12;
 
 const PALETTE = {
-  sky: "#150f0c",
+  sky: "#faf3df",
   grass: "#14532d",
   roadDark: "#292524",
   roadLight: "#44403c",
-  laneLine: "#a8a29e",
+  laneLine: "#ffd23f",
   car: "#f97316",
   carAccent: "#c2410c",
   carWindow: "#1c1917",

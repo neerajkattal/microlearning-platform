@@ -23,7 +23,7 @@ export function StatsPage({ onBack }: StatsPageProps) {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <button onClick={onBack} className="text-sm text-stone-400 hover:text-white transition-colors">
+      <button onClick={onBack} className="text-sm text-stone-600 hover:text-ink transition-colors">
         ← Back
       </button>
 
@@ -37,7 +37,7 @@ export function StatsPage({ onBack }: StatsPageProps) {
       {me && (
         <div className="space-y-6">
           <div className="text-center space-y-1 motion-safe:animate-card-in">
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-100">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-ink">
               Welcome back, {me.user.username}!
             </h2>
             <p className="text-stone-500 text-sm">Your gamified learning journey</p>
@@ -45,21 +45,20 @@ export function StatsPage({ onBack }: StatsPageProps) {
 
           <div className="grid sm:grid-cols-3 gap-4">
             <div
-              className="rounded-2xl border border-stone-800 bg-stone-900/60 shadow-card p-5 text-center
+              className="rounded-2xl border border-ink bg-white/60 shadow-card p-5 text-center
                 space-y-2 motion-safe:animate-card-in"
             >
               <div
-                className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-amber-400/20 to-orange-500/20
-                  border border-amber-500/30 text-3xl flex items-center justify-center"
+                className="w-16 h-16 mx-auto rounded-full bg-accent-yellow border-2 border-ink text-3xl flex items-center justify-center"
               >
                 <span aria-hidden>{avatarEmoji(me.user.avatar)}</span>
               </div>
               <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Total XP</p>
-              <p className="text-2xl font-extrabold text-amber-400">{me.stats.xp}</p>
+              <p className="text-2xl font-extrabold text-amber-700">{me.stats.xp}</p>
             </div>
 
             <div
-              className="rounded-2xl border border-stone-800 bg-stone-900/60 shadow-card p-5 flex flex-col
+              className="rounded-2xl border border-ink bg-white/60 shadow-card p-5 flex flex-col
                 items-center justify-center gap-2 motion-safe:animate-card-in"
               style={{ animationDelay: "60ms" }}
             >
@@ -67,7 +66,7 @@ export function StatsPage({ onBack }: StatsPageProps) {
                 Progress to level {me.stats.level + 1}
               </p>
               <ProgressRing percent={me.stats.xp % XP_PER_LEVEL} size={80}>
-                <span className="text-lg font-extrabold text-stone-100">{me.stats.level}</span>
+                <span className="text-lg font-extrabold text-ink">{me.stats.level}</span>
               </ProgressRing>
               <p className="text-xs text-stone-500">
                 {me.stats.xp % XP_PER_LEVEL}/{XP_PER_LEVEL} XP
@@ -75,7 +74,7 @@ export function StatsPage({ onBack }: StatsPageProps) {
             </div>
 
             <div
-              className="rounded-2xl border border-stone-800 bg-stone-900/60 shadow-card p-5 text-center
+              className="rounded-2xl border border-ink bg-white/60 shadow-card p-5 text-center
                 space-y-2 motion-safe:animate-card-in"
               style={{ animationDelay: "120ms" }}
             >
@@ -83,13 +82,13 @@ export function StatsPage({ onBack }: StatsPageProps) {
                 🔥
               </p>
               <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Current streak</p>
-              <p className="text-2xl font-extrabold text-stone-100">{me.stats.current_streak} day(s)</p>
+              <p className="text-2xl font-extrabold text-ink">{me.stats.current_streak} day(s)</p>
               <p className="text-xs text-stone-500">Longest: {me.stats.longest_streak} day(s)</p>
             </div>
           </div>
 
           <div>
-            <h3 className="font-semibold mb-3 text-stone-200">
+            <h3 className="font-semibold mb-3 text-stone-800">
               {`Achievements (${me.achievements.length})`}
             </h3>
             {me.achievements.length === 0 && (
@@ -101,13 +100,13 @@ export function StatsPage({ onBack }: StatsPageProps) {
                   <div key={achievement.code} className="flex flex-col items-center gap-1.5 text-center">
                     <div
                       title={achievement.description}
-                      className="w-16 h-16 flex items-center justify-center text-2xl bg-gradient-to-br
-                        from-amber-500/20 to-orange-500/10 border-2 border-amber-500/40 shadow-glow"
+                      className="w-16 h-16 flex items-center justify-center text-2xl bg-accent-yellow
+                        border-2 border-ink shadow-glow"
                       style={{ clipPath: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)" }}
                     >
                       <span aria-hidden>{achievement.icon}</span>
                     </div>
-                    <p className="text-xs font-medium text-stone-300 leading-tight">{achievement.name}</p>
+                    <p className="text-xs font-medium text-stone-700 leading-tight">{achievement.name}</p>
                   </div>
                 ))}
               </div>
