@@ -46,4 +46,13 @@ describe("categoryPhoto", () => {
       expect(categoryPhoto(name)).toMatch(/^https:\/\//);
     }
   });
+
+  // Commons keeps whatever resolution was uploaded, not something sized
+  // for the web (its Colosseum photo is 69MB, its Mona Lisa scan 94MB) -
+  // every photo here renders small and/or blurred/dimmed under a color
+  // scrim, so serving the full original was pure wasted weight and the
+  // actual cause of category art loading slowly.
+  it("serves Commons' own thumbnail rendering, not the full original file", () => {
+    expect(categoryPhoto("History")).toMatch(/\/thumb\/.*\/500px-/);
+  });
 });

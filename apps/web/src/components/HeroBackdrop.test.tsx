@@ -59,6 +59,33 @@ describe("HeroBackdrop", () => {
     expect(opacities[0]).not.toBe("0");
   });
 
+  // Setting every photo's backgroundImage upfront meant the page had to
+  // fetch all of them before it felt loaded - only the current photo and
+  // the one it's about to fade into should ever load eagerly.
+  function backgroundImages(container: HTMLElement): string[] {
+    return Array.from(container.querySelectorAll("[aria-hidden] > div"))
+      .slice(0, HERO_PHOTOS.length)
+      .map((el) => (el as HTMLElement).style.backgroundImage);
+  }
+
+  it("only loads the first photo and the next one on mount, not all of them", () => {
+    const { container } = render(<HeroBackdrop />);
+    const images = backgroundImages(container);
+    expect(images[0]).not.toBe("");
+    expect(images[1]).not.toBe("");
+    expect(images.slice(2)).toEqual(Array(HERO_PHOTOS.length - 2).fill(""));
+  });
+
+  it("preloads the next photo one rotation ahead as it advances", () => {
+    const { container } = render(<HeroBackdrop />);
+    act(() => {
+      vi.advanceTimersByTime(4000);
+    });
+    // now showing photo 1; photo 2 should already be loading for the
+    // rotation after this one
+    expect(backgroundImages(container)[2]).not.toBe("");
+  });
+
   it("stays on the first photo when the viewer prefers reduced motion", () => {
     stubReducedMotion(true);
     const { container } = render(<HeroBackdrop />);

@@ -8,7 +8,28 @@
 // build time - not stock photography this app can license or a
 // generated image, but a real, freely-usable photo per topic rather
 // than an abstract color+icon placeholder.
-const EXACT: Record<string, string> = {
+
+// The URLs below are Commons' full ORIGINAL files - several are tens of
+// megabytes (the Colosseum photo is 69MB, the Mona Lisa scan 94MB) since
+// Commons keeps whatever resolution was uploaded, not something sized
+// for a web background. Every one of these renders small, blurred,
+// and/or dimmed under a color scrim (CategoryTile, CategoryBackdrop,
+// CardExpandOverlay, HeroBackdrop) - full resolution is wasted weight
+// nobody can see, and was the actual cause of category art and the
+// hero backdrop loading slowly. `thumb()` rewrites each URL to
+// Commons' own thumbnail renderer (the same one Wikipedia articles
+// themselves use for inline images), cutting every one of these down
+// to tens/low hundreds of KB. Commons only serves a fixed whitelist of
+// widths for fresh (uncached) thumbnail requests - 500 is confirmed
+// available for every source file used here.
+function thumb(url: string, width = 500): string {
+  const match = url.match(/^(https:\/\/upload\.wikimedia\.org\/wikipedia\/commons)\/([0-9a-f])\/([0-9a-f]{2})\/([^/]+)$/);
+  if (!match) return url;
+  const [, base, dir1, dir2, filename] = match;
+  return `${base}/thumb/${dir1}/${dir2}/${filename}/${width}px-${filename}`;
+}
+
+const ORIGINALS: Record<string, string> = {
   "general knowledge": "https://upload.wikimedia.org/wikipedia/commons/a/a3/SanDiegoCityCollegeLearningResource_-_bookshelf.jpg",
   "entertainment: books": "https://upload.wikimedia.org/wikipedia/commons/b/b6/Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg",
   "entertainment: film": "https://upload.wikimedia.org/wikipedia/commons/b/b1/Ptuj%2C_city_cinema.jpg",
@@ -33,6 +54,10 @@ const EXACT: Record<string, string> = {
   animals: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Animal_diversity_b.png",
   vehicles: "https://upload.wikimedia.org/wikipedia/commons/4/43/2005_Toyota_Corolla_1.4_T3.jpg",
 };
+
+const EXACT: Record<string, string> = Object.fromEntries(
+  Object.entries(ORIGINALS).map(([name, url]) => [name, thumb(url)])
+);
 
 const KEYWORDS: [RegExp, string][] = [
   [/film|movie/i, EXACT["entertainment: film"]],
