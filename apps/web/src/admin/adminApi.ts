@@ -13,22 +13,47 @@ const API_BASE = import.meta.env.VITE_API_BASE ?? "/api";
 
 export class AdminUnauthorizedError extends Error {}
 
+// FastAPI's error body is either {detail: "a plain string"} (an
+// HTTPException we raised) or {detail: [{loc, msg, type}, ...]} (a
+// Pydantic validation failure it raised itself) - passing the array
+// form straight to `new Error(...)` stringifies it to the useless
+// "[object Object]", since Error coerces a non-string message with
+// plain String(), not JSON.stringify.
+function extractErrorMessage(body: unknown, fallback: string): string {
+  const detail = (body as { detail?: unknown } | null)?.detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    return detail
+      .map((item) => (typeof item === "object" && item !== null && "msg" in item ? String(item.msg) : String(item)))
+      .join("; ");
+  }
+  return fallback;
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token = getAdminToken();
+  // Destructured out and merged explicitly - spreading `options` last
+  // in the fetch() call's object literal would otherwise let its own
+  // `headers` key silently replace (not merge with) the ones set here,
+  // dropping Content-Type/Authorization whenever a caller (like
+  // bootstrap, which sends X-Admin-Key) passes its own headers.
+  const { headers: extraHeaders, ...restOptions } = options ?? {};
   const res = await fetch(`${API_BASE}${path}`, {
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...extraHeaders,
     },
-    ...options,
+    ...restOptions,
   });
   if (res.status === 401 || res.status === 403) {
     clearAdminToken();
-    throw new AdminUnauthorizedError(`Request to ${path} failed: ${res.status}`);
+    const body = await res.json().catch(() => null);
+    throw new AdminUnauthorizedError(extractErrorMessage(body, `Request to ${path} failed: ${res.status}`));
   }
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    throw new Error(body?.detail ?? `Request to ${path} failed: ${res.status}`);
+    throw new Error(extractErrorMessage(body, `Request to ${path} failed: ${res.status}`));
   }
   if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
