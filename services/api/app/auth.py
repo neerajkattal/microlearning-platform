@@ -1,9 +1,10 @@
+import hmac
 from datetime import UTC, datetime, timedelta
 from typing import Optional
 
 import bcrypt
 import jwt
-from fastapi import Depends, HTTPException
+from fastapi import Depends, Header, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
@@ -53,3 +54,12 @@ def get_current_user(
     if user is None:
         raise HTTPException(status_code=401, detail="User no longer exists")
     return user
+
+
+def require_admin(x_admin_key: Optional[str] = Header(default=None)) -> None:
+    """A single shared secret checked with a constant-time comparison
+    (`hmac.compare_digest`), not `==` - a naive string comparison leaks
+    timing information proportional to how many leading characters
+    match, which is a real (if slow) way to brute-force a secret."""
+    if x_admin_key is None or not hmac.compare_digest(x_admin_key, settings.admin_api_key):
+        raise HTTPException(status_code=401, detail="Invalid or missing admin key")

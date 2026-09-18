@@ -33,5 +33,12 @@ class Settings(BaseSettings):
     categories_cache_ttl_seconds: int = 300
     leaderboard_cache_ttl_seconds: int = 30
 
+    # Dev-only default - a real deployment must override this via the
+    # ADMIN_API_KEY env var. Deliberately a single shared secret rather
+    # than a per-user is_admin flag/role system: there's exactly one
+    # operator (the owner) for this app right now, so a role table would
+    # be unused generality, not a feature.
+    admin_api_key: str = "dev-only-insecure-admin-key-change-in-production"
+
 
 settings = Settings()

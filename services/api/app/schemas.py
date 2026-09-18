@@ -4,6 +4,7 @@ from typing import Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .avatars import AVATAR_KEYS
+from .moderation import contains_banned_word
 
 
 class IngestionRequest(BaseModel):
@@ -132,6 +133,16 @@ class RegisterRequest(BaseModel):
     # first-run moment, not something registration should hard-require.
     avatar: Optional[str] = None
 
+    @field_validator("username")
+    @classmethod
+    def _username_must_be_clean(cls, value: str) -> str:
+        # Catches the obvious cases before they ever reach the leaderboard.
+        # Not exhaustive (see moderation.py) - the admin rename/hide tools
+        # exist for whatever slips past this.
+        if contains_banned_word(value):
+            raise ValueError("That username isn't allowed - please choose another one.")
+        return value
+
     @field_validator("avatar")
     @classmethod
     def _avatar_must_be_known(cls, value: Optional[str]) -> Optional[str]:
@@ -191,3 +202,23 @@ class LeaderboardEntryOut(BaseModel):
     xp: int
     level: int
     badges: int
+
+
+class AdminUserOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    username: str
+    created_at: datetime
+    hidden_from_leaderboard: bool
+
+
+class RenameUserRequest(BaseModel):
+    new_username: str = Field(min_length=3, max_length=32, pattern=r"^[a-zA-Z0-9_]+$")
+
+    @field_validator("new_username")
+    @classmethod
+    def _new_username_must_be_clean(cls, value: str) -> str:
+        if contains_banned_word(value):
+            raise ValueError("That username isn't allowed - please choose another one.")
+        return value

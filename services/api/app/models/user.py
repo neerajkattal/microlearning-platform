@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from ..database import Base
@@ -17,6 +17,11 @@ class User(Base):
     # not the emoji itself, so the actual glyph can be changed later
     # without a data migration.
     avatar = Column(String, nullable=False, default="astronaut")
+    # Admin moderation tool: excludes this user from /leaderboard without
+    # deleting their account or forcing a rename - useful while a report
+    # is pending review, or for anything short of "this username itself
+    # needs to change" (see routers/admin.py).
+    hidden_from_leaderboard = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     updated_at = Column(
         DateTime,

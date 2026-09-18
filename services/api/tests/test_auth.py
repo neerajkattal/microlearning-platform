@@ -73,6 +73,16 @@ def test_register_rejects_a_duplicate_username(db_session):
     assert resp.status_code == 409
 
 
+def test_register_rejects_a_banned_username(db_session):
+    app.dependency_overrides[get_db] = _override_get_db(db_session)
+    try:
+        resp = client.post("/auth/register", json={"username": "fuckyou123", "password": "correct-horse"})
+    finally:
+        app.dependency_overrides.clear()
+
+    assert resp.status_code == 422
+
+
 def test_register_rejects_a_too_short_password(db_session):
     app.dependency_overrides[get_db] = _override_get_db(db_session)
     try:

@@ -4,7 +4,7 @@ from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from .config import settings
 from .request_logging import RequestLoggingMiddleware
-from .routers import auth, health, ingestion, questions, quiz, users
+from .routers import admin, auth, health, ingestion, questions, quiz, users
 
 app = FastAPI(title="Microlearning Platform API")
 
@@ -30,6 +30,7 @@ app.add_middleware(
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 app.include_router(health.router)
+app.include_router(admin.router)
 app.include_router(auth.router)
 app.include_router(ingestion.router)
 app.include_router(questions.router)

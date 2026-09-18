@@ -44,6 +44,7 @@ def get_leaderboard(
         rows = (
             db.query(models.User, models.UserStats)
             .join(models.UserStats, models.UserStats.user_id == models.User.id)
+            .filter(models.User.hidden_from_leaderboard.is_(False))
             .order_by(models.UserStats.xp.desc())
             .limit(limit)
             .all()
