@@ -33,12 +33,16 @@ class Settings(BaseSettings):
     categories_cache_ttl_seconds: int = 300
     leaderboard_cache_ttl_seconds: int = 30
 
-    # Dev-only default - a real deployment must override this via the
-    # ADMIN_API_KEY env var. Deliberately a single shared secret rather
-    # than a per-user is_admin flag/role system: there's exactly one
-    # operator (the owner) for this app right now, so a role table would
-    # be unused generality, not a feature.
+    # Ongoing admin access is a real username/password login (AdminUser,
+    # routers/admin.py) - this key's only remaining job is gating POST
+    # /admin/bootstrap, which creates the first (and normally only) admin
+    # account. That endpoint also self-disables once any admin account
+    # exists, but that check alone has a race right after a fresh deploy:
+    # without this key, whoever hits /admin/bootstrap first - not
+    # necessarily the real operator - becomes the admin. Dev-only default
+    # - a real deployment must override this via the ADMIN_API_KEY env var.
     admin_api_key: str = "dev-only-insecure-admin-key-change-in-production"
+    admin_jwt_expires_minutes: int = 60 * 12  # 12 hours - shorter-lived than player tokens
 
 
 settings = Settings()

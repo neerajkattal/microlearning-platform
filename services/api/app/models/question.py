@@ -20,6 +20,10 @@ class Category(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
     slug = Column(String, unique=True, nullable=False)
+    # Deactivated categories are hidden from players (GET /categories) and
+    # excluded from new quiz sessions, but never deleted - past sessions
+    # still reference their questions.
+    is_active = Column(Boolean, nullable=False, default=True)
 
     questions = relationship("Question", back_populates="category")
 
@@ -49,6 +53,9 @@ class Question(Base):
     # Nullable: internally-authored questions have no external source id.
     source_question_id = Column(String, nullable=True)
     license = Column(String, nullable=True)
+    # A deactivated question is skipped by new sessions but never deleted -
+    # a past quiz_session_question / answer_attempt still needs it to exist.
+    is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     updated_at = Column(
         DateTime,

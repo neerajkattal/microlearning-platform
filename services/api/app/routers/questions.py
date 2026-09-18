@@ -19,7 +19,11 @@ def list_categories(db: Session = Depends(get_db), redis: Redis = Depends(get_re
     def compute():
         rows = (
             db.query(models.Category, func.count(models.Question.id))
-            .outerjoin(models.Question)
+            .filter(models.Category.is_active.is_(True))
+            .outerjoin(
+                models.Question,
+                (models.Question.category_id == models.Category.id) & (models.Question.is_active.is_(True)),
+            )
             .group_by(models.Category.id)
             .order_by(models.Category.name)
             .all()
@@ -47,7 +51,7 @@ def list_questions(
 ):
     query = db.query(models.Question).options(
         joinedload(models.Question.category), joinedload(models.Question.source)
-    )
+    ).filter(models.Question.is_active.is_(True))
     if category:
         query = query.join(models.Category).filter(models.Category.slug == category)
     if difficulty:

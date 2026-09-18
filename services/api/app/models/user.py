@@ -22,6 +22,7 @@ class User(Base):
     # is pending review, or for anything short of "this username itself
     # needs to change" (see routers/admin.py).
     hidden_from_leaderboard = Column(Boolean, nullable=False, default=False)
+    last_login_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     updated_at = Column(
         DateTime,

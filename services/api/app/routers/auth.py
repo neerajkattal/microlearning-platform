@@ -1,7 +1,10 @@
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
+from ..activity_log import log_activity
 from ..auth import create_access_token, hash_password, verify_password
 from ..avatars import DEFAULT_AVATAR
 from ..config import settings
@@ -34,6 +37,7 @@ def register(payload: schemas.RegisterRequest, db: Session = Depends(get_db)):
     db.add(user)
     db.flush()
     db.add(models.UserStats(user_id=user.id))
+    log_activity(db, "user_registered", user_id=user.id, username=user.username)
     db.commit()
     db.refresh(user)
 
@@ -46,6 +50,10 @@ def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
     user = db.query(models.User).filter_by(username=payload.username).first()
     if user is None or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid username or password")
+
+    user.last_login_at = datetime.now(UTC)
+    log_activity(db, "user_login", user_id=user.id, username=user.username)
+    db.commit()
 
     token = create_access_token(user.id)
     return schemas.TokenResponse(access_token=token, user=schemas.UserOut.model_validate(user))

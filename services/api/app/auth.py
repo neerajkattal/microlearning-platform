@@ -1,10 +1,9 @@
-import hmac
 from datetime import UTC, datetime, timedelta
 from typing import Optional
 
 import bcrypt
 import jwt
-from fastapi import Depends, Header, HTTPException
+from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
@@ -56,10 +55,34 @@ def get_current_user(
     return user
 
 
-def require_admin(x_admin_key: Optional[str] = Header(default=None)) -> None:
-    """A single shared secret checked with a constant-time comparison
-    (`hmac.compare_digest`), not `==` - a naive string comparison leaks
-    timing information proportional to how many leading characters
-    match, which is a real (if slow) way to brute-force a secret."""
-    if x_admin_key is None or not hmac.compare_digest(x_admin_key, settings.admin_api_key):
-        raise HTTPException(status_code=401, detail="Invalid or missing admin key")
+def create_admin_access_token(admin_id: int) -> str:
+    """Same JWT machinery as player tokens, but with `type: admin` in the
+    payload - the two are otherwise indistinguishable (same secret, same
+    algorithm), and this claim is what stops a player's own token from
+    being replayed against /admin/* (and vice versa)."""
+    expires_at = datetime.now(UTC) + timedelta(minutes=settings.admin_jwt_expires_minutes)
+    payload = {"sub": str(admin_id), "type": "admin", "exp": expires_at}
+    return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+
+
+def get_current_admin(
+    credentials: HTTPAuthorizationCredentials = Depends(_bearer_scheme),
+    db: Session = Depends(get_db),
+) -> models.AdminUser:
+    try:
+        payload = jwt.decode(credentials.credentials, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid or expired admin token")
+
+    if payload.get("type") != "admin":
+        raise HTTPException(status_code=401, detail="Invalid or expired admin token")
+
+    try:
+        admin_id = int(payload["sub"])
+    except (KeyError, ValueError, TypeError):
+        raise HTTPException(status_code=401, detail="Invalid or expired admin token")
+
+    admin = db.get(models.AdminUser, admin_id)
+    if admin is None:
+        raise HTTPException(status_code=401, detail="Admin account no longer exists")
+    return admin

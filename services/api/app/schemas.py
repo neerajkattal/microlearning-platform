@@ -222,3 +222,144 @@ class RenameUserRequest(BaseModel):
         if contains_banned_word(value):
             raise ValueError("That username isn't allowed - please choose another one.")
         return value
+
+
+class AdminBootstrapRequest(BaseModel):
+    username: str = Field(min_length=3, max_length=32)
+    password: str = Field(min_length=8, max_length=128)
+
+
+class AdminLoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class AdminTokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    admin_username: str
+
+
+class AdminUserDetailOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    username: str
+    created_at: datetime
+    last_login_at: Optional[datetime]
+    hidden_from_leaderboard: bool
+
+
+class StatsOut(BaseModel):
+    total_users: int
+    total_questions: int
+    total_categories: int
+    total_quiz_sessions: int
+    questions_per_category: list[dict]
+
+
+class ActivityLogEntryOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    event_type: str
+    user_id: Optional[int]
+    username: Optional[str]
+    detail: Optional[str]
+    created_at: datetime
+
+
+class AdminCategoryOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    slug: str
+    is_active: bool
+    question_count: int
+
+
+class CategoryCreateRequest(BaseModel):
+    name: str = Field(min_length=2, max_length=64)
+    slug: str = Field(min_length=2, max_length=64, pattern=r"^[a-z0-9-]+$")
+
+
+class CategoryUpdateRequest(BaseModel):
+    name: Optional[str] = Field(default=None, min_length=2, max_length=64)
+    is_active: Optional[bool] = None
+
+
+class AdminAnswerIn(BaseModel):
+    text: str = Field(min_length=1, max_length=300)
+    is_correct: bool = False
+
+
+class AdminAnswerOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    text: str
+    is_correct: bool
+
+
+class AdminQuestionOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    text: str
+    category_id: int
+    difficulty: str
+    explanation: Optional[str]
+    is_active: bool
+    answers: list[AdminAnswerOut]
+
+
+class QuestionCreateRequest(BaseModel):
+    text: str = Field(min_length=3, max_length=500)
+    category_id: int
+    difficulty: Literal["easy", "medium", "hard"]
+    explanation: Optional[str] = None
+    answers: list[AdminAnswerIn] = Field(min_length=2, max_length=6)
+
+    @field_validator("answers")
+    @classmethod
+    def _exactly_one_correct_answer(cls, value: list[AdminAnswerIn]) -> list[AdminAnswerIn]:
+        correct_count = sum(1 for a in value if a.is_correct)
+        if correct_count != 1:
+            raise ValueError("exactly one answer must be marked correct")
+        return value
+
+
+class QuestionUpdateRequest(BaseModel):
+    text: Optional[str] = Field(default=None, min_length=3, max_length=500)
+    difficulty: Optional[Literal["easy", "medium", "hard"]] = None
+    explanation: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class GameConfigOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    base_correct_xp: int
+    attempt_xp: int
+    difficulty_multiplier_easy: float
+    difficulty_multiplier_medium: float
+    difficulty_multiplier_hard: float
+    speed_bonus_threshold_ms: int
+    speed_bonus_xp: int
+    max_streak_bonus_days: int
+    streak_bonus_xp_per_day: int
+    xp_per_level: int
+
+
+class GameConfigUpdateRequest(BaseModel):
+    base_correct_xp: Optional[int] = Field(default=None, ge=0, le=1000)
+    attempt_xp: Optional[int] = Field(default=None, ge=0, le=1000)
+    difficulty_multiplier_easy: Optional[float] = Field(default=None, ge=0, le=10)
+    difficulty_multiplier_medium: Optional[float] = Field(default=None, ge=0, le=10)
+    difficulty_multiplier_hard: Optional[float] = Field(default=None, ge=0, le=10)
+    speed_bonus_threshold_ms: Optional[int] = Field(default=None, ge=0, le=60000)
+    speed_bonus_xp: Optional[int] = Field(default=None, ge=0, le=1000)
+    max_streak_bonus_days: Optional[int] = Field(default=None, ge=0, le=365)
+    streak_bonus_xp_per_day: Optional[int] = Field(default=None, ge=0, le=1000)
+    xp_per_level: Optional[int] = Field(default=None, ge=1, le=100000)

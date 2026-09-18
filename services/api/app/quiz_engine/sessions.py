@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 
 from .. import models
 from ..achievements import check_and_award_achievements
-from .scoring import apply_daily_activity, calculate_level, calculate_xp
+from ..activity_log import log_activity
+from .scoring import apply_daily_activity, calculate_level, calculate_xp, get_active_scoring_config
 
 
 class QuizEngineError(Exception):
@@ -46,11 +47,11 @@ def start_session(
     question_count: int,
     difficulty: Optional[str] = None,
 ) -> models.QuizSession:
-    query = db.query(models.Question)
+    query = db.query(models.Question).filter(models.Question.is_active.is_(True))
     category = None
     if category_slug:
         category = db.query(models.Category).filter_by(slug=category_slug).first()
-        if category is None:
+        if category is None or not category.is_active:
             raise NoQuestionsAvailableError(f"unknown category: {category_slug}")
         query = query.filter(models.Question.category_id == category.id)
     if difficulty:
@@ -137,6 +138,7 @@ def submit_answer(
         difficulty=sq.question.difficulty,
         response_time_ms=response_time_ms,
         current_streak=stats.current_streak,
+        config=get_active_scoring_config(db),
     )
 
     attempt = models.AnswerAttempt(
@@ -171,6 +173,7 @@ def complete_session(db: Session, session_id: int, *, owner_id: int) -> dict:
         raise SessionNotInProgressError(f"quiz session {session_id} is {session.status}")
 
     stats = session.user.stats
+    config = get_active_scoring_config(db)
 
     total_xp_earned = 0
     score = 0
@@ -199,6 +202,7 @@ def complete_session(db: Session, session_id: int, *, owner_id: int) -> dict:
             difficulty=sq.question.difficulty,
             response_time_ms=attempt.response_time_ms,
             current_streak=stats.current_streak,
+            config=config,
         )
         review.append(
             {
@@ -211,7 +215,7 @@ def complete_session(db: Session, session_id: int, *, owner_id: int) -> dict:
         )
 
     stats.xp += total_xp_earned
-    stats.level = calculate_level(stats.xp)
+    stats.level = calculate_level(stats.xp, config)
     apply_daily_activity(stats, date.today())
 
     session.status = "completed"
@@ -220,6 +224,14 @@ def complete_session(db: Session, session_id: int, *, owner_id: int) -> dict:
 
     newly_earned = check_and_award_achievements(
         db, user=session.user, score=score, total_questions=len(session.session_questions), stats=stats
+    )
+
+    log_activity(
+        db,
+        "quiz_completed",
+        user_id=session.user.id,
+        username=session.user.username,
+        detail=f"score {score}/{len(session.session_questions)}, +{total_xp_earned} XP",
     )
 
     db.commit()
