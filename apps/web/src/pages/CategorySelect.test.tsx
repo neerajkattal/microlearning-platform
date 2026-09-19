@@ -155,6 +155,22 @@ describe("CategorySelect", () => {
     expect(screen.getByText('No categories match "zzz".')).toBeTruthy();
   });
 
+  it("lets a player request a topic that matched nothing, then shows a confirmation", async () => {
+    mockFetchOnce([{ id: 1, name: "Geography", slug: "geography", question_count: 5 }]);
+    mockFetchOnce({}, false); // getMe - irrelevant here
+    render(<CategorySelect onSelectCategory={vi.fn()} />);
+
+    await waitFor(() => expect(screen.getAllByText("Geography").length).toBeGreaterThan(0));
+    fireEvent.change(screen.getByLabelText("Search categories"), { target: { value: "K-pop" } });
+
+    const requestButton = screen.getByText('Request "K-pop" as a topic');
+    mockFetchOnce({ id: 1, topic: "K-pop", request_count: 1, status: "pending" });
+    fireEvent.click(requestButton);
+
+    await waitFor(() => expect(screen.getByText('Thanks! We\'ll consider adding "K-pop".')).toBeTruthy());
+    expect(screen.queryByText('Request "K-pop" as a topic')).toBeNull();
+  });
+
   it("hides the featured carousel and 'any category' option while searching", async () => {
     mockFetchOnce([{ id: 1, name: "Geography", slug: "geography", question_count: 5 }]);
     render(<CategorySelect onSelectCategory={vi.fn()} />);

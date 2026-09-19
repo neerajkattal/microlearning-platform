@@ -7,6 +7,7 @@ import type {
   AdminUserDetail,
   GameConfig,
   Stats,
+  TopicRequestItem,
 } from "./adminTypes";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "/api";
@@ -114,4 +115,11 @@ export const adminApi = {
   getGameConfig: () => request<GameConfig>("/admin/game-config"),
   updateGameConfig: (payload: Partial<GameConfig>) =>
     request<GameConfig>("/admin/game-config", { method: "PATCH", body: JSON.stringify(payload) }),
+
+  listTopicRequests: (status: "pending" | "fulfilled" | "dismissed" | "all" = "pending") =>
+    request<TopicRequestItem[]>(`/admin/topic-requests?status=${status}`),
+  fulfillTopicRequest: (id: number) =>
+    request<TopicRequestItem>(`/admin/topic-requests/${id}/fulfill`, { method: "POST" }),
+  dismissTopicRequest: (id: number) =>
+    request<TopicRequestItem>(`/admin/topic-requests/${id}/dismiss`, { method: "POST" }),
 };

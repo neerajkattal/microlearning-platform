@@ -9,6 +9,15 @@ class Settings(BaseSettings):
     opentdb_base_url: str = "https://opentdb.com/api.php"
     api_env: str = "development"
 
+    # QuizAPI.io: a second static trivia source (tech-focused categories
+    # OpenTDB doesn't cover - Linux, Docker, DevOps, SQL), ingested through
+    # the exact same worker-triggers-via-HTTP pattern as OpenTDB (see
+    # ADR-0003). Empty by default - a real deployment sets this via the
+    # QUIZAPI_KEY env var; ingestion simply can't run without it, same
+    # failure mode as any other missing required secret.
+    quizapi_base_url: str = "https://quizapi.io/api/v1/questions"
+    quizapi_key: str = ""
+
     # Comma-separated list — dev default covers the local Vite dev server.
     # A real deployment overrides this via the CORS_ORIGINS env var (e.g.
     # the Vercel frontend's real origin). Kept as a single string setting

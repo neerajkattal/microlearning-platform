@@ -16,7 +16,18 @@ export interface Stats {
   total_questions: number;
   total_categories: number;
   total_quiz_sessions: number;
+  pending_topic_requests: number;
   questions_per_category: { category: string; count: number }[];
+}
+
+export interface TopicRequestItem {
+  id: number;
+  topic: string;
+  request_count: number;
+  status: "pending" | "fulfilled" | "dismissed";
+  requested_by_username: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ActivityLogEntry {

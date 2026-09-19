@@ -255,6 +255,7 @@ class StatsOut(BaseModel):
     total_questions: int
     total_categories: int
     total_quiz_sessions: int
+    pending_topic_requests: int
     questions_per_category: list[dict]
 
 
@@ -363,3 +364,19 @@ class GameConfigUpdateRequest(BaseModel):
     max_streak_bonus_days: Optional[int] = Field(default=None, ge=0, le=365)
     streak_bonus_xp_per_day: Optional[int] = Field(default=None, ge=0, le=1000)
     xp_per_level: Optional[int] = Field(default=None, ge=1, le=100000)
+
+
+class TopicRequestCreate(BaseModel):
+    topic: str = Field(min_length=2, max_length=80)
+
+
+class TopicRequestOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    topic: str
+    request_count: int
+    status: str
+    requested_by_username: Optional[str]
+    created_at: datetime
+    updated_at: datetime

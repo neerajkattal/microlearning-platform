@@ -54,6 +54,9 @@ export const api = {
 
   listCategories: () => request<Category[]>("/categories"),
 
+  requestTopic: (topic: string) =>
+    request<{ request_count: number }>("/topic-requests", { method: "POST", body: JSON.stringify({ topic }) }),
+
   startQuizSession: (params: { category: string | null; difficulty?: string | null; questionCount: number }) =>
     request<QuizSession>("/quiz-sessions", {
       method: "POST",

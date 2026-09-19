@@ -24,6 +24,8 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
   const [error, setError] = useState(false);
   const [me, setMe] = useState<UserMe | null>(null);
   const [search, setSearch] = useState("");
+  const [requestedTopics, setRequestedTopics] = useState<Set<string>>(new Set());
+  const [requestingTopic, setRequestingTopic] = useState(false);
   const { target, expanded, trigger } = useCardExpand();
 
   useEffect(() => {
@@ -61,6 +63,22 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
     .sort((a, b) => b.question_count - a.question_count)
     .slice(0, FEATURED_COUNT);
   const xpIntoLevel = me ? me.stats.xp % XP_PER_LEVEL : 0;
+
+  async function handleRequestTopic() {
+    const topic = search.trim();
+    if (!topic || requestingTopic) return;
+    setRequestingTopic(true);
+    try {
+      await api.requestTopic(topic);
+      setRequestedTopics((prev) => new Set(prev).add(topic.toLowerCase()));
+    } catch {
+      // Not critical enough to interrupt the player with an error state -
+      // worst case they just don't see the "thanks" confirmation and can
+      // try again.
+    } finally {
+      setRequestingTopic(false);
+    }
+  }
 
   function selectWithExpand(
     e: React.MouseEvent<HTMLButtonElement>,
@@ -151,7 +169,24 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
       )}
 
       {isSearching && grouped.length === 0 && (
-        <p className="text-stone-500 text-center">No categories match "{search.trim()}".</p>
+        <div className="text-center space-y-3">
+          <p className="text-stone-500">No categories match "{search.trim()}".</p>
+          {requestedTopics.has(trimmedSearch) ? (
+            <p className="inline-block text-sm font-semibold text-ink bg-accent-yellow border-2 border-ink rounded-full px-4 py-2">
+              Thanks! We'll consider adding "{search.trim()}".
+            </p>
+          ) : (
+            <button
+              onClick={handleRequestTopic}
+              disabled={requestingTopic}
+              className="text-sm font-semibold px-4 py-2 rounded-full border-2 border-ink bg-accent-yellow
+                shadow-card hover:shadow-glow hover:-translate-y-0.5 active:shadow-none active:translate-y-0
+                transition-all disabled:opacity-40"
+            >
+              {requestingTopic ? "Requesting..." : `Request "${search.trim()}" as a topic`}
+            </button>
+          )}
+        </div>
       )}
 
       {grouped.map(([label, groupCategories]) => (

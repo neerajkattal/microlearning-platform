@@ -27,11 +27,12 @@ export function OverviewTab() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <StatCard label="Players" value={stats.total_users} />
         <StatCard label="Questions" value={stats.total_questions} />
         <StatCard label="Categories" value={stats.total_categories} />
         <StatCard label="Quiz sessions" value={stats.total_quiz_sessions} />
+        <StatCard label="Pending requests" value={stats.pending_topic_requests} />
       </div>
 
       <div className="rounded-xl border-2 border-ink bg-white shadow-card p-4">

@@ -38,6 +38,32 @@ class ActivityLog(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
 
 
+class TopicRequest(Base):
+    """A player typed a category into search and got no results - this
+    is that request, so it's visible to the admin instead of just
+    silently disappearing. Repeat requests for the same (case-
+    insensitive) topic while still pending increment `request_count`
+    rather than creating duplicate rows, so "14 people want K-pop"
+    is one row the admin can actually read, not fourteen."""
+
+    __tablename__ = "topic_requests"
+
+    id = Column(Integer, primary_key=True)
+    topic = Column(String, nullable=False)
+    topic_normalized = Column(String, nullable=False, index=True)  # topic.strip().lower(), for de-dup lookups
+    request_count = Column(Integer, nullable=False, default=1)
+    status = Column(String, nullable=False, default="pending")  # "pending" | "fulfilled" | "dismissed"
+    requested_by_user_id = Column(Integer, nullable=True)
+    requested_by_username = Column(String, nullable=True)  # denormalized, see ActivityLog
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    updated_at = Column(
+        DateTime,
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+
 class GameConfig(Base):
     """A single row (id=1) of the scoring constants from quiz_engine/
     scoring.py, editable from the admin dashboard. Defaults match those

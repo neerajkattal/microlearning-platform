@@ -70,6 +70,7 @@ def get_stats(db: Session = Depends(get_db)):
         total_questions=db.query(func.count(models.Question.id)).scalar(),
         total_categories=db.query(func.count(models.Category.id)).scalar(),
         total_quiz_sessions=db.query(func.count(models.QuizSession.id)).scalar(),
+        pending_topic_requests=db.query(func.count(models.TopicRequest.id)).filter_by(status="pending").scalar(),
         questions_per_category=[{"category": name, "count": count} for name, count in per_category],
     )
 
@@ -82,6 +83,45 @@ def get_activity(limit: int = Query(default=50, ge=1, le=200), db: Session = Dep
         .limit(limit)
         .all()
     )
+
+
+# --- Topic requests ------------------------------------------------------
+
+
+@router.get("/topic-requests", response_model=list[schemas.TopicRequestOut], dependencies=[_admin_only])
+def list_topic_requests(
+    status: Optional[str] = Query(default="pending", pattern="^(pending|fulfilled|dismissed|all)$"),
+    db: Session = Depends(get_db),
+):
+    query = db.query(models.TopicRequest)
+    if status != "all":
+        query = query.filter_by(status=status)
+    return query.order_by(models.TopicRequest.request_count.desc(), models.TopicRequest.created_at.desc()).all()
+
+
+def _get_topic_request_or_404(request_id: int, db: Session) -> models.TopicRequest:
+    request = db.get(models.TopicRequest, request_id)
+    if request is None:
+        raise HTTPException(status_code=404, detail="Topic request not found")
+    return request
+
+
+@router.post("/topic-requests/{request_id}/fulfill", response_model=schemas.TopicRequestOut, dependencies=[_admin_only])
+def fulfill_topic_request(request_id: int, db: Session = Depends(get_db)):
+    request = _get_topic_request_or_404(request_id, db)
+    request.status = "fulfilled"
+    db.commit()
+    db.refresh(request)
+    return request
+
+
+@router.post("/topic-requests/{request_id}/dismiss", response_model=schemas.TopicRequestOut, dependencies=[_admin_only])
+def dismiss_topic_request(request_id: int, db: Session = Depends(get_db)):
+    request = _get_topic_request_or_404(request_id, db)
+    request.status = "dismissed"
+    db.commit()
+    db.refresh(request)
+    return request
 
 
 # --- Users ---------------------------------------------------------------

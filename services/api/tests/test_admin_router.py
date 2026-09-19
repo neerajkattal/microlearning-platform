@@ -422,3 +422,64 @@ def test_registering_and_logging_in_appear_in_the_activity_feed(db_session):
     event_types = [row["event_type"] for row in resp.json() if row["username"] == "activity_test_user"]
     assert "user_registered" in event_types
     assert "user_login" in event_types
+
+
+# --- topic requests -------------------------------------------------------
+
+
+def test_admin_sees_a_pending_topic_request(db_session):
+    headers = _bootstrap_and_login(db_session)
+    try:
+        player_token = client.post(
+            "/auth/register", json={"username": "topic_requester", "password": "correct-horse"}
+        ).json()["access_token"]
+        client.post(
+            "/topic-requests", json={"topic": "K-pop"}, headers={"Authorization": f"Bearer {player_token}"}
+        )
+
+        resp = client.get("/admin/topic-requests", headers=headers)
+        stats_resp = client.get("/admin/stats", headers=headers)
+    finally:
+        app.dependency_overrides.clear()
+
+    assert resp.status_code == 200
+    assert any(r["topic"] == "K-pop" and r["status"] == "pending" for r in resp.json())
+    assert stats_resp.json()["pending_topic_requests"] >= 1
+
+
+def test_admin_can_dismiss_a_topic_request(db_session):
+    headers = _bootstrap_and_login(db_session)
+    try:
+        player_token = client.post(
+            "/auth/register", json={"username": "topic_requester_2", "password": "correct-horse"}
+        ).json()["access_token"]
+        created = client.post(
+            "/topic-requests", json={"topic": "Cricket stats"}, headers={"Authorization": f"Bearer {player_token}"}
+        ).json()
+
+        dismiss_resp = client.post(f"/admin/topic-requests/{created['id']}/dismiss", headers=headers)
+        pending_resp = client.get("/admin/topic-requests", headers=headers)
+    finally:
+        app.dependency_overrides.clear()
+
+    assert dismiss_resp.status_code == 200
+    assert dismiss_resp.json()["status"] == "dismissed"
+    assert all(r["id"] != created["id"] for r in pending_resp.json())
+
+
+def test_admin_can_fulfill_a_topic_request(db_session):
+    headers = _bootstrap_and_login(db_session)
+    try:
+        player_token = client.post(
+            "/auth/register", json={"username": "topic_requester_3", "password": "correct-horse"}
+        ).json()["access_token"]
+        created = client.post(
+            "/topic-requests", json={"topic": "Formula 1"}, headers={"Authorization": f"Bearer {player_token}"}
+        ).json()
+
+        resp = client.post(f"/admin/topic-requests/{created['id']}/fulfill", headers=headers)
+    finally:
+        app.dependency_overrides.clear()
+
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "fulfilled"
