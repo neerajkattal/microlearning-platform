@@ -1,9 +1,10 @@
+import hmac
 from datetime import UTC, datetime, timedelta
 from typing import Optional
 
 import bcrypt
 import jwt
-from fastapi import Depends, HTTPException
+from fastapi import Depends, Header, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
@@ -12,6 +13,18 @@ from .config import settings
 from .database import get_db
 
 _bearer_scheme = HTTPBearer()
+
+
+def require_operator_key(x_admin_key: Optional[str] = Header(default=None)) -> None:
+    """The same shared secret that gates /admin/bootstrap, reused here
+    for machine-to-machine calls (the GitHub Actions ingestion workflow,
+    the worker's own scheduled job in local dev) that have no human to
+    log in as - a JWT login flow doesn't fit a cron job the way it fits
+    an admin opening the dashboard. Constant-time compare, same
+    reasoning as require_admin used to have before it became a full
+    login system."""
+    if x_admin_key is None or not hmac.compare_digest(x_admin_key, settings.admin_api_key):
+        raise HTTPException(status_code=401, detail="Invalid or missing admin key")
 
 
 def hash_password(plain_password: str) -> str:

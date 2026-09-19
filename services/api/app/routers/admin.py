@@ -1,31 +1,22 @@
-import hmac
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from .. import models, schemas
-from ..auth import create_admin_access_token, get_current_admin, hash_password, verify_password
-from ..config import settings
+from ..auth import create_admin_access_token, get_current_admin, hash_password, require_operator_key, verify_password
 from ..database import get_db
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
 # --- Bootstrap & login (unauthenticated by admin-token; bootstrap is
-# gated by the shared ADMIN_API_KEY instead - see config.py) -----------
+# gated by the shared ADMIN_API_KEY instead - see auth.require_operator_key) -
 
 
-@router.post("/bootstrap", response_model=schemas.AdminTokenResponse, status_code=201)
-def bootstrap_admin(
-    payload: schemas.AdminBootstrapRequest,
-    x_admin_key: Optional[str] = Header(default=None),
-    db: Session = Depends(get_db),
-):
-    if x_admin_key is None or not hmac.compare_digest(x_admin_key, settings.admin_api_key):
-        raise HTTPException(status_code=401, detail="Invalid or missing admin key")
-
+@router.post("/bootstrap", response_model=schemas.AdminTokenResponse, status_code=201, dependencies=[Depends(require_operator_key)])
+def bootstrap_admin(payload: schemas.AdminBootstrapRequest, db: Session = Depends(get_db)):
     if db.query(models.AdminUser).count() > 0:
         raise HTTPException(status_code=403, detail="An admin account already exists")
 

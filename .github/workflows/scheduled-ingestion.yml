@@ -4,9 +4,16 @@ name: Scheduled question ingestion
 # cron jobs both require a paid plan (confirmed directly against
 # Render's API: both requests came back "only web services allowed for
 # plan" / "invalid plan: free"). The worker's whole job was just calling
-# the API's own /ingestion/opentdb endpoint on a schedule (see
-# ADR-0003), so this workflow does that instead of running a second
-# always-on Render service - same effect, no extra cost.
+# the API's own /ingestion/* endpoints on a schedule (see ADR-0003), so
+# this workflow does that instead of running a second always-on Render
+# service - same effect, no extra cost.
+#
+# /ingestion/* now requires the same X-Admin-Key as /admin/bootstrap
+# (it used to be wide open - anyone with the URL could trigger it
+# repeatedly and burn through QuizAPI.io's rate limit). This workflow's
+# ADMIN_API_KEY secret must be set to the exact same value as the
+# ADMIN_API_KEY env var on the Render service: repo Settings -> Secrets
+# and variables -> Actions -> New repository secret.
 on:
   schedule:
     - cron: "0 */6 * * *"
@@ -20,4 +27,11 @@ jobs:
         run: |
           curl -sf -X POST https://playtolearn-api.onrender.com/ingestion/opentdb \
             -H "Content-Type: application/json" \
+            -H "X-Admin-Key: ${{ secrets.ADMIN_API_KEY }}" \
+            -d '{"amount": 50}'
+      - name: Trigger QuizAPI.io ingestion on the live API
+        run: |
+          curl -sf -X POST https://playtolearn-api.onrender.com/ingestion/quizapi \
+            -H "Content-Type: application/json" \
+            -H "X-Admin-Key: ${{ secrets.ADMIN_API_KEY }}" \
             -d '{"amount": 50}'

@@ -24,3 +24,4 @@ def register(job: ScheduledJob) -> None:
 
 
 from . import ingest_opentdb  # noqa: E402,F401  (import for its registration side-effect)
+from . import ingest_quizapi  # noqa: E402,F401  (import for its registration side-effect)

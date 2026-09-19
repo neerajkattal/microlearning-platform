@@ -57,12 +57,17 @@ Positive:
   `test_ingestion_endpoint.py`) without needing the worker at all.
 
 Negative:
-- The ingestion endpoint (`POST /ingestion/opentdb`) is not authenticated
+- ~~The ingestion endpoint (`POST /ingestion/opentdb`) is not authenticated
   yet — there's no auth system until a later phase. It's reachable from
   the browser through NGINX like any other `/api/*` route, bounded only
   by `amount` being capped at 50 per call. Documented as a known gap
   (see `docs/architecture/PHASE_1.md`); real access control is Phase 7
-  (production hardening).
+  (production hardening).~~ **Resolved**: every `/ingestion/*` route
+  (now including `/ingestion/quizapi`, a second provider) requires the
+  same shared `X-Admin-Key` as `POST /admin/bootstrap` — see
+  `auth.require_operator_key`. The worker's own scheduled job, and the
+  GitHub Actions workflow that replaced it in production (Render's free
+  tier has no background-worker plan), both send it.
 - An extra network hop (worker → nginx-fronted api, or worker → api
   directly on the compose network) for something that could theoretically
   be a local function call. Not a real cost at this scale.
