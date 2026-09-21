@@ -1,7 +1,7 @@
 # Phase 4 — Lane Rush
 
 What got built, matching `docs/BUILD_PLAN.md`'s Phase 4 list and
-`ENGINEERING.md` §9: the first real game mode. Four answer lanes, a car that
+`ENGINEERING.md` §8: the first real game mode. Four answer lanes, a car that
 drives forward automatically, and left/right steering to lock in an
 answer — running on the exact same `/quiz-sessions` API contract Phase 3
 already proved out, with a Classic/Lane Rush choice added so both modes
@@ -53,7 +53,7 @@ App (screen state machine: categories | mode-select | quiz | results)
   movement — it does *not* decide correct/wrong. `LaneRush.tsx` submits
   that pending choice to `POST /quiz-sessions/{id}/questions/{qid}/answer`
   and only calls `scene.applyServerVerdict(is_correct)` once the real
-  answer comes back from Postgres. `ENGINEERING.md` §4's security boundary
+  answer comes back from Postgres. `ENGINEERING.md` §3's security boundary
   ("the browser must never be trusted to declare an answer correct")
   applies exactly as much to a car game as to answer buttons.
 - **Response time is measured the same way as Phase 3** — wall-clock
@@ -64,7 +64,7 @@ App (screen state machine: categories | mode-select | quiz | results)
   preserves `pendingResolution` as a recorded answer instead of
   discarding it, so the race-finished event's answer count always
   matches the number of gates the player actually passed.
-- **Accessibility (`ENGINEERING.md` §11):** feedback is always text
+- **Accessibility (`ENGINEERING.md` §10):** feedback is always text
   ("Correct!"/"Wrong"), never color-only — the colored screen flash is
   purely decorative and is skipped entirely when
   `prefers-reduced-motion: reduce` is set. Touch buttons (◀ ▶) sit under

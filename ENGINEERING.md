@@ -27,16 +27,7 @@ Vite + React frontend (see ADR-0002 — deviates from this pack's original Next.
 Infrastructure learning path:
 Docker → Docker Compose → NGINX → CI/CD → AWS → Kubernetes → observability → resilience/scaling.
 
-## 3. CV-Aligned Learning
-
-The developer already has exposure to React, FastAPI, PostgreSQL, Docker, Kubernetes/OpenShift, Git/GitLab CI/CD, JWT, REST APIs, AWS fundamentals, testing, and Agile practices.
-
-Therefore:
-- Do not spend excessive effort teaching basic CRUD.
-- Deepen backend, database, infrastructure, system architecture, observability, cloud, and resilience skills.
-- Introduce new infrastructure only when the product gives it a legitimate reason to exist.
-
-## 4. Architecture Rules
+## 3. Architecture Rules
 
 ### Question/content boundary
 Games must never call OpenTDB directly.
@@ -75,7 +66,7 @@ Never accept client-provided `isCorrect`, XP, score, or level as authoritative.
 External API objects must be normalized into internal domain models before use.
 Do not expose raw OpenTDB response objects throughout the application.
 
-## 5. Technology Defaults
+## 4. Technology Defaults
 
 Frontend:
 - Vite + React (see ADR-0002 — was Next.js in this pack's original default)
@@ -106,7 +97,7 @@ Testing:
 - Vitest where useful for frontend/domain logic
 - Playwright for critical browser flows
 
-## 6. Repository Structure
+## 5. Repository Structure
 
 Use a modular monorepo, not microservices.
 
@@ -147,7 +138,7 @@ microlearning-platform/
 
 If using a different exact directory layout is necessary for tooling, preserve the architectural boundaries and document the deviation.
 
-## 7. Domain Model
+## 6. Domain Model
 
 Initial entities:
 - User
@@ -183,7 +174,7 @@ Minimum Answer fields:
 
 Never expose `isCorrect` to the game client.
 
-## 8. Question Lifecycle
+## 7. Question Lifecycle
 
 ```text
 External source
@@ -208,7 +199,7 @@ OpenTDB ingestion must support:
 
 Do not fetch OpenTDB synchronously for every player question.
 
-## 9. Game Architecture
+## 8. Game Architecture
 
 Phaser is the game runtime. The Vite + React app remains the application shell.
 
@@ -227,7 +218,7 @@ Balloon Pop:
 
 Both games use the same Quiz Engine and backend session contract.
 
-## 10. Scoring
+## 9. Scoring
 
 Server-authoritative scoring only.
 
@@ -240,7 +231,7 @@ Start simple:
 
 Do not tune the economy prematurely. Make formulas configurable and test them.
 
-## 11. UX / Accessibility
+## 10. UX / Accessibility
 
 Support:
 - keyboard controls where practical
@@ -252,7 +243,7 @@ Support:
 - loading/error states
 - graceful degraded behavior when external services are unavailable
 
-## 12. Observability
+## 11. Observability
 
 Build toward:
 - structured logs
@@ -269,7 +260,7 @@ Later:
 - Grafana
 - CloudWatch when running in AWS
 
-## 13. Infrastructure Strategy
+## 12. Infrastructure Strategy
 
 Local-first is mandatory.
 
@@ -294,7 +285,7 @@ Use AWS carefully:
 
 Kubernetes should first be learned locally before using a paid managed cluster.
 
-## 14. Git / Delivery Rules
+## 13. Git / Delivery Rules
 
 Use small, coherent commits.
 
@@ -310,7 +301,7 @@ Do not mix large unrelated changes in one commit.
 
 Every feature should include appropriate tests.
 
-## 15. Documentation Rules
+## 14. Documentation Rules
 
 Architecture changes require documentation updates.
 
@@ -322,7 +313,7 @@ Use Architecture Decision Records for important choices:
 
 Keep a learning note for major infrastructure topics so the developer can explain them in an interview.
 
-## 16. Definition of Done
+## 15. Definition of Done
 
 A feature is complete only when:
 1. Code is typed/validated.
@@ -335,21 +326,7 @@ A feature is complete only when:
 8. Local Docker workflow still works.
 9. No secrets are committed.
 
-## 17. Agent Working Method
-
-Before making a significant change:
-1. Inspect the existing repository.
-2. Read relevant docs and ADRs.
-3. State the smallest implementation plan.
-4. Implement incrementally.
-5. Run tests/lint/type checks.
-6. Update documentation.
-7. Summarize what changed and why.
-
-Do not rewrite working systems without a concrete reason.
-Do not introduce microservices, queues, Kubernetes, or additional managed services merely for resume keywords.
-
-## 18. First Milestone
+## 16. First Milestone
 
 The first milestone is foundation only.
 

@@ -70,7 +70,7 @@ listed there has questions ingested by Phase 1's worker job.
   sufficient for Phase 3's scope.
 - Fixed `question_count: 5` per session — no UI control for it yet.
 - No visual theme/game presentation — this is deliberately plain HTML
-  buttons and Tailwind, per `ENGINEERING.md` §9: "games own rendering", and no
+  buttons and Tailwind, per `ENGINEERING.md` §8: "games own rendering", and no
   game exists yet. Lane Rush / Balloon Pop (Phase 4/5) are where that
   actually matters.
 

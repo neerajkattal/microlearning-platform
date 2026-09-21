@@ -10,7 +10,7 @@ logs:
 	docker compose logs -f
 
 # Alembic runs from the host, not inside the api container: alembic.ini and
-# migrations/ live at the repo root (per ENGINEERING.md §6), while the api image
+# migrations/ live at the repo root (per ENGINEERING.md §5), while the api image
 # only carries services/api/app. Requires `docker compose up` (or at least
 # the postgres service) to already be running, using its host port mapping.
 migrate:

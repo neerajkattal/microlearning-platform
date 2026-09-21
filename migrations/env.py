@@ -5,7 +5,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-# Migrations live at the repo root (per ENGINEERING.md §6), but the SQLAlchemy
+# Migrations live at the repo root (per ENGINEERING.md §5), but the SQLAlchemy
 # models they target live in services/api. Add it to sys.path rather than
 # duplicating the schema definition here.
 API_SRC = os.path.join(os.path.dirname(__file__), "..", "services", "api")

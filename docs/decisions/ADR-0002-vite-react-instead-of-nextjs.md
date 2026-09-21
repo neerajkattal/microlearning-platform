@@ -34,7 +34,7 @@ point.
 
 Positive:
 - One less new technology to learn simultaneously with Redis/NGINX/worker
-  architecture, which are the things `ENGINEERING.md` §3 actually wants
+  architecture, which are the things `ENGINEERING.md` §2 actually wants
   deepened.
 - Vite's dev server and build are fast and simple to reason about.
 
