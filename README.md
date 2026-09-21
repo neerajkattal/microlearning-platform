@@ -5,7 +5,16 @@
 A full-stack gamified trivia platform. Questions are answered through short
 interactive browser games (a lane-dodging runner, a balloon-popping game) instead
 of a plain multiple-choice form, backed by a real quiz engine, auth, XP/leaderboard
-system, and a live production deployment.
+system, a moderation/admin layer, and a live production deployment.
+
+## Demo
+
+<!-- TODO: replace with a real screen recording (Loom/YouTube unlisted/local .mp4)
+     of the golden path: register -> pick a category -> play Lane Rush or
+     Balloon Pop -> see XP/streak/leaderboard update. A 60-90s walkthrough is
+     plenty; this is the first thing a reviewer sees, before they read anything else. -->
+
+📹 *Demo video coming soon.*
 
 **Stack:** FastAPI (Python) · PostgreSQL · Redis · SQLAlchemy/Alembic · React +
 TypeScript · Phaser (game engine) · Docker Compose · deployed on Vercel + Render +
@@ -18,16 +27,29 @@ Upstash.
 - **Two Phaser game modes** sharing one quiz engine, each split into a pure,
   fully-unit-tested game-logic module plus a thin rendering layer.
 - **Real auth, XP, streaks, achievements, and a leaderboard** — JWT + bcrypt,
-  server-computed scoring formula (base + difficulty + speed + streak bonuses).
+  server-computed scoring formula (base + difficulty + speed + streak bonuses),
+  with a live-editable scoring config (no redeploy needed to retune it).
+- **Two independent question sources** (OpenTDB, QuizAPI.io) behind one
+  `QuestionProvider` abstraction — adding a source means writing one adapter, the
+  fetch/normalize/dedupe/persist pipeline doesn't change. Ingestion runs on a
+  schedule via GitHub Actions (Render's free tier has no background-worker plan),
+  gated by a shared operator key so it can't be triggered by anyone with the URL.
+- **A real admin dashboard** (`/admin`, separate login from player accounts) —
+  live stats, user search/rename/hide-from-leaderboard, category/question CRUD
+  with soft-deactivate instead of destructive deletes, an activity feed, and a
+  topic-request inbox (players can ask for a category that doesn't exist yet;
+  admins see a live pending-count badge).
+- **Username moderation** — a banned-word filter at registration, plus the admin
+  tools above for whatever slips past it.
 - **Production hardening**: structured JSON logging with request IDs, Redis rate
   limiting on auth endpoints, Redis caching on hot read endpoints, a documented
   self-review that found and fixed a real bug (the rate limiter was keying off the
   reverse proxy's IP instead of the real client's).
-- **182 automated tests** (87 backend, 95 frontend) across unit, integration, and
-  component-level coverage.
+- **377 automated tests** (143 API, 17 worker, 217 frontend) across unit,
+  integration, and component-level coverage.
 - **Live deployment** — Vercel (frontend) + Render (API, Docker) + Upstash (Redis),
-  with a free-tier-aware architecture (a GitHub Actions cron replaces a paid
-  background worker, another pings the API to avoid cold starts).
+  with a free-tier-aware architecture (GitHub Actions cron jobs replace a paid
+  background worker and keep the API warm to avoid cold starts).
 
 See `CLAUDE.md` for the full engineering constitution, and `docs/START_HERE.md` for
 the product/architecture overview.
@@ -35,8 +57,10 @@ the product/architecture overview.
 ## Status
 
 Phases 0-7 of the build plan complete (foundation, question ingestion, quiz engine,
-two game modes, auth/gamification, production hardening) plus a UI/UX redesign and a
-live deployment. See `docs/BUILD_PLAN.md` for the phased roadmap and
+two game modes, auth/gamification, production hardening), plus a full UI/UX
+redesign, a live deployment, and a post-launch round of real production features:
+a second question source, an admin dashboard, username moderation, and a
+topic-request pipeline. See `docs/BUILD_PLAN.md` for the phased roadmap and
 `docs/architecture/` for what each phase actually delivered.
 
 ## Local setup
@@ -77,6 +101,18 @@ make build        # production build of apps/web
 | web (Vite) | 5173 | direct, bypasses nginx |
 | api (FastAPI) | 8000 | direct; `/docs` for interactive API explorer |
 | postgres | 5432 | exposed for `make migrate` / local psql |
+
+## Admin dashboard
+
+A separate surface at `/admin`, with its own login — completely independent of
+player accounts (different table, different JWT, a player's token is rejected by
+every `/admin/*` route and vice versa).
+
+First-time setup: open `/admin`, click **"First time setting this up?"**, and use
+the `ADMIN_API_KEY` env var as the one-time key (it only gates account creation —
+after that you log in with a normal username/password, and the key is never
+needed again). That endpoint permanently disables itself once one admin account
+exists, so this only works once.
 
 ## Docs
 
