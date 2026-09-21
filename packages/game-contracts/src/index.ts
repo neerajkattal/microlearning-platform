@@ -1,6 +1,6 @@
 /**
  * The interface any game (Lane Rush, Balloon Pop, future ones) implements
- * to plug into the shared quiz session flow. Per CLAUDE.md's game/quiz
+ * to plug into the shared quiz session flow. Per ENGINEERING.md's game/quiz
  * boundary: games own rendering/input/animation/local state; they never
  * decide correctness themselves, they just report what the player picked
  * and render whatever result the server sends back.

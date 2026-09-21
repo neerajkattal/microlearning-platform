@@ -1,6 +1,6 @@
 # Learning note: Alembic in a monorepo
 
-`CLAUDE.md` puts `migrations/` at the repo root, separate from
+`ENGINEERING.md` puts `migrations/` at the repo root, separate from
 `services/api` where the SQLAlchemy models actually live. That's a
 deliberate monorepo convention (migrations as an infra-level concern,
 decoupled from any one service's code layout) but it means Alembic's

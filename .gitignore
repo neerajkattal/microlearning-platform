@@ -32,6 +32,9 @@ docs/learning/INFRASTRUCTURE.md
 docs/learning/PROJECT_MASTER_GUIDE.md
 docs/learning/EASY_EXPLAINER.md
 
+# kept local only - literally titled "First Prompt to Give Claude"
+docs/CLAUDE_FIRST_PROMPT.md
+
 # database backups (may contain real user data, even if just local test data)
 backups/
 .vercel

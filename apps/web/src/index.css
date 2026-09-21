@@ -15,7 +15,7 @@ body {
 
 /* A visible focus ring everywhere, not just the browser default - a
    thick solid black outline, same as every other border in this theme
-   (CLAUDE.md §11: visible focus). */
+   (ENGINEERING.md §11: visible focus). */
 :focus-visible {
   outline: 3px solid #141110;
   outline-offset: 2px;

@@ -1,9 +1,9 @@
 # packages/quiz-engine — placeholder
 
-`CLAUDE.md` lists this as a sibling of `shared-types` and `game-contracts`,
+`ENGINEERING.md` lists this as a sibling of `shared-types` and `game-contracts`,
 but the Quiz Engine's actual logic (question selection, answer
 randomization, sessions, server-side correctness, scoring, XP, streaks —
-see `CLAUDE.md` §4 "Quiz boundary") is **server-authoritative by design**.
+see `ENGINEERING.md` §4 "Quiz boundary") is **server-authoritative by design**.
 It can't live in a browser-shipped TypeScript package without breaking the
 security boundary ("the browser must never be trusted to declare an answer
 correct").

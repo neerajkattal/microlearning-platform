@@ -20,7 +20,7 @@ class RawQuestion:
 
 
 class QuestionProvider(ABC):
-    """Adapter boundary (CLAUDE.md 'Question/content boundary'): games and
+    """Adapter boundary (ENGINEERING.md 'Question/content boundary'): games and
     the Quiz Engine never call a provider directly, only the ingestion
     pipeline does. OpenTDB is one implementation; internal/manually-authored
     questions and future providers are others.

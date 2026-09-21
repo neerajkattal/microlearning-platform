@@ -2,7 +2,7 @@
  * Client-safe view models for the quiz domain. These mirror the API's
  * response shapes, not the database models — in particular, an answer
  * choice here has no `isCorrect` field. The server never sends it (see
- * CLAUDE.md "Security boundary"), so it can't leak through these types
+ * ENGINEERING.md "Security boundary"), so it can't leak through these types
  * either.
  *
  * These are hand-written for now rather than generated from the API's

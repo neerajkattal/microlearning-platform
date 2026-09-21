@@ -229,7 +229,7 @@ export class LaneRushScene extends Phaser.Scene {
     this.showFeedback(correct);
   }
 
-  /** Feedback is never color-only (CLAUDE.md "feedback that does not
+  /** Feedback is never color-only (ENGINEERING.md "feedback that does not
    * rely on color alone") — the text says "Correct"/"Wrong" regardless.
    * The colored flash is purely decorative and skipped for players who
    * prefer reduced motion. */
@@ -251,7 +251,7 @@ export class LaneRushScene extends Phaser.Scene {
 
   /** Called from the React wrapper's on-screen touch buttons — Phaser
    * itself has no opinion on mobile UI chrome, so that's rendered as
-   * ordinary HTML overlaying the canvas (see CLAUDE.md "touch/mobile
+   * ordinary HTML overlaying the canvas (see ENGINEERING.md "touch/mobile
    * controls"), and just calls into the scene through these. */
   pressLeft() {
     this.state = shiftLane(this.state, -1);

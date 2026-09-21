@@ -39,7 +39,7 @@ class QuestionSummaryOut(BaseModel):
     # Deliberately no answers/choices here — this is a Phase 1 content-pool
     # visibility endpoint, not the player-facing question fetch. That's
     # Phase 2's Quiz Engine, which owns session-scoped answer randomization
-    # and must never leak `isCorrect` (see CLAUDE.md "Security boundary").
+    # and must never leak `isCorrect` (see ENGINEERING.md "Security boundary").
     id: int
     text: str
     difficulty: str
@@ -55,7 +55,7 @@ class StartQuizSessionRequest(BaseModel):
 
 
 class AnswerChoiceOut(BaseModel):
-    # id + text only — never isCorrect (CLAUDE.md "Security boundary").
+    # id + text only — never isCorrect (ENGINEERING.md "Security boundary").
     id: int
     text: str
 
@@ -81,7 +81,7 @@ class SubmitAnswerRequest(BaseModel):
 
 class HintOut(BaseModel):
     # Exactly 2 answer ids, guaranteed wrong - never enough on its own to
-    # infer which of the remaining 2 is correct (CLAUDE.md "Security
+    # infer which of the remaining 2 is correct (ENGINEERING.md "Security
     # boundary"). See quiz_engine.sessions.get_hint for why this is
     # deterministic per question rather than re-randomized per call.
     eliminated_answer_ids: list[int]
@@ -106,7 +106,7 @@ class AchievementOut(BaseModel):
 class AnswerReviewOut(BaseModel):
     # Safe to expose only now - the session is already completed, so
     # revealing correct_answer here can no longer let a client cheat on
-    # a question it hasn't submitted yet (CLAUDE.md "Security boundary").
+    # a question it hasn't submitted yet (ENGINEERING.md "Security boundary").
     question_id: int
     prompt: str
     your_answer: Optional[str]  # null if the question was never answered

@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 
 from .. import models
 
-# Server-authoritative XP formula (CLAUDE.md "Scoring"). Deliberately
-# simple constants, not economy-tuned — CLAUDE.md explicitly says not to
+# Server-authoritative XP formula (ENGINEERING.md "Scoring"). Deliberately
+# simple constants, not economy-tuned — ENGINEERING.md explicitly says not to
 # tune this prematurely. These remain the defaults for every caller that
 # doesn't pass a `config` - live-tuning via the admin dashboard (see
 # GameConfig, get_active_scoring_config below) is opt-in on top of them,

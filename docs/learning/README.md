@@ -1,6 +1,6 @@
 # Learning Notes
 
-Per `CLAUDE.md` §15: keep a short note for each major infrastructure topic covered by
+Per `ENGINEERING.md` §15: keep a short note for each major infrastructure topic covered by
 this project, written so it can be explained in an interview later — not just "what"
 was built, but why that choice was made and what the alternatives were.
 

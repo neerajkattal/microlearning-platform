@@ -51,7 +51,7 @@ Upstash.
   with a free-tier-aware architecture (GitHub Actions cron jobs replace a paid
   background worker and keep the API warm to avoid cold starts).
 
-See `CLAUDE.md` for the full engineering constitution, and `docs/START_HERE.md` for
+See `ENGINEERING.md` for the full engineering constitution, and `docs/START_HERE.md` for
 the product/architecture overview.
 
 ## Status

@@ -5,7 +5,7 @@ Accepted
 
 ## Context
 
-`CLAUDE.md` (from the starter pack) specifies Next.js as the frontend
+`ENGINEERING.md` (from the starter pack) specifies Next.js as the frontend
 framework. The developer already has working experience with a plain
 Vite + React + TypeScript + Tailwind stack from a prior project and
 explicitly asked to keep that stack rather than adopt Next.js.
@@ -13,7 +13,7 @@ explicitly asked to keep that stack rather than adopt Next.js.
 ## Decision
 
 Use Vite + React + TypeScript + Tailwind for `apps/web` instead of Next.js.
-Everything else in `CLAUDE.md`'s target architecture is unchanged: FastAPI,
+Everything else in `ENGINEERING.md`'s target architecture is unchanged: FastAPI,
 PostgreSQL, Redis, a worker service, and NGINX as the single local entry
 point.
 
@@ -21,7 +21,7 @@ point.
 
 - Matches technology the developer already knows and wants to deepen,
   rather than spending Phase 0 learning a new framework on top of
-  everything else in `CLAUDE.md` §2 (systems-engineering learning goals
+  everything else in `ENGINEERING.md` §2 (systems-engineering learning goals
   are backend/infra-focused, not "which React meta-framework").
 - Next.js's server-rendering/routing features aren't load-bearing for this
   product — the browser talks to FastAPI over a JSON API regardless of
@@ -34,7 +34,7 @@ point.
 
 Positive:
 - One less new technology to learn simultaneously with Redis/NGINX/worker
-  architecture, which are the things `CLAUDE.md` §3 actually wants
+  architecture, which are the things `ENGINEERING.md` §3 actually wants
   deepened.
 - Vite's dev server and build are fast and simple to reason about.
 

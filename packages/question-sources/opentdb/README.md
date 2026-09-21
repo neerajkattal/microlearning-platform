@@ -1,6 +1,6 @@
 # packages/question-sources/opentdb — placeholder
 
-Same reasoning as `packages/quiz-engine`: `CLAUDE.md` places this under
+Same reasoning as `packages/quiz-engine`: `ENGINEERING.md` places this under
 `packages/`, but question ingestion (fetch → validate → normalize →
 deduplicate → persist, with retries and rate-limit awareness — see
 `docs/architecture/QUESTION_SYSTEM.md`) is a **backend/worker concern**,
@@ -14,4 +14,4 @@ scheduled ingestion job runs in `services/worker`. Both added in Phase 0/1
 This folder is reserved for any shared TypeScript types describing a
 *normalized* question shape the frontend might want independently of
 `shared-types` (unlikely, but kept for symmetry with the repo layout in
-`CLAUDE.md`). Nothing here yet.
+`ENGINEERING.md`). Nothing here yet.

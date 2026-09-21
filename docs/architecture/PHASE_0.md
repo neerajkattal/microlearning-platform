@@ -1,6 +1,6 @@
 # Phase 0 — Foundation
 
-What actually got built, matching `docs/CLAUDE_FIRST_PROMPT.md`'s deliverable list.
+What actually got built, matching the original foundation-phase deliverable list.
 
 ## System
 
@@ -26,7 +26,7 @@ Real and tested:
 - `services/api`: FastAPI, `/health` (liveness) + `/ready` (readiness —
   actually checks Postgres and Redis), 12 tests
 - `services/worker`: connectivity-check loop with graceful shutdown, 5 tests
-- Domain models: all 12 entities from `CLAUDE.md` §7, with real constraints
+- Domain models: all 12 entities from `ENGINEERING.md` §7, with real constraints
   (unique source+source_question_id for dedup, one attempt per session
   question, one achievement per user) — 9 tests
 - Initial Alembic migration, verified end-to-end against both a temporary
@@ -47,7 +47,7 @@ Real and tested:
   workspace packages, typecheck cleanly, `game-contracts` imports from
   `shared-types` across the workspace boundary
 
-Skeleton/placeholder (deliberately, per `CLAUDE.md` §18 — foundation only):
+Skeleton/placeholder (deliberately, per `ENGINEERING.md` §18 — foundation only):
 - `packages/quiz-engine`, `packages/question-sources/opentdb`: READMEs
   only, explaining why the real logic lives server-side (see those
   READMEs for the reasoning)

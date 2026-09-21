@@ -77,7 +77,7 @@ class Answer(Base):
     question_id = Column(Integer, ForeignKey("questions.id"), nullable=False)
     text = Column(String, nullable=False)
     # Server-only. Must never be serialized into a response the browser can read
-    # before the quiz engine has validated the player's attempt (see CLAUDE.md
+    # before the quiz engine has validated the player's attempt (see ENGINEERING.md
     # "Security boundary").
     is_correct = Column(Boolean, nullable=False, default=False)
 

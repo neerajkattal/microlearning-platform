@@ -1,6 +1,6 @@
 # Phase 5 — Balloon Pop
 
-What got built, matching `docs/BUILD_PLAN.md`'s Phase 5 list and `CLAUDE.md` §9: the
+What got built, matching `docs/BUILD_PLAN.md`'s Phase 5 list and `ENGINEERING.md` §9: the
 second game mode. Four answer balloons in a 2x2 grid — tap (or press 1-4) to pop the
 one you think is right — running on the exact same `/quiz-sessions` API contract Lane
 Rush and Classic mode already use, with no backend changes at all.
@@ -67,7 +67,7 @@ App (screen state machine: categories | mode-select | quiz | results)
   this after the fact, in response to feedback) — same Phaser Scale
   Manager (`FIT` + `CENTER_BOTH`) pattern, toggle button shown only when
   `game.scale.fullscreen.available`.
-- **Accessibility (`CLAUDE.md` §11)**: feedback is always text
+- **Accessibility (`ENGINEERING.md` §11)**: feedback is always text
   ("Correct!"/"Wrong"), never color-only; the screen flash and pop-tween
   animation are both skipped under `prefers-reduced-motion: reduce`
   (the pop still resolves instantly, just without the tween).

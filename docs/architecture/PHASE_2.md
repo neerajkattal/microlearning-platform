@@ -1,6 +1,6 @@
 # Phase 2 — Quiz Engine
 
-What got built, matching `docs/BUILD_PLAN.md`'s Phase 2 list and CLAUDE.md
+What got built, matching `docs/BUILD_PLAN.md`'s Phase 2 list and ENGINEERING.md
 §4's "Quiz boundary."
 
 ## System

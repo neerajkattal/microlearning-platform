@@ -285,7 +285,7 @@ export class BalloonPopScene extends Phaser.Scene {
     });
   }
 
-  /** Feedback is never color-only (CLAUDE.md "feedback that does not
+  /** Feedback is never color-only (ENGINEERING.md "feedback that does not
    * rely on color alone") — the text says "Correct"/"Wrong" regardless.
    * The colored flash is purely decorative and skipped for players who
    * prefer reduced motion. */
