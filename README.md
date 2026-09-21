@@ -1,5 +1,9 @@
 # PlayToLearn
 
+![live](https://img.shields.io/badge/live-playtolearn--five.vercel.app-14b8a6)
+![tests](https://img.shields.io/badge/tests-377%20passing-brightgreen)
+![stack](https://img.shields.io/badge/stack-FastAPI%20%C2%B7%20React%20%C2%B7%20Postgres%20%C2%B7%20Redis-blue)
+
 **Live:** [playtolearn-five.vercel.app](https://playtolearn-five.vercel.app)
 
 A full-stack gamified trivia platform. Questions are answered through short
@@ -9,12 +13,21 @@ system, a moderation/admin layer, and a live production deployment.
 
 ## Demo
 
-<!-- TODO: replace with a real screen recording (Loom/YouTube unlisted/local .mp4)
-     of the golden path: register -> pick a category -> play Lane Rush or
-     Balloon Pop -> see XP/streak/leaderboard update. A 60-90s walkthrough is
-     plenty; this is the first thing a reviewer sees, before they read anything else. -->
+<!-- TODO: replace this note with a real screen recording (Loom/YouTube unlisted/
+     local .mp4) of the golden path: register -> pick a category -> play Lane
+     Rush or Balloon Pop -> see XP/streak/leaderboard update. A 60-90s walkthrough
+     is plenty. The screenshots below are real (captured from the live
+     deployment), not mockups - a video is the one thing they can't show: the
+     actual game motion and the crossfade between screens. -->
 
-📹 *Demo video coming soon.*
+📹 *Video walkthrough coming soon — screenshots below are from the live site.*
+
+| | |
+|---|---|
+| ![Landing page with a live, playable demo quiz — no account needed](docs/screenshots/landing.png) | ![Category browser with real photo-backed tiles, grouped by theme](docs/screenshots/categories.png) |
+| Landing — try a real question with no account | Category browser, grouped and searchable |
+| ![Lane Rush: steer into the lane with the right answer while dodging traffic](docs/screenshots/lane-rush.png) | ![Admin dashboard login, completely separate from player accounts](docs/screenshots/admin.png) |
+| Lane Rush — an actual QuizAPI.io question in play | Admin dashboard — separate login, own JWT |
 
 **Stack:** FastAPI (Python) · PostgreSQL · Redis · SQLAlchemy/Alembic · React +
 TypeScript · Phaser (game engine) · Docker Compose · deployed on Vercel + Render +
