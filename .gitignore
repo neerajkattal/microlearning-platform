@@ -35,6 +35,10 @@ docs/learning/EASY_EXPLAINER.md
 # kept local only - literally titled "First Prompt to Give Claude"
 docs/CLAUDE_FIRST_PROMPT.md
 
+# scratch working directory for generating docs/demo/ (raw composition
+# project, fonts, sfx/music library, snapshots) - not meant for the repo
+brag-output/
+
 # database backups (may contain real user data, even if just local test data)
 backups/
 .vercel

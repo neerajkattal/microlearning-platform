@@ -13,14 +13,11 @@ system, a moderation/admin layer, and a live production deployment.
 
 ## Demo
 
-<!-- TODO: replace this note with a real screen recording (Loom/YouTube unlisted/
-     local .mp4) of the golden path: register -> pick a category -> play Lane
-     Rush or Balloon Pop -> see XP/streak/leaderboard update. A 60-90s walkthrough
-     is plenty. The screenshots below are real (captured from the live
-     deployment), not mockups - a video is the one thing they can't show: the
-     actual game motion and the crossfade between screens. -->
+<video src="https://github.com/neerajkattal/microlearning-platform/raw/main/docs/demo/playtolearn-demo.mp4" controls muted poster="https://github.com/neerajkattal/microlearning-platform/raw/main/docs/demo/playtolearn-demo.jpg" width="100%"></video>
 
-📹 *Video walkthrough coming soon — screenshots below are from the live site.*
+<!-- GitHub renders the <video> tag above inline on github.com. If a viewer's
+     client doesn't render raw <video> tags, the screenshots below are the
+     same real UI, captured from the live site. -->
 
 | | |
 |---|---|

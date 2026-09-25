@@ -14,6 +14,7 @@ import { QuizQuestion } from "./components/QuizQuestion";
 import { LaneRush } from "./components/LaneRush";
 import { BalloonPop } from "./components/BalloonPop";
 import { ResultsScreen } from "./components/ResultsScreen";
+import { LoadingScreen } from "./components/ui/LoadingScreen";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "/api";
 
@@ -52,6 +53,7 @@ function statusDotClass(status: HealthStatus): string {
 
 export default function App() {
   const [status, setStatus] = useState<HealthStatus>("checking");
+  const [slowHealthCheck, setSlowHealthCheck] = useState(false);
   const [screen, setScreen] = useState<Screen>(() =>
     getToken() ? { name: "checking-auth" } : { name: "auth" }
   );
@@ -63,9 +65,15 @@ export default function App() {
   const [startError, setStartError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Render's free tier spins the API down after inactivity, so this can
+    // take several seconds on a cold start. After a short grace period,
+    // swap the label so "checking..." doesn't read as stuck/broken.
+    const slowTimer = setTimeout(() => setSlowHealthCheck(true), 2500);
     fetch(`${API_BASE}/health`)
       .then((res) => (res.ok ? setStatus("ok") : setStatus("error")))
-      .catch(() => setStatus("error"));
+      .catch(() => setStatus("error"))
+      .finally(() => clearTimeout(slowTimer));
+    return () => clearTimeout(slowTimer);
   }, []);
 
   // A stored token might be stale (expired, or from before a server
@@ -138,11 +146,19 @@ export default function App() {
           <div className="flex items-center gap-2 sm:gap-4 text-sm text-stone-600 min-w-0">
             <p
               className="flex items-center gap-1.5 whitespace-nowrap"
-              title={`API: ${status === "checking" ? "checking..." : status === "ok" ? "connected" : "unreachable"}`}
+              title={`API: ${
+                status === "checking"
+                  ? slowHealthCheck
+                    ? "waking up the server..."
+                    : "checking..."
+                  : status === "ok"
+                    ? "connected"
+                    : "unreachable"
+              }`}
             >
               <span className={`inline-block w-2 h-2 rounded-full ${statusDotClass(status)}`} aria-hidden />
               <span className="hidden sm:inline">
-                API: {status === "checking" && "checking..."}
+                API: {status === "checking" && (slowHealthCheck ? "waking up..." : "checking...")}
                 {status === "ok" && "connected"}
                 {status === "error" && "unreachable"}
               </span>
@@ -190,9 +206,7 @@ export default function App() {
         }`}
       >
         <div key={screen.name} className="motion-safe:animate-screen-in">
-          {screen.name === "checking-auth" && (
-            <p className="text-center text-stone-500">Loading...</p>
-          )}
+          {screen.name === "checking-auth" && <LoadingScreen />}
 
           {screen.name === "auth" && <LoginScreen onAuthenticated={handleAuthenticated} />}
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import { avatarEmoji } from "../avatars";
+import { LoadingScreen } from "../components/ui/LoadingScreen";
 import type { LeaderboardEntry } from "../types";
 
 interface LeaderboardPageProps {
@@ -36,7 +37,7 @@ export function LeaderboardPage({ onBack, currentUsername }: LeaderboardPageProp
           Couldn't load the leaderboard. Check that the backend is running.
         </p>
       )}
-      {!error && entries === null && <p className="text-stone-500 text-center">Loading...</p>}
+      {!error && entries === null && <LoadingScreen />}
       {entries !== null && entries.length === 0 && (
         <p className="text-stone-500 text-center">No players yet.</p>
       )}

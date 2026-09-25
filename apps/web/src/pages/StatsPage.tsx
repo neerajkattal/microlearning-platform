@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import { avatarEmoji } from "../avatars";
 import { ProgressRing } from "../components/ProgressRing";
+import { LoadingScreen } from "../components/ui/LoadingScreen";
 import type { UserMe } from "../types";
 
 interface StatsPageProps {
@@ -32,7 +33,7 @@ export function StatsPage({ onBack }: StatsPageProps) {
           Couldn't load your stats. Check that the backend is running.
         </p>
       )}
-      {!error && me === null && <p className="text-stone-500 text-center">Loading your stats...</p>}
+      {!error && me === null && <LoadingScreen />}
 
       {me && (
         <div className="space-y-6">

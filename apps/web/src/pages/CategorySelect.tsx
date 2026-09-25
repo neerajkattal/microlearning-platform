@@ -8,6 +8,7 @@ import { CardExpandOverlay } from "../components/CardExpandOverlay";
 import { CategoryRow } from "../components/CategoryRow";
 import { FeaturedCarousel } from "../components/FeaturedCarousel";
 import { ProgressRing } from "../components/ProgressRing";
+import { LoadingScreen } from "../components/ui/LoadingScreen";
 import { useCardExpand } from "../useCardExpand";
 import type { Category, UserMe } from "../types";
 
@@ -49,7 +50,7 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
   }
 
   if (categories === null) {
-    return <p className="text-stone-500 text-center">Loading categories...</p>;
+    return <LoadingScreen />;
   }
 
   const trimmedSearch = search.trim().toLowerCase();
