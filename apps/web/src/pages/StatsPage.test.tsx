@@ -16,7 +16,7 @@ describe("StatsPage", () => {
     });
 
     render(<StatsPage onBack={vi.fn()} />);
-    expect(screen.getByText("Loading your stats...")).toBeTruthy();
+    expect(screen.getByRole("status")).toBeTruthy();
 
     await waitFor(() => expect(screen.getByText(/Welcome back, alice/)).toBeTruthy());
     expect(screen.getByText("120")).toBeTruthy();

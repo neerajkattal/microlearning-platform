@@ -30,7 +30,7 @@ describe("CategorySelect", () => {
   it("shows a loading state before categories arrive", () => {
     mockFetchOnce([]);
     render(<CategorySelect onSelectCategory={vi.fn()} />);
-    expect(screen.getByText("Loading categories...")).toBeTruthy();
+    expect(screen.getByRole("status")).toBeTruthy();
   });
 
   it("renders fetched categories plus an 'any category' option", async () => {
