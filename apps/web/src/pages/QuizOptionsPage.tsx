@@ -20,6 +20,7 @@ const DIFFICULTIES: { value: Difficulty; label: string }[] = [
 
 const QUESTION_COUNTS = [5, 10, 15, 20];
 
+// Lets the player pick difficulty and question count before a quiz starts.
 export function QuizOptionsPage({ categoryName, color, icon, onStart, onBack }: QuizOptionsPageProps) {
   const [difficulty, setDifficulty] = useState<Difficulty>(null);
   const [questionCount, setQuestionCount] = useState(5);

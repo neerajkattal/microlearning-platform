@@ -22,6 +22,8 @@ STREAK_BONUS_XP_PER_DAY = 1
 XP_PER_LEVEL = 100
 
 
+# Bundles every tunable scoring constant into one object, so calculate_xp
+# etc. can take "the config to use" as a single argument instead of ten.
 @dataclass(frozen=True)
 class ScoringConfig:
     base_correct_xp: int = BASE_CORRECT_XP
@@ -35,6 +37,8 @@ class ScoringConfig:
     streak_bonus_xp_per_day: int = STREAK_BONUS_XP_PER_DAY
     xp_per_level: int = XP_PER_LEVEL
 
+    # Looks up the XP multiplier for a difficulty string, defaulting to 1.0
+    # for anything unrecognized.
     def difficulty_multiplier(self, difficulty: str) -> float:
         return {
             "easy": self.difficulty_multiplier_easy,
@@ -46,6 +50,8 @@ class ScoringConfig:
 DEFAULT_SCORING_CONFIG = ScoringConfig()
 
 
+# Fetches the config actually in effect right now — the admin-edited one
+# if it exists, otherwise the hardcoded defaults.
 def get_active_scoring_config(db: Session) -> ScoringConfig:
     """The live, admin-editable config if one has been saved (GameConfig
     is a single row, id=1 - see routers/admin.py), otherwise the
@@ -69,6 +75,9 @@ def get_active_scoring_config(db: Session) -> ScoringConfig:
     )
 
 
+# Computes the XP earned for one answer: base XP by difficulty (or a
+# smaller flat amount just for attempting, if wrong), a speed bonus for a
+# fast response, and a per-day streak bonus.
 def calculate_xp(
     *,
     is_correct: bool,
@@ -87,10 +96,14 @@ def calculate_xp(
     return round(xp)
 
 
+# Derives a player's level from their total XP (every xp_per_level XP is one level).
 def calculate_level(total_xp: int, config: ScoringConfig = DEFAULT_SCORING_CONFIG) -> int:
     return 1 + total_xp // config.xp_per_level
 
 
+# Advances a player's daily streak based on today's activity: +1 if they
+# played yesterday too, reset to 1 if there was a gap, unchanged if
+# they've already played today.
 def apply_daily_activity(stats, today: date) -> int:
     """Update stats.current_streak/longest_streak/last_activity_date for
     activity happening on `today`. Idempotent within the same day, so

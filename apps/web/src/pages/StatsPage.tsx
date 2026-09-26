@@ -11,6 +11,7 @@ interface StatsPageProps {
 
 const XP_PER_LEVEL = 100;
 
+// Shows the player's own XP, level progress, streak, and earned achievements.
 export function StatsPage({ onBack }: StatsPageProps) {
   const [me, setMe] = useState<UserMe | null>(null);
   const [error, setError] = useState(false);

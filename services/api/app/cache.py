@@ -6,6 +6,8 @@ from redis import Redis
 T = TypeVar("T")
 
 
+# Reads `key` from Redis if present; otherwise runs `compute()`, caches its
+# result for `ttl_seconds`, and returns it either way.
 def cached_json(redis: Redis, key: str, ttl_seconds: int, compute: Callable[[], T]) -> T:
     """Cache-aside: return the cached value for `key` if present, otherwise
     call `compute()`, cache its (JSON-serializable) result for `ttl_seconds`,

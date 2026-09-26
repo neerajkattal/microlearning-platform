@@ -39,18 +39,21 @@ const PALETTE = {
   hudText: "#d6d3d1",
 };
 
+// Shrinks a balloon's answer label font as its text gets longer, so it still fits.
 function fontSizeFor(text: string): number {
   if (text.length > 22) return 10;
   if (text.length > 14) return 12;
   return 14;
 }
 
+// Shrinks the question prompt's font as its text gets longer, so it still fits the banner.
 function questionFontSizeFor(text: string): number {
   if (text.length > 90) return 12;
   if (text.length > 55) return 14;
   return 16;
 }
 
+// Pixel center of the balloon at this grid index, for drawing/hit-testing it.
 function balloonCenter(index: number): { x: number; y: number } {
   const col = index % COLUMN_COUNT;
   const row = Math.floor(index / COLUMN_COUNT);
@@ -76,6 +79,8 @@ export const BALLOON_POP_EVENTS = {
   QUESTION_CHANGED: "question-changed",
 } as const;
 
+// The Phaser scene for Balloon Pop: owns rendering and input, delegating
+// all actual game rules to the pure functions in balloonPopEngine.ts.
 export class BalloonPopScene extends Phaser.Scene {
   private state!: BalloonPopState;
   private questions: SessionQuestion[] = [];
@@ -102,11 +107,15 @@ export class BalloonPopScene extends Phaser.Scene {
     super({ key: "BalloonPopScene" });
   }
 
+  // Phaser lifecycle: receives the scene's start-up data (the session's
+  // questions) and builds the initial engine state from it.
   init(data: { questions: SessionQuestion[] }) {
     this.questions = data.questions;
     this.state = createGameState(this.questions);
   }
 
+  // Phaser lifecycle: builds every graphics/text object and hit zone once,
+  // wires up keyboard input, and starts the countdown.
   create() {
     this.reducedMotion =
       typeof window !== "undefined" &&
@@ -194,6 +203,9 @@ export class BalloonPopScene extends Phaser.Scene {
     this.render();
   }
 
+  // Phaser lifecycle, called every frame: advances the engine state,
+  // redraws, and emits events (answer locked, question changed, game
+  // finished) for the React wrapper to react to.
   update(_time: number, delta: number) {
     this.handleKeyboardInput();
     this.state = engineUpdate(this.state, delta);
@@ -236,22 +248,27 @@ export class BalloonPopScene extends Phaser.Scene {
     this.attemptPop(index);
   }
 
+  // Pauses balloon popping.
   pauseGame() {
     this.state = enginePause(this.state);
   }
 
+  // Resumes a paused round.
   resumeGame() {
     this.state = engineResume(this.state);
   }
 
+  // Whether the round is currently paused.
   isPaused() {
     return this.state.phase === "paused";
   }
 
+  // The session-question id of whatever question is currently live.
   getCurrentSessionQuestionId(): number | null {
     return this.state.currentQuestion?.session_question_id ?? null;
   }
 
+  // Marks 2 answer ids for the current question as hint-eliminated (visual only).
   applyHint(eliminatedAnswerIds: number[]) {
     this.state = applyHint(this.state, eliminatedAnswerIds);
   }
@@ -263,6 +280,8 @@ export class BalloonPopScene extends Phaser.Scene {
     this.state = engineStop(this.state);
   }
 
+  // Tries to pop the balloon at this index (via engine.popBalloon) and
+  // starts its pop-shrink tween if the attempt actually took.
   private attemptPop(index: number) {
     const before = this.state;
     this.state = popBalloon(this.state, index);
@@ -277,6 +296,7 @@ export class BalloonPopScene extends Phaser.Scene {
     }
   }
 
+  // Pops the balloon whose number key (1-4) was just pressed.
   private handleKeyboardInput() {
     this.popKeys.forEach((key, index) => {
       if (Phaser.Input.Keyboard.JustDown(key)) {
@@ -305,6 +325,7 @@ export class BalloonPopScene extends Phaser.Scene {
     this.tweens.add({ targets: this.flashGraphics, alpha: 0, duration: 400 });
   }
 
+  // Redraws every visual layer from the current engine state.
   private render() {
     this.drawSky();
     this.drawBanner();
@@ -312,6 +333,7 @@ export class BalloonPopScene extends Phaser.Scene {
     this.drawHud();
   }
 
+  // Fills the background, then draws every balloon on top of it.
   private drawSky() {
     // A one-time-per-question-not-needed static background is cheap to
     // just redraw every frame here, same as the rest of this scene.
@@ -322,6 +344,8 @@ export class BalloonPopScene extends Phaser.Scene {
     this.drawBalloonShapes();
   }
 
+  // Draws each balloon (color, string, highlight) and its answer/number
+  // labels, applying the pop-shrink or hint-dim scale as appropriate.
   private drawBalloonShapes() {
     const g = this.balloonGraphics;
     const question = this.state.currentQuestion;
@@ -368,6 +392,7 @@ export class BalloonPopScene extends Phaser.Scene {
     }
   }
 
+  // Draws the top banner and updates the question prompt text inside it.
   private drawBanner() {
     const g = this.bannerGraphics;
     g.clear();
@@ -383,6 +408,7 @@ export class BalloonPopScene extends Phaser.Scene {
     }
   }
 
+  // Updates the question-progress and score text in the corners.
   private drawHud() {
     const questionNumber = this.questions.length - this.state.queue.length;
     const clamped = Math.max(0, Math.min(this.questions.length, questionNumber));
@@ -392,6 +418,7 @@ export class BalloonPopScene extends Phaser.Scene {
     this.scoreText.setText(`Score: ${this.state.score}`);
   }
 
+  // Shows the "3, 2, 1, GO!" countdown text, or clears it once running.
   private drawCountdown() {
     if (this.state.phase !== "countdown") {
       this.countdownText.setText("");

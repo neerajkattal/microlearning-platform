@@ -6,6 +6,9 @@ import { getAdminToken } from "./adminAuth";
 
 type Screen = { name: "checking" } | { name: "login" } | { name: "dashboard"; adminUsername: string };
 
+// Root of the admin dashboard: a small screen state machine (checking a
+// stored token -> login -> dashboard), completely separate from the
+// player app's own App.tsx.
 export function AdminApp() {
   const [screen, setScreen] = useState<Screen>(() => (getAdminToken() ? { name: "checking" } : { name: "login" }));
 

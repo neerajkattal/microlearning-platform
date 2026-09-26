@@ -6,6 +6,14 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from .avatars import AVATAR_KEYS
 from .moderation import contains_banned_word
 
+# Every request/response shape the API accepts or returns, grouped below
+# by feature area (ingestion, quiz content, quiz sessions, auth, admin,
+# game config, topic requests). These are pure data containers - the
+# behavior lives in the routers/services that build and consume them.
+
+
+# --- Question ingestion ---
+
 
 class IngestionRequest(BaseModel):
     amount: int = Field(default=10, ge=1, le=50)
@@ -24,6 +32,9 @@ class IngestionResultOut(BaseModel):
     skipped_duplicate: int
     skipped_malformed: int
     errors: list[str]
+
+
+# --- Question content ---
 
 
 class CategoryOut(BaseModel):
@@ -46,6 +57,9 @@ class QuestionSummaryOut(BaseModel):
     category: str
     source: str
     created_at: datetime
+
+
+# --- Quiz sessions (server-authoritative scoring: see quiz_engine/) ---
 
 
 class StartQuizSessionRequest(BaseModel):
@@ -126,6 +140,9 @@ class CompleteSessionResult(BaseModel):
     review: list[AnswerReviewOut] = []
 
 
+# --- Auth / player accounts ---
+
+
 class RegisterRequest(BaseModel):
     username: str = Field(min_length=3, max_length=32, pattern=r"^[a-zA-Z0-9_]+$")
     password: str = Field(min_length=8, max_length=128)
@@ -133,6 +150,8 @@ class RegisterRequest(BaseModel):
     # first-run moment, not something registration should hard-require.
     avatar: Optional[str] = None
 
+    # Rejects a username containing a banned word (runs automatically
+    # whenever a RegisterRequest is parsed).
     @field_validator("username")
     @classmethod
     def _username_must_be_clean(cls, value: str) -> str:
@@ -143,6 +162,7 @@ class RegisterRequest(BaseModel):
             raise ValueError("That username isn't allowed - please choose another one.")
         return value
 
+    # Rejects an avatar key that isn't one of the known AVATAR_KEYS.
     @field_validator("avatar")
     @classmethod
     def _avatar_must_be_known(cls, value: Optional[str]) -> Optional[str]:
@@ -159,6 +179,7 @@ class LoginRequest(BaseModel):
 class UpdateProfileRequest(BaseModel):
     avatar: str
 
+    # Same avatar-key check as RegisterRequest, applied on profile updates.
     @field_validator("avatar")
     @classmethod
     def _avatar_must_be_known(cls, value: str) -> str:
@@ -202,6 +223,9 @@ class LeaderboardEntryOut(BaseModel):
     xp: int
     level: int
     badges: int
+
+
+# --- Admin dashboard ---
 
 
 class AdminUserOut(BaseModel):
@@ -322,6 +346,7 @@ class QuestionCreateRequest(BaseModel):
     explanation: Optional[str] = None
     answers: list[AdminAnswerIn] = Field(min_length=2, max_length=6)
 
+    # Rejects an answer set that doesn't have exactly one correct choice.
     @field_validator("answers")
     @classmethod
     def _exactly_one_correct_answer(cls, value: list[AdminAnswerIn]) -> list[AdminAnswerIn]:
@@ -336,6 +361,9 @@ class QuestionUpdateRequest(BaseModel):
     difficulty: Optional[Literal["easy", "medium", "hard"]] = None
     explanation: Optional[str] = None
     is_active: Optional[bool] = None
+
+
+# --- Live-editable scoring config (see quiz_engine/scoring.py) ---
 
 
 class GameConfigOut(BaseModel):
@@ -364,6 +392,9 @@ class GameConfigUpdateRequest(BaseModel):
     max_streak_bonus_days: Optional[int] = Field(default=None, ge=0, le=365)
     streak_bonus_xp_per_day: Optional[int] = Field(default=None, ge=0, le=1000)
     xp_per_level: Optional[int] = Field(default=None, ge=1, le=100000)
+
+
+# --- Topic requests (players asking for a missing category) ---
 
 
 class TopicRequestCreate(BaseModel):

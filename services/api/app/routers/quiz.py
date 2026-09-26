@@ -18,6 +18,8 @@ router = APIRouter(prefix="/quiz-sessions", tags=["quiz"])
 
 
 @router.post("", response_model=schemas.QuizSessionOut, status_code=201)
+# Starts a new quiz session for the logged-in player and returns it in
+# player-safe shape (choices, no answer correctness).
 def start_quiz_session(
     payload: schemas.StartQuizSessionRequest,
     db: Session = Depends(get_db),
@@ -37,6 +39,7 @@ def start_quiz_session(
 
 
 @router.get("/{session_id}", response_model=schemas.QuizSessionOut)
+# Fetches one of the current player's own sessions by id.
 def get_quiz_session(
     session_id: int,
     db: Session = Depends(get_db),
@@ -50,6 +53,9 @@ def get_quiz_session(
 
 
 @router.post("/{session_id}/questions/{session_question_id}/answer", response_model=schemas.SubmitAnswerResult)
+# Submits an answer to one question in a session, translating the quiz
+# engine's outcome into the right HTTP status (404/409) or a result with
+# the correct answer now revealed.
 def submit_answer(
     session_id: int,
     session_question_id: int,
@@ -82,6 +88,8 @@ def submit_answer(
 
 
 @router.post("/{session_id}/questions/{session_question_id}/hint", response_model=schemas.HintOut)
+# Returns two eliminable (always-wrong) answer ids for a question, for the
+# in-game hint button.
 def get_hint(
     session_id: int,
     session_question_id: int,
@@ -100,6 +108,7 @@ def get_hint(
 
 
 @router.post("/{session_id}/complete", response_model=schemas.CompleteSessionResult)
+# Finalizes a session and returns the score/XP/achievements summary.
 def complete_quiz_session(
     session_id: int,
     db: Session = Depends(get_db),
@@ -114,6 +123,8 @@ def complete_quiz_session(
     return schemas.CompleteSessionResult(**result)
 
 
+# Shared mapper: turns a QuizSession ORM row into the player-safe response
+# shape, applying each question's per-session shuffled answer order.
 def _to_session_out(session: models.QuizSession) -> schemas.QuizSessionOut:
     questions = []
     for sq in session.session_questions:

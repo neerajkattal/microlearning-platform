@@ -11,6 +11,7 @@ interface LeaderboardPageProps {
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
+// Shows the top players by XP, highlighting the current user's own row.
 export function LeaderboardPage({ onBack, currentUsername }: LeaderboardPageProps) {
   const [entries, setEntries] = useState<LeaderboardEntry[] | null>(null);
   const [error, setError] = useState(false);

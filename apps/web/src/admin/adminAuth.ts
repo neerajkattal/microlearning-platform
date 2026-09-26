@@ -4,6 +4,7 @@
 // keys means logging out of one never accidentally touches the other.
 const ADMIN_TOKEN_KEY = "microlearning_admin_token";
 
+// Reads the stored admin JWT, if any.
 export function getAdminToken(): string | null {
   try {
     return localStorage.getItem(ADMIN_TOKEN_KEY);
@@ -12,6 +13,7 @@ export function getAdminToken(): string | null {
   }
 }
 
+// Persists the admin JWT returned by login/bootstrap.
 export function setAdminToken(token: string): void {
   try {
     localStorage.setItem(ADMIN_TOKEN_KEY, token);
@@ -20,6 +22,7 @@ export function setAdminToken(token: string): void {
   }
 }
 
+// Removes the stored admin JWT (logout, or a 401/403 telling us it's stale).
 export function clearAdminToken(): void {
   try {
     localStorage.removeItem(ADMIN_TOKEN_KEY);

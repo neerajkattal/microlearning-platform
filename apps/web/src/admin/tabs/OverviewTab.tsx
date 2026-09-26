@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { adminApi } from "../adminApi";
 import type { Stats } from "../adminTypes";
 
+// A single big-number tile (e.g. "Players: 1,204").
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-xl border-2 border-ink bg-white shadow-card p-4">
@@ -11,6 +12,8 @@ function StatCard({ label, value }: { label: string; value: number }) {
   );
 }
 
+// The dashboard's landing tab: top-line counters plus a per-category
+// question breakdown.
 export function OverviewTab() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [error, setError] = useState(false);

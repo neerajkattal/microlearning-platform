@@ -15,6 +15,8 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 # gated by the shared ADMIN_API_KEY instead - see auth.require_operator_key) -
 
 
+# One-time setup endpoint: creates the first (and normally only) admin
+# account, then permanently refuses if one already exists.
 @router.post("/bootstrap", response_model=schemas.AdminTokenResponse, status_code=201, dependencies=[Depends(require_operator_key)])
 def bootstrap_admin(payload: schemas.AdminBootstrapRequest, db: Session = Depends(get_db)):
     if db.query(models.AdminUser).count() > 0:
@@ -29,6 +31,7 @@ def bootstrap_admin(payload: schemas.AdminBootstrapRequest, db: Session = Depend
     return schemas.AdminTokenResponse(access_token=token, admin_username=admin.username)
 
 
+# Verifies admin username/password and returns an admin access token.
 @router.post("/login", response_model=schemas.AdminTokenResponse)
 def admin_login(payload: schemas.AdminLoginRequest, db: Session = Depends(get_db)):
     admin = db.query(models.AdminUser).filter_by(username=payload.username).first()
@@ -47,6 +50,8 @@ _admin_only = Depends(get_current_admin)
 # --- Overview / stats ---------------------------------------------------
 
 
+# Returns the dashboard's top-line counters (users, questions, categories,
+# sessions, pending topic requests) plus a per-category question breakdown.
 @router.get("/stats", response_model=schemas.StatsOut, dependencies=[_admin_only])
 def get_stats(db: Session = Depends(get_db)):
     per_category = (
@@ -66,6 +71,8 @@ def get_stats(db: Session = Depends(get_db)):
     )
 
 
+# Returns the most recent activity-log entries (registrations, logins,
+# completed quizzes, topic requests), newest first.
 @router.get("/activity", response_model=list[schemas.ActivityLogEntryOut], dependencies=[_admin_only])
 def get_activity(limit: int = Query(default=50, ge=1, le=200), db: Session = Depends(get_db)):
     return (
@@ -79,6 +86,7 @@ def get_activity(limit: int = Query(default=50, ge=1, le=200), db: Session = Dep
 # --- Topic requests ------------------------------------------------------
 
 
+# Lists topic requests, filtered by status (defaults to just the pending ones).
 @router.get("/topic-requests", response_model=list[schemas.TopicRequestOut], dependencies=[_admin_only])
 def list_topic_requests(
     status: Optional[str] = Query(default="pending", pattern="^(pending|fulfilled|dismissed|all)$"),
@@ -90,6 +98,7 @@ def list_topic_requests(
     return query.order_by(models.TopicRequest.request_count.desc(), models.TopicRequest.created_at.desc()).all()
 
 
+# Shared lookup: fetches a topic request by id, 404s if it doesn't exist.
 def _get_topic_request_or_404(request_id: int, db: Session) -> models.TopicRequest:
     request = db.get(models.TopicRequest, request_id)
     if request is None:
@@ -97,6 +106,7 @@ def _get_topic_request_or_404(request_id: int, db: Session) -> models.TopicReque
     return request
 
 
+# Marks a topic request as fulfilled (its matching category now exists).
 @router.post("/topic-requests/{request_id}/fulfill", response_model=schemas.TopicRequestOut, dependencies=[_admin_only])
 def fulfill_topic_request(request_id: int, db: Session = Depends(get_db)):
     request = _get_topic_request_or_404(request_id, db)
@@ -106,6 +116,7 @@ def fulfill_topic_request(request_id: int, db: Session = Depends(get_db)):
     return request
 
 
+# Marks a topic request as dismissed (won't be actioned).
 @router.post("/topic-requests/{request_id}/dismiss", response_model=schemas.TopicRequestOut, dependencies=[_admin_only])
 def dismiss_topic_request(request_id: int, db: Session = Depends(get_db)):
     request = _get_topic_request_or_404(request_id, db)
@@ -118,6 +129,7 @@ def dismiss_topic_request(request_id: int, db: Session = Depends(get_db)):
 # --- Users ---------------------------------------------------------------
 
 
+# Lists players, optionally filtered by a case-insensitive username substring.
 @router.get("/users", response_model=list[schemas.AdminUserDetailOut], dependencies=[_admin_only])
 def list_users(
     search: Optional[str] = Query(default=None, description="Case-insensitive substring match on username"),
@@ -130,6 +142,7 @@ def list_users(
     return query.order_by(models.User.created_at.desc()).limit(limit).all()
 
 
+# Shared lookup: fetches a user by id, 404s if it doesn't exist.
 def _get_user_or_404(user_id: int, db: Session) -> models.User:
     user = db.get(models.User, user_id)
     if user is None:
@@ -137,6 +150,7 @@ def _get_user_or_404(user_id: int, db: Session) -> models.User:
     return user
 
 
+# Renames a player's account (moderation tool), rejecting a name already taken.
 @router.post("/users/{user_id}/rename", response_model=schemas.AdminUserDetailOut, dependencies=[_admin_only])
 def rename_user(user_id: int, payload: schemas.RenameUserRequest, db: Session = Depends(get_db)):
     user = _get_user_or_404(user_id, db)
@@ -151,6 +165,7 @@ def rename_user(user_id: int, payload: schemas.RenameUserRequest, db: Session = 
     return user
 
 
+# Hides a player from the public leaderboard without deleting their account.
 @router.post("/users/{user_id}/hide", response_model=schemas.AdminUserDetailOut, dependencies=[_admin_only])
 def hide_user_from_leaderboard(user_id: int, db: Session = Depends(get_db)):
     user = _get_user_or_404(user_id, db)
@@ -160,6 +175,7 @@ def hide_user_from_leaderboard(user_id: int, db: Session = Depends(get_db)):
     return user
 
 
+# Reverses hide_user_from_leaderboard.
 @router.post("/users/{user_id}/unhide", response_model=schemas.AdminUserDetailOut, dependencies=[_admin_only])
 def unhide_user_from_leaderboard(user_id: int, db: Session = Depends(get_db)):
     user = _get_user_or_404(user_id, db)
@@ -172,6 +188,9 @@ def unhide_user_from_leaderboard(user_id: int, db: Session = Depends(get_db)):
 # --- Categories ------------------------------------------------------------
 
 
+# Lists every category (active or not) with its live question count —
+# the admin view, unlike the public /categories endpoint which hides
+# inactive ones.
 @router.get("/categories", response_model=list[schemas.AdminCategoryOut], dependencies=[_admin_only])
 def list_categories_admin(db: Session = Depends(get_db)):
     rows = (
@@ -189,6 +208,7 @@ def list_categories_admin(db: Session = Depends(get_db)):
     ]
 
 
+# Creates a new category, rejecting a slug that's already in use.
 @router.post("/categories", response_model=schemas.AdminCategoryOut, status_code=201, dependencies=[_admin_only])
 def create_category(payload: schemas.CategoryCreateRequest, db: Session = Depends(get_db)):
     existing = db.query(models.Category).filter_by(slug=payload.slug).first()
@@ -204,6 +224,7 @@ def create_category(payload: schemas.CategoryCreateRequest, db: Session = Depend
     )
 
 
+# Updates a category's name and/or active flag (soft-deactivate, not delete).
 @router.patch("/categories/{category_id}", response_model=schemas.AdminCategoryOut, dependencies=[_admin_only])
 def update_category(category_id: int, payload: schemas.CategoryUpdateRequest, db: Session = Depends(get_db)):
     category = db.get(models.Category, category_id)
@@ -226,6 +247,8 @@ def update_category(category_id: int, payload: schemas.CategoryUpdateRequest, db
 # --- Questions ---------------------------------------------------------
 
 
+# Lists questions (including inactive ones) with their answers, optionally
+# filtered by category and/or a text search, paginated.
 @router.get("/questions", response_model=list[schemas.AdminQuestionOut], dependencies=[_admin_only])
 def list_questions_admin(
     category_id: Optional[int] = None,
@@ -242,6 +265,8 @@ def list_questions_admin(
     return query.order_by(models.Question.id.desc()).offset(offset).limit(limit).all()
 
 
+# Looks up (or creates) the QuestionSource row used to tag manually
+# admin-authored questions, as opposed to ones ingested from OpenTDB/QuizAPI.
 def _get_or_create_internal_source(db: Session) -> models.QuestionSource:
     source = db.query(models.QuestionSource).filter_by(name="internal").first()
     if source is None:
@@ -251,6 +276,8 @@ def _get_or_create_internal_source(db: Session) -> models.QuestionSource:
     return source
 
 
+# Creates a new question with its answers, authored directly in the admin
+# dashboard rather than ingested from an external source.
 @router.post("/questions", response_model=schemas.AdminQuestionOut, status_code=201, dependencies=[_admin_only])
 def create_question(payload: schemas.QuestionCreateRequest, db: Session = Depends(get_db)):
     category = db.get(models.Category, payload.category_id)
@@ -274,6 +301,8 @@ def create_question(payload: schemas.QuestionCreateRequest, db: Session = Depend
     return question
 
 
+# Updates a question's text/difficulty/explanation/active flag (partial
+# update — only the fields present in the payload change).
 @router.patch("/questions/{question_id}", response_model=schemas.AdminQuestionOut, dependencies=[_admin_only])
 def update_question(question_id: int, payload: schemas.QuestionUpdateRequest, db: Session = Depends(get_db)):
     question = db.get(models.Question, question_id)
@@ -296,6 +325,8 @@ def update_question(question_id: int, payload: schemas.QuestionUpdateRequest, db
 # --- Game config -----------------------------------------------------------
 
 
+# Looks up (or creates, seeded with the scoring.py defaults) the single
+# GameConfig row (id=1) that holds the live-editable scoring constants.
 def _get_or_create_game_config(db: Session) -> models.GameConfig:
     config = db.get(models.GameConfig, 1)
     if config is None:
@@ -306,11 +337,14 @@ def _get_or_create_game_config(db: Session) -> models.GameConfig:
     return config
 
 
+# Returns the current scoring config (creating the default row if none exists yet).
 @router.get("/game-config", response_model=schemas.GameConfigOut, dependencies=[_admin_only])
 def get_game_config(db: Session = Depends(get_db)):
     return _get_or_create_game_config(db)
 
 
+# Updates whichever scoring constants are present in the payload (partial
+# update), taking effect immediately with no redeploy needed.
 @router.patch("/game-config", response_model=schemas.GameConfigOut, dependencies=[_admin_only])
 def update_game_config(payload: schemas.GameConfigUpdateRequest, db: Session = Depends(get_db)):
     config = _get_or_create_game_config(db)

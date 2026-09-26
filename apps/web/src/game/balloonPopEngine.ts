@@ -29,6 +29,8 @@ export interface BalloonPopState {
   eliminatedAnswerIds: number[];
 }
 
+// Builds the initial state from the session's question list: the first
+// question becomes current, the rest sit in the queue.
 export function createGameState(questions: SessionQuestion[]): BalloonPopState {
   const [first, ...rest] = questions;
   return {
@@ -44,6 +46,7 @@ export function createGameState(questions: SessionQuestion[]): BalloonPopState {
   };
 }
 
+// Begins the pre-round countdown. No-op unless the round is still idle.
 export function start(state: BalloonPopState): BalloonPopState {
   return state.phase === "idle" ? { ...state, phase: "countdown", countdownMs: COUNTDOWN_MS } : state;
 }
@@ -55,6 +58,7 @@ export function pause(state: BalloonPopState): BalloonPopState {
   return state.phase === "running" ? { ...state, phase: "paused" } : state;
 }
 
+// Un-pauses the round. No-op unless it's currently paused.
 export function resume(state: BalloonPopState): BalloonPopState {
   return state.phase === "paused" ? { ...state, phase: "running" } : state;
 }
@@ -100,6 +104,8 @@ export function popBalloon(state: BalloonPopState, balloonIndex: number): Balloo
   };
 }
 
+// Pulls the next question off the queue into currentQuestion, or
+// finishes the round if the queue is empty.
 function spawnNextQuestion(state: BalloonPopState): BalloonPopState {
   const [next, ...rest] = state.queue;
   if (!next) {

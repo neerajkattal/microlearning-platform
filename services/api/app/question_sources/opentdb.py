@@ -17,10 +17,14 @@ class OpenTDBProvider(QuestionProvider):
     deduplication, and persistence. This class only proves fetch+normalize.
     """
 
+    # Builds the provider, defaulting to the configured OpenTDB URL and a
+    # fresh HTTP client (a caller can inject its own client for testing).
     def __init__(self, base_url: Optional[str] = None, client: Optional[httpx.Client] = None):
         self.base_url = base_url or settings.opentdb_base_url
         self._client = client or httpx.Client(timeout=10.0)
 
+    # Calls OpenTDB's API for one batch of multiple-choice questions and
+    # normalizes each result into a RawQuestion.
     def fetch_batch(self, *, amount: int, category: Optional[str] = None) -> list[RawQuestion]:
         params: dict[str, int | str] = {"amount": amount, "type": "multiple"}
         # OpenTDB's own category ids (9-32, from GET /api_category.php) -
@@ -40,6 +44,8 @@ class OpenTDBProvider(QuestionProvider):
 
         return [self._normalize(item) for item in payload.get("results", [])]
 
+    # Converts one raw OpenTDB API result into our RawQuestion shape,
+    # un-escaping OpenTDB's HTML-entity-encoded text along the way.
     def _normalize(self, item: dict) -> RawQuestion:
         return RawQuestion(
             source="opentdb",

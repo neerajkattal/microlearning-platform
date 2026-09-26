@@ -11,12 +11,14 @@ interface ProfilePageProps {
   onBack: () => void;
 }
 
+// Lets the player change their avatar character.
 export function ProfilePage({ user, onUpdated, onBack }: ProfilePageProps) {
   const [avatar, setAvatar] = useState(user.avatar);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const changed = avatar !== user.avatar;
 
+  // Saves the selected avatar and hands the updated user back to App.tsx.
   async function handleSave() {
     setSaving(true);
     setError(null);

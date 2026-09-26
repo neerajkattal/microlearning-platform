@@ -18,6 +18,7 @@ router = APIRouter(prefix="/ingestion", tags=["ingestion"], dependencies=[Depend
 
 
 @router.post("/opentdb", response_model=schemas.IngestionResultOut)
+# Triggers one ingestion run against OpenTDB and reports what happened.
 def ingest_opentdb(payload: schemas.IngestionRequest, db: Session = Depends(get_db)):
     provider = OpenTDBProvider()
     result = run_ingestion(db, provider, amount=payload.amount, category=payload.category, source_name="opentdb")
@@ -31,6 +32,7 @@ def ingest_opentdb(payload: schemas.IngestionRequest, db: Session = Depends(get_
 
 
 @router.post("/quizapi", response_model=schemas.IngestionResultOut)
+# Triggers one ingestion run against QuizAPI.io and reports what happened.
 def ingest_quizapi(payload: schemas.IngestionRequest, db: Session = Depends(get_db)):
     provider = QuizApiProvider()
     result = run_ingestion(db, provider, amount=payload.amount, category=payload.category, source_name="quizapi")

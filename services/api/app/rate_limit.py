@@ -4,6 +4,9 @@ from redis import Redis
 from .redis_client import get_redis
 
 
+# Factory that builds a FastAPI dependency enforcing "at most `limit`
+# requests per `window_seconds`, per client IP" for whatever route it's
+# attached to (e.g. rate_limit("login", limit=5, window_seconds=60)).
 def rate_limit(key_prefix: str, *, limit: int, window_seconds: int):
     """FastAPI dependency factory: a fixed-window counter per client IP,
     stored in Redis — `INCR` the window's key, set it to expire on the
@@ -13,6 +16,9 @@ def rate_limit(key_prefix: str, *, limit: int, window_seconds: int):
     "stop naive credential-stuffing," not a general-purpose API gateway
     feature."""
 
+    # The actual per-request dependency returned to FastAPI: increments
+    # this client's counter for the current window and raises 429 once
+    # it's over `limit`.
     def dependency(request: Request, redis: Redis = Depends(get_redis)) -> None:
         client_ip = request.client.host if request.client else "unknown"
         key = f"ratelimit:{key_prefix}:{client_ip}"

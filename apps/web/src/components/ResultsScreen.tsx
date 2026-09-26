@@ -7,6 +7,8 @@ interface ResultsScreenProps {
   onBackToCategories: () => void;
 }
 
+// The post-quiz summary: score, XP/level/streak, any achievements just
+// earned, and a per-question review of what was answered correctly.
 export function ResultsScreen({ result, onPlayAgain, onBackToCategories }: ResultsScreenProps) {
   const pct = result.total_questions > 0 ? Math.round((result.score / result.total_questions) * 100) : 0;
   const xpIntoLevel = result.total_xp % 100;

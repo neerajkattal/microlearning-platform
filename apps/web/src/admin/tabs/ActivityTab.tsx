@@ -8,6 +8,8 @@ const EVENT_LABELS: Record<string, string> = {
   quiz_completed: "✅ Finished a quiz",
 };
 
+// Shows the raw activity-log feed as a table (registrations, logins,
+// completed quizzes), newest first.
 export function ActivityTab() {
   const [entries, setEntries] = useState<ActivityLogEntry[] | null>(null);
   const [error, setError] = useState(false);

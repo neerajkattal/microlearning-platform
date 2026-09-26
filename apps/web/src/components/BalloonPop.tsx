@@ -22,6 +22,9 @@ interface AnswerLockedPayload {
   chosenAnswerId: number;
 }
 
+// The Balloon Pop mini-game: mounts a Phaser canvas and bridges its
+// events (answer locked, question changed, game finished) to the real
+// API calls, plus the React-side chrome (pause, stop, hints, fullscreen).
 export function BalloonPop({ session, onComplete }: BalloonPopProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
@@ -107,10 +110,12 @@ export function BalloonPop({ session, onComplete }: BalloonPopProps) {
     // its identity changing doesn't tear down and recreate the game.
   }, [session.id]);
 
+  // Looks up the live Phaser scene instance, once it's mounted.
   function getScene(): BalloonPopScene | null {
     return (gameRef.current?.scene.getScene(SCENE_KEY) as BalloonPopScene | undefined) ?? null;
   }
 
+  // Enters/exits the browser's fullscreen mode for the game canvas.
   function toggleFullscreen() {
     const game = gameRef.current;
     if (!game) return;
@@ -121,6 +126,8 @@ export function BalloonPop({ session, onComplete }: BalloonPopProps) {
     }
   }
 
+  // Pauses the Phaser scene and records when, so resumeGame can exclude
+  // this downtime from the next answer's response time.
   function pauseGame() {
     const scene = getScene();
     if (!scene || !scene.isPaused()) {
@@ -130,6 +137,7 @@ export function BalloonPop({ session, onComplete }: BalloonPopProps) {
     }
   }
 
+  // Resumes the Phaser scene, adding the time just spent paused to the running total to exclude.
   function resumeGame() {
     const scene = getScene();
     scene?.resumeGame();
@@ -169,16 +177,20 @@ export function BalloonPop({ session, onComplete }: BalloonPopProps) {
     setConfirmingStop(true);
   }
 
+  // Backs out of the stop-confirmation and resumes the game.
   function cancelStop() {
     setConfirmingStop(false);
     resumeGame();
   }
 
+  // Confirms stopping early and ends the Phaser scene, which then
+  // triggers GAME_FINISHED to complete the session.
   function confirmStop() {
     setConfirmingStop(false);
     getScene()?.stopGame();
   }
 
+  // Requests a hint for the current question and applies it in the scene.
   async function useHint() {
     const scene = getScene();
     const sessionQuestionId = scene?.getCurrentSessionQuestionId();

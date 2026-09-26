@@ -17,6 +17,9 @@ interface AnswerLockedPayload {
   chosenAnswerId: number;
 }
 
+// The Lane Rush mini-game: mounts a Phaser canvas and bridges its events
+// (answer locked, gate/question changed, race finished) to the real API
+// calls, plus the React-side chrome (pause, stop, hints, fullscreen).
 export function LaneRush({ session, onComplete }: LaneRushProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
@@ -101,10 +104,12 @@ export function LaneRush({ session, onComplete }: LaneRushProps) {
     // its identity changing doesn't tear down and recreate the game.
   }, [session.id]);
 
+  // Looks up the live Phaser scene instance, once it's mounted.
   function getScene(): LaneRushScene | null {
     return (gameRef.current?.scene.getScene(SCENE_KEY) as LaneRushScene | undefined) ?? null;
   }
 
+  // Enters/exits the browser's fullscreen mode for the game canvas.
   function toggleFullscreen() {
     const game = gameRef.current;
     if (!game) return;
@@ -136,6 +141,8 @@ export function LaneRush({ session, onComplete }: LaneRushProps) {
     // dependencies; only `paused` itself determines which one to call.
   }, [paused]);
 
+  // Pauses the Phaser scene and records when, so resumeGame can exclude
+  // this downtime from the next answer's response time.
   function pauseGame() {
     const scene = getScene();
     if (!scene || !scene.isPaused()) {
@@ -145,6 +152,7 @@ export function LaneRush({ session, onComplete }: LaneRushProps) {
     }
   }
 
+  // Resumes the Phaser scene, adding the time just spent paused to the running total to exclude.
   function resumeGame() {
     const scene = getScene();
     scene?.resumeGame();
@@ -163,16 +171,20 @@ export function LaneRush({ session, onComplete }: LaneRushProps) {
     setConfirmingStop(true);
   }
 
+  // Backs out of the stop-confirmation and resumes the game.
   function cancelStop() {
     setConfirmingStop(false);
     resumeGame();
   }
 
+  // Confirms stopping early and ends the Phaser scene, which then
+  // triggers RACE_FINISHED to complete the session.
   function confirmStop() {
     setConfirmingStop(false);
     getScene()?.stopGame();
   }
 
+  // Requests a hint for the current gate/question and applies it in the scene.
   async function useHint() {
     const scene = getScene();
     const sessionQuestionId = scene?.getCurrentSessionQuestionId();

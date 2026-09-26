@@ -10,6 +10,9 @@ const EMPTY_ANSWERS = [
   { text: "", is_correct: false },
 ];
 
+// Category and question CRUD: pick a category, browse/toggle its
+// questions, and create new categories/questions directly from the
+// dashboard (soft-deactivate throughout, never a destructive delete).
 export function ContentTab() {
   const [categories, setCategories] = useState<AdminCategory[] | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
@@ -24,6 +27,7 @@ export function ContentTab() {
   const [newDifficulty, setNewDifficulty] = useState("easy");
   const [newAnswers, setNewAnswers] = useState(EMPTY_ANSWERS);
 
+  // Loads every category and selects the first one if nothing's selected yet.
   function loadCategories() {
     adminApi
       .listCategories()
@@ -44,6 +48,7 @@ export function ContentTab() {
       .catch(() => setError("Couldn't load questions."));
   }, [selectedCategoryId]);
 
+  // Creates a new category from the inline form and refreshes the list.
   async function handleCreateCategory(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -57,6 +62,7 @@ export function ContentTab() {
     }
   }
 
+  // Flips a category's active flag (soft deactivate/reactivate).
   async function toggleCategoryActive(category: AdminCategory) {
     setError(null);
     try {
@@ -67,6 +73,7 @@ export function ContentTab() {
     }
   }
 
+  // Flips a question's active flag (soft deactivate/reactivate).
   async function toggleQuestionActive(question: AdminQuestion) {
     setError(null);
     try {
@@ -77,6 +84,7 @@ export function ContentTab() {
     }
   }
 
+  // Creates a new question (with its answers) in the selected category.
   async function handleCreateQuestion(e: React.FormEvent) {
     e.preventDefault();
     if (selectedCategoryId === null) return;

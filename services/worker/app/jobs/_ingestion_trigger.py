@@ -6,6 +6,8 @@ import httpx
 from ..config import settings
 
 
+# Calls one of the API's /ingestion/* endpoints (shared by both
+# ingest_opentdb and ingest_quizapi), retrying with backoff on failure.
 def trigger_ingestion(*, endpoint: str, amount: int, max_retries: int, backoff_base_seconds: float, logger: logging.Logger) -> None:
     """Shared retry/backoff logic behind every /ingestion/* job - the
     worker never touches a question source or Postgres directly for

@@ -19,6 +19,9 @@ const API_BASE = import.meta.env.VITE_API_BASE ?? "/api";
  * generic error. */
 export class UnauthorizedError extends Error {}
 
+// Shared fetch wrapper used by every api.* call below: attaches the auth
+// token (if any), and turns a 401 into an UnauthorizedError (also
+// clearing the stale token) instead of a generic thrown Error.
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token = getToken();
   const res = await fetch(`${API_BASE}${path}`, {
@@ -38,6 +41,8 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+// Every backend call the player-facing app makes, in one typed object —
+// each entry is a thin wrapper over request() for one endpoint.
 export const api = {
   register: (params: { username: string; password: string; avatar?: string }) =>
     request<AuthResponse>("/auth/register", { method: "POST", body: JSON.stringify(params) }),

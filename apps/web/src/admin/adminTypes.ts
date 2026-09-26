@@ -1,3 +1,6 @@
+// Shared TypeScript shapes mirroring the admin API's response schemas
+// (services/api/app/schemas.py) — kept in sync by hand.
+
 export interface AdminTokenResponse {
   access_token: string;
   admin_username: string;

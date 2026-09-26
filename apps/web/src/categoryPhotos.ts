@@ -22,6 +22,9 @@
 // to tens/low hundreds of KB. Commons only serves a fixed whitelist of
 // widths for fresh (uncached) thumbnail requests - 500 is confirmed
 // available for every source file used here.
+// Rewrites a Commons full-resolution image URL into a request for
+// Commons' own small thumbnail rendition (see the file comment above for
+// why this exists — this is the actual performance fix).
 function thumb(url: string, width = 500): string {
   const match = url.match(/^(https:\/\/upload\.wikimedia\.org\/wikipedia\/commons)\/([0-9a-f])\/([0-9a-f]{2})\/([^/]+)$/);
   if (!match) return url;
@@ -76,6 +79,8 @@ const KEYWORDS: [RegExp, string][] = [
 
 const DEFAULT_PHOTO = EXACT["general knowledge"];
 
+// Resolves a category name to a (thumbnailed) photo URL: exact match
+// first, then a keyword fallback, then the "general knowledge" default.
 export function categoryPhoto(name: string): string {
   const exact = EXACT[name.trim().toLowerCase()];
   if (exact) return exact;

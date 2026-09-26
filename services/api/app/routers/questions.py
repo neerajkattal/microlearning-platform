@@ -15,7 +15,10 @@ router = APIRouter(tags=["questions"])
 
 
 @router.get("/categories", response_model=list[schemas.CategoryOut])
+# Returns every active category with its live question count, cached
+# briefly in Redis since this is the app's most-read endpoint.
 def list_categories(db: Session = Depends(get_db), redis: Redis = Depends(get_redis)):
+    # The actual DB query, only run on a cache miss.
     def compute():
         rows = (
             db.query(models.Category, func.count(models.Question.id))
@@ -42,6 +45,9 @@ def list_categories(db: Session = Depends(get_db), redis: Redis = Depends(get_re
 
 
 @router.get("/questions", response_model=list[schemas.QuestionSummaryOut])
+# Lists active questions, optionally filtered by category/difficulty and
+# paginated via limit/offset. Content-pool visibility only — never
+# includes which answer is correct.
 def list_questions(
     category: Optional[str] = None,
     difficulty: Optional[str] = None,
@@ -62,6 +68,7 @@ def list_questions(
 
 
 @router.get("/questions/{question_id}", response_model=schemas.QuestionSummaryOut)
+# Fetches one question by id, 404s if it doesn't exist.
 def get_question(question_id: int, db: Session = Depends(get_db)):
     question = (
         db.query(models.Question)
@@ -74,6 +81,7 @@ def get_question(question_id: int, db: Session = Depends(get_db)):
     return _to_summary(question)
 
 
+# Shared mapper: turns a Question ORM row into the public-safe response shape.
 def _to_summary(question: models.Question) -> schemas.QuestionSummaryOut:
     return schemas.QuestionSummaryOut(
         id=question.id,

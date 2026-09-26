@@ -15,6 +15,7 @@ logging.basicConfig(
 logger = logging.getLogger("api")
 
 
+# Middleware mounted on every request (see app.add_middleware in main.py).
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """Assigns a request id to every request (reusing one supplied via the
     X-Request-ID header, e.g. from an upstream proxy, rather than always
@@ -22,6 +23,8 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
     the id back as a response header so a client-reported issue can be
     matched to a specific server-side log line."""
 
+    # Runs on every request: tags it with a request id, times it, logs one
+    # line once the response is ready, then returns that response.
     async def dispatch(self, request: Request, call_next):
         request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
         request.state.request_id = request_id

@@ -6,6 +6,8 @@ interface AdminLoginProps {
   onLoggedIn: (adminUsername: string) => void;
 }
 
+// The admin sign-in screen, with a toggle to the one-time bootstrap flow
+// (creating the very first admin account using the operator key).
 export function AdminLogin({ onLoggedIn }: AdminLoginProps) {
   const [mode, setMode] = useState<"login" | "bootstrap">("login");
   const [username, setUsername] = useState("");
@@ -14,6 +16,8 @@ export function AdminLogin({ onLoggedIn }: AdminLoginProps) {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // Submits either a login or a bootstrap request depending on `mode`,
+  // stores the returned token, and hands control back to AdminApp.
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);

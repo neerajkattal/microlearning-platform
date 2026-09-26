@@ -16,6 +16,8 @@ const MODES: { mode: GameMode; label: string; desc: string; emoji: string }[] = 
   { mode: "balloon-pop", label: "Balloon Pop", desc: "Pop the balloon with the right answer", emoji: "🎈" },
 ];
 
+// Lets the player pick how to answer this category's questions: plain
+// Classic mode, or one of the two Phaser mini-games.
 export function GameModeSelect({ categoryName, color, icon, onSelectMode, onBack }: GameModeSelectProps) {
   return (
     <div className="max-w-3xl mx-auto space-y-6">

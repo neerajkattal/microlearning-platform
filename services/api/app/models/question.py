@@ -14,6 +14,7 @@ from sqlalchemy.orm import relationship
 from ..database import Base
 
 
+# A trivia topic (e.g. "Geography", "Entertainment: Video Games").
 class Category(Base):
     __tablename__ = "categories"
 
@@ -28,6 +29,8 @@ class Category(Base):
     questions = relationship("Question", back_populates="category")
 
 
+# Which provider a question was ingested from (OpenTDB, QuizAPI.io, ...) —
+# see question_sources/ for the actual fetch/normalize adapters.
 class QuestionSource(Base):
     __tablename__ = "question_sources"
 
@@ -38,6 +41,8 @@ class QuestionSource(Base):
     questions = relationship("Question", back_populates="source")
 
 
+# One trivia question in the content pool, with its category, difficulty,
+# and originating source. Its actual answer choices live in Answer, below.
 class Question(Base):
     __tablename__ = "questions"
     __table_args__ = (
@@ -70,6 +75,8 @@ class Question(Base):
     statistics = relationship("QuestionStatistics", back_populates="question", uselist=False)
 
 
+# One possible answer choice for a question. `is_correct` is server-only —
+# see the comment on the column itself for why it can never reach the client early.
 class Answer(Base):
     __tablename__ = "answers"
 

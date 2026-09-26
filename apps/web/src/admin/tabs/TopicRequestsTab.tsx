@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { adminApi } from "../adminApi";
 import type { TopicRequestItem } from "../adminTypes";
 
+// Lists pending topic requests with buttons to fulfill or dismiss each one.
 export function TopicRequestsTab() {
   const [requests, setRequests] = useState<TopicRequestItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // (Re)loads the pending-request list from the API.
   function load() {
     adminApi
       .listTopicRequests("pending")
@@ -15,6 +17,7 @@ export function TopicRequestsTab() {
 
   useEffect(load, []);
 
+  // Marks a request fulfilled and removes it from the visible list.
   async function fulfill(id: number) {
     setError(null);
     try {
@@ -25,6 +28,7 @@ export function TopicRequestsTab() {
     }
   }
 
+  // Marks a request dismissed and removes it from the visible list.
   async function dismiss(id: number) {
     setError(null);
     try {

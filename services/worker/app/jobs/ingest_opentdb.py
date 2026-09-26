@@ -7,6 +7,8 @@ from ._ingestion_trigger import trigger_ingestion
 logger = logging.getLogger("worker.jobs.ingest_opentdb")
 
 
+# The scheduled job body: triggers the API's OpenTDB ingestion endpoint
+# with this job's configured amount/retry settings.
 def trigger_opentdb_ingestion() -> None:
     trigger_ingestion(
         endpoint="/ingestion/opentdb",
@@ -17,6 +19,7 @@ def trigger_opentdb_ingestion() -> None:
     )
 
 
+# Registers this job with the worker's schedule at import time.
 register(
     ScheduledJob(
         name="ingest_opentdb",

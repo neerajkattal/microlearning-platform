@@ -1,6 +1,8 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+# All worker configuration in one place, same pattern as the API's own
+# config.py — each field reads from an env var or a local .env file.
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
@@ -25,4 +27,5 @@ class Settings(BaseSettings):
     admin_api_key: str = ""
 
 
+# One shared instance, imported everywhere config values are needed.
 settings = Settings()

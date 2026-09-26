@@ -7,6 +7,8 @@ from ._ingestion_trigger import trigger_ingestion
 logger = logging.getLogger("worker.jobs.ingest_quizapi")
 
 
+# The scheduled job body: triggers the API's QuizAPI.io ingestion
+# endpoint with this job's configured amount/retry settings.
 def trigger_quizapi_ingestion() -> None:
     trigger_ingestion(
         endpoint="/ingestion/quizapi",
@@ -17,6 +19,7 @@ def trigger_quizapi_ingestion() -> None:
     )
 
 
+# Registers this job with the worker's schedule at import time.
 register(
     ScheduledJob(
         name="ingest_quizapi",

@@ -27,5 +27,6 @@ _BANNED_PATTERN = re.compile(
 )
 
 
+# Checks whether a candidate username contains any word on the banned list.
 def contains_banned_word(username: str) -> bool:
     return _BANNED_PATTERN.search(username) is not None

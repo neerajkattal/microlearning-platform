@@ -16,6 +16,9 @@ MAX_RETRIES = 3
 BACKOFF_BASE_SECONDS = 0.5
 
 
+# Tally of what happened during one ingestion run — how many questions were
+# fetched from the provider, how many actually got inserted, how many were
+# skipped as duplicates/malformed, and any error messages along the way.
 @dataclass
 class IngestionResult:
     fetched: int = 0
@@ -25,11 +28,14 @@ class IngestionResult:
     errors: list[str] = field(default_factory=list)
 
 
+# Turns a human-readable category name into a URL/DB-friendly slug
+# (lowercase, dashes instead of spaces/punctuation).
 def _slugify(name: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", name.strip().lower()).strip("-")
     return slug or "uncategorized"
 
 
+# Builds a stable fingerprint for a question, used to detect duplicates.
 def _content_hash(raw: RawQuestion) -> str:
     """OpenTDB has no stable per-question id (see OpenTDBProvider docstring).
     Hash the normalized text+category+difficulty instead, so re-ingesting
@@ -39,6 +45,8 @@ def _content_hash(raw: RawQuestion) -> str:
     return hashlib.sha256(key.encode("utf-8")).hexdigest()[:32]
 
 
+# Looks up a Category row by name (via its slug), creating it first if this
+# is the first time a question in this category has been ingested.
 def get_or_create_category(db: Session, name: str) -> models.Category:
     slug = _slugify(name)
     category = db.query(models.Category).filter_by(slug=slug).first()
@@ -50,6 +58,8 @@ def get_or_create_category(db: Session, name: str) -> models.Category:
     return category
 
 
+# Looks up a QuestionSource row by name (e.g. "opentdb", "quizapi"),
+# creating it first if this source has never been ingested from before.
 def get_or_create_source(db: Session, name: str, base_url: str | None = None) -> models.QuestionSource:
     source = db.query(models.QuestionSource).filter_by(name=name).first()
     if source:
@@ -60,6 +70,8 @@ def get_or_create_source(db: Session, name: str, base_url: str | None = None) ->
     return source
 
 
+# Calls the provider's fetch_batch, retrying with exponential backoff on
+# network/HTTP errors up to MAX_RETRIES times before giving up.
 def _fetch_with_retry(provider: QuestionProvider, amount: int, category: str | None = None) -> list[RawQuestion]:
     last_error: Exception | None = None
     for attempt in range(1, MAX_RETRIES + 1):
@@ -75,6 +87,8 @@ def _fetch_with_retry(provider: QuestionProvider, amount: int, category: str | N
     raise last_error
 
 
+# Persists a single raw question (and its answers) as a Question row,
+# unless it's already been ingested before or is missing required fields.
 def _ingest_one(db: Session, source: models.QuestionSource, raw: RawQuestion) -> str:
     """Returns 'inserted', 'duplicate', or raises on malformed input —
     callers decide whether one malformed item should abort the batch."""
@@ -109,6 +123,9 @@ def _ingest_one(db: Session, source: models.QuestionSource, raw: RawQuestion) ->
     return "inserted"
 
 
+# Top-level entry point: fetches a batch of questions from the given
+# provider and persists whichever ones are new, returning a summary of
+# what happened. This is what the /ingestion/* routes call.
 def run_ingestion(
     db: Session,
     provider: QuestionProvider,

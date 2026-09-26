@@ -15,6 +15,8 @@ const FIELDS: { key: keyof GameConfig; label: string; step?: string }[] = [
   { key: "xp_per_level", label: "XP needed per level" },
 ];
 
+// A form editing the live scoring constants (GameConfig) — saving here
+// changes XP math for every answer submitted afterward, no redeploy needed.
 export function SettingsTab() {
   const [config, setConfig] = useState<GameConfig | null>(null);
   const [saved, setSaved] = useState(false);
@@ -25,6 +27,7 @@ export function SettingsTab() {
     adminApi.getGameConfig().then(setConfig).catch(() => setError("Couldn't load game config."));
   }, []);
 
+  // Saves the whole edited config back to the API.
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!config) return;

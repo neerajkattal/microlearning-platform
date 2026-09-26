@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from . import models
 
 
+# Records one entry in the admin dashboard's activity feed.
 def log_activity(
     db: Session,
     event_type: str,

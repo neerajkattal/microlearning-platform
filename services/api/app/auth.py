@@ -15,6 +15,8 @@ from .database import get_db
 _bearer_scheme = HTTPBearer()
 
 
+# FastAPI dependency that checks the `X-Admin-Key` header against the
+# shared operator secret and raises 401 if it doesn't match.
 def require_operator_key(x_admin_key: Optional[str] = Header(default=None)) -> None:
     """The same shared secret that gates /admin/bootstrap, reused here
     for machine-to-machine calls (the GitHub Actions ingestion workflow,
@@ -27,20 +29,24 @@ def require_operator_key(x_admin_key: Optional[str] = Header(default=None)) -> N
         raise HTTPException(status_code=401, detail="Invalid or missing admin key")
 
 
+# Hashes a plaintext password with bcrypt (with a fresh random salt) for storage.
 def hash_password(plain_password: str) -> str:
     return bcrypt.hashpw(plain_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
+# Checks a plaintext password against a stored bcrypt hash.
 def verify_password(plain_password: str, password_hash: str) -> bool:
     return bcrypt.checkpw(plain_password.encode("utf-8"), password_hash.encode("utf-8"))
 
 
+# Builds a signed JWT for a player, embedding their user id and an expiry time.
 def create_access_token(user_id: int) -> str:
     expires_at = datetime.now(UTC) + timedelta(minutes=settings.jwt_expires_minutes)
     payload = {"sub": str(user_id), "exp": expires_at}
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 
 
+# Decodes and validates a player JWT, returning the user id it encodes.
 def decode_access_token(token: str) -> Optional[int]:
     """Returns the user id encoded in a valid, unexpired token, or None for
     anything invalid/expired/malformed — callers turn None into a 401."""
@@ -54,6 +60,9 @@ def decode_access_token(token: str) -> Optional[int]:
         return None
 
 
+# FastAPI dependency that resolves the bearer token on a request into the
+# logged-in player's User row, or raises 401 if the token is bad or the
+# user no longer exists.
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(_bearer_scheme),
     db: Session = Depends(get_db),
@@ -68,6 +77,7 @@ def get_current_user(
     return user
 
 
+# Builds a signed JWT for an admin account, marked with a "type": "admin" claim.
 def create_admin_access_token(admin_id: int) -> str:
     """Same JWT machinery as player tokens, but with `type: admin` in the
     payload - the two are otherwise indistinguishable (same secret, same
@@ -78,6 +88,9 @@ def create_admin_access_token(admin_id: int) -> str:
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 
 
+# FastAPI dependency that resolves the bearer token into the logged-in
+# AdminUser row, rejecting any token that isn't a valid admin token
+# (wrong signature, expired, or missing the "type": "admin" claim).
 def get_current_admin(
     credentials: HTTPAuthorizationCredentials = Depends(_bearer_scheme),
     db: Session = Depends(get_db),

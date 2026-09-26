@@ -10,6 +10,9 @@ router = APIRouter(prefix="/topic-requests", tags=["topic-requests"])
 
 
 @router.post("", response_model=schemas.TopicRequestOut, status_code=201)
+# Records a player's request for a missing topic — bumping the count on
+# an existing pending request for the same (normalized) topic instead of
+# creating a duplicate row.
 def request_topic(
     payload: schemas.TopicRequestCreate,
     db: Session = Depends(get_db),

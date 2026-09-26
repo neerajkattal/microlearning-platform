@@ -5,6 +5,7 @@ from sqlalchemy import Column, DateTime, Float, Integer, String
 from ..database import Base
 
 
+# A dashboard operator's login account (username + hashed password).
 class AdminUser(Base):
     """Deliberately separate from `User` (the player table), not a role
     flag on it - there's exactly one operator for this app, logging into
@@ -20,6 +21,8 @@ class AdminUser(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
 
 
+# One row per notable event (registration, login, quiz completed), read
+# by the admin dashboard's activity feed.
 class ActivityLog(Base):
     """An append-only feed for the admin dashboard - who registered, who
     logged in, who finished a quiz, and when. `user_id` has no FK
@@ -38,6 +41,8 @@ class ActivityLog(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
 
 
+# A category players asked for that doesn't exist yet, with a count of
+# how many times it's been requested.
 class TopicRequest(Base):
     """A player typed a category into search and got no results - this
     is that request, so it's visible to the admin instead of just
@@ -64,6 +69,7 @@ class TopicRequest(Base):
     )
 
 
+# The live-editable scoring constants (see quiz_engine/scoring.py).
 class GameConfig(Base):
     """A single row (id=1) of the scoring constants from quiz_engine/
     scoring.py, editable from the admin dashboard. Defaults match those

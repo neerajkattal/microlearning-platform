@@ -10,12 +10,14 @@ from ..redis_client import get_redis
 router = APIRouter(tags=["health"])
 
 
+# Simple "is the process up" check — used by Render/uptime pings.
 @router.get("/health")
 def health():
     """Liveness only — the process is up. Does not touch dependencies."""
     return {"status": "ok"}
 
 
+# Checks that Postgres and Redis are both actually reachable right now.
 @router.get("/ready")
 def ready(db: Session = Depends(get_db), redis: Redis = Depends(get_redis)):
     """Readiness — checks that Postgres and Redis are actually reachable."""

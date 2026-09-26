@@ -5,6 +5,8 @@ interface ProgressRingProps {
   children?: React.ReactNode;
 }
 
+// A circular SVG progress indicator (e.g. "XP into next level"), with
+// arbitrary content (a number, an icon) centered inside the ring.
 export function ProgressRing({ percent, size = 64, strokeWidth = 6, children }: ProgressRingProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;

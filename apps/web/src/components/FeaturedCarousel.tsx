@@ -21,6 +21,7 @@ interface FeaturedCarouselProps {
   onSelect: (category: Category, e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
+// Strips a "Prefix: " label off a category name (e.g. "Entertainment: Film" -> "Film").
 function shortName(name: string): string {
   return name.replace(/^.*?:\s*/, "");
 }
@@ -51,6 +52,7 @@ interface CategoryInfoProps {
   onPlay: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
+// The preview sheet's content — category blurb, stats, and a Play button.
 function CategoryInfo({ category, color, onPlay }: CategoryInfoProps) {
   return (
     <>
@@ -100,6 +102,8 @@ function CategoryInfo({ category, color, onPlay }: CategoryInfoProps) {
   );
 }
 
+// An auto-scrolling row of the site's most-played categories; on touch
+// devices a tap opens a preview sheet first instead of starting a quiz immediately.
 export function FeaturedCarousel({ categories, onSelect }: FeaturedCarouselProps) {
   const [previewing, setPreviewing] = useState<Category | null>(null);
   const isTouch = useIsTouchDevice();
@@ -110,6 +114,7 @@ export function FeaturedCarousel({ categories, onSelect }: FeaturedCarouselProps
   // by any faster - slow enough to actually read a title.
   const durationSeconds = categories.length * 3;
 
+  // On touch, opens the preview sheet; otherwise starts the quiz directly.
   function handleTileClick(category: Category, e: React.MouseEvent<HTMLButtonElement>) {
     if (isTouch) {
       setPreviewing(category);

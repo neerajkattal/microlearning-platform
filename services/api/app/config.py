@@ -1,6 +1,9 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+# All app configuration in one place. Pydantic reads each field's value
+# from an environment variable of the same name (upper-cased) or from a
+# local .env file, falling back to the default below when neither is set.
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
@@ -24,6 +27,8 @@ class Settings(BaseSettings):
     # rather than a list because that's how a plain env var arrives.
     cors_origins: str = "http://localhost:5173"
 
+    # Splits the comma-separated cors_origins string into a clean list of
+    # origins, which is the shape CORSMiddleware actually expects.
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
@@ -54,4 +59,6 @@ class Settings(BaseSettings):
     admin_jwt_expires_minutes: int = 60 * 12  # 12 hours - shorter-lived than player tokens
 
 
+# One shared instance, imported everywhere config values are needed —
+# built once at import time from the environment/`.env` file.
 settings = Settings()

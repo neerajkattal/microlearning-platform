@@ -20,6 +20,8 @@ const FEATURES = [
   "💡 Hints",
 ];
 
+// The logged-out landing page: marketing hero + no-account demo quiz on
+// top, and the actual login/register form below.
 export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
   const [mode, setMode] = useState<Mode>("login");
   const [username, setUsername] = useState("");
@@ -30,6 +32,8 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
   const [avatar, setAvatar] = useState("astronaut");
   const formCardRef = useRef<HTMLDivElement>(null);
 
+  // Submits either a login or a register request depending on `mode`,
+  // stores the returned token, and hands control back to App.tsx.
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -64,11 +68,13 @@ export function LoginScreen({ onAuthenticated }: LoginScreenProps) {
     setError(null);
   }
 
+  // Switches to the register form and scrolls it into view.
   function goToRegister() {
     switchMode("register");
     formCardRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" });
   }
 
+  // Switches to the login form and scrolls it into view.
   function goToLogin() {
     switchMode("login");
     formCardRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" });

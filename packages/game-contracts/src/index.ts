@@ -8,6 +8,8 @@
 
 import type { AnswerAttemptResult, QuizSessionQuestionView } from "@microlearning/shared-types";
 
+// The host app's callbacks into a running game — a game calls these to
+// tell the host what happened; it never calls itself.
 export interface GameSessionHandle {
   /** Called by the host app when the next question is ready to play. */
   presentQuestion(question: QuizSessionQuestionView): void;
@@ -17,6 +19,8 @@ export interface GameSessionHandle {
   onSessionComplete(): void;
 }
 
+// A pluggable game's own side of the contract: mount/unmount into a DOM
+// container, identified by a stable id and a display name.
 export interface GameAdapter {
   readonly id: string;
   readonly displayName: string;

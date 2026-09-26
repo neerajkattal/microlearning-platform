@@ -24,6 +24,9 @@ _auth_rate_limit = rate_limit(
     status_code=201,
     dependencies=[Depends(_auth_rate_limit)],
 )
+# Creates a new player account (hashing the password, rejecting a taken
+# username or a banned word via RegisterRequest's own validators) and
+# returns a ready-to-use access token.
 def register(payload: schemas.RegisterRequest, db: Session = Depends(get_db)):
     existing = db.query(models.User).filter_by(username=payload.username).first()
     if existing is not None:
@@ -46,6 +49,7 @@ def register(payload: schemas.RegisterRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=schemas.TokenResponse, dependencies=[Depends(_auth_rate_limit)])
+# Verifies username/password and returns an access token on success.
 def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
     user = db.query(models.User).filter_by(username=payload.username).first()
     if user is None or not verify_password(payload.password, user.password_hash):

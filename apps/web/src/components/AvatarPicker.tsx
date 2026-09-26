@@ -5,6 +5,7 @@ interface AvatarPickerProps {
   onChange: (key: string) => void;
 }
 
+// A grid of selectable character emoji, used at registration and on the profile page.
 export function AvatarPicker({ value, onChange }: AvatarPickerProps) {
   return (
     <div className="grid grid-cols-4 sm:grid-cols-6 gap-2" role="group" aria-label="Choose your character">

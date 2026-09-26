@@ -15,30 +15,40 @@ class QuizEngineError(Exception):
     """Base for quiz-engine errors; the router translates these to HTTP."""
 
 
+# Raised when no questions match the requested category/difficulty.
 class NoQuestionsAvailableError(QuizEngineError):
     pass
 
 
+# Raised when a session id doesn't exist, or belongs to a different user.
 class SessionNotFoundError(QuizEngineError):
     pass
 
 
+# Raised when an action requires an in-progress session, but it's already
+# completed or abandoned.
 class SessionNotInProgressError(QuizEngineError):
     pass
 
 
+# Raised when trying to answer a session-question that already has an attempt.
 class QuestionAlreadyAnsweredError(QuizEngineError):
     pass
 
 
+# Raised when a session-question id doesn't belong to the given session.
 class SessionQuestionNotFoundError(QuizEngineError):
     pass
 
 
+# Raised when the selected answer id isn't actually a choice for the question.
 class AnswerNotFoundError(QuizEngineError):
     pass
 
 
+# Creates a new quiz session: picks `question_count` random active
+# questions matching the category/difficulty filters, shuffles each
+# question's answer order, and persists it all as an in-progress session.
 def start_session(
     db: Session,
     *,
@@ -90,6 +100,8 @@ def start_session(
     return session
 
 
+# Fetches a session by id, scoped to its owner so one player can never
+# read or act on another player's session.
 def get_session(db: Session, session_id: int, *, owner_id: int) -> models.QuizSession:
     """`owner_id` mismatch raises the same error as a genuinely missing
     session — a 404, not a 403 — so a session id belonging to another user
@@ -100,6 +112,9 @@ def get_session(db: Session, session_id: int, *, owner_id: int) -> models.QuizSe
     return session
 
 
+# Shared lookup used by submit_answer and get_hint: resolves a session +
+# session-question pair, checking ownership and that the session is still
+# in progress.
 def _get_in_progress_session_question(
     db: Session, session_id: int, session_question_id: int, *, owner_id: int
 ) -> tuple[models.QuizSession, models.QuizSessionQuestion]:
@@ -113,6 +128,9 @@ def _get_in_progress_session_question(
     return session, sq
 
 
+# Records a player's answer to one question, scores it server-side (the
+# client never knows which choice is correct before this call), and
+# returns the saved attempt plus the XP it earned.
 def submit_answer(
     db: Session,
     *,
@@ -154,6 +172,8 @@ def submit_answer(
     return attempt, xp_earned
 
 
+# Picks 2 answer ids that are safe to eliminate for a question (always
+# wrong, never the one correct answer), for the in-game hint feature.
 def get_hint(db: Session, *, session_id: int, session_question_id: int, owner_id: int) -> list[int]:
     """Returns 2 answer ids safe to rule out — always wrong, never the
     correct one. Deterministic per session-question (seeded off its own
@@ -167,6 +187,11 @@ def get_hint(db: Session, *, session_id: int, session_question_id: int, owner_id
     return sorted(random.Random(sq.id).sample(wrong_answer_ids, min(2, len(wrong_answer_ids))))
 
 
+# Finalizes a session: recomputes total XP/score from the stored answer
+# attempts (authoritative, not trusting any client-reported running
+# total), updates the player's stats/level/streak, awards any newly
+# earned achievements, logs the completion, and returns a full summary
+# with a per-question review.
 def complete_session(db: Session, session_id: int, *, owner_id: int) -> dict:
     session = get_session(db, session_id, owner_id=owner_id)
     if session.status != "in_progress":

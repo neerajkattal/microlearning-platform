@@ -10,6 +10,7 @@
  * that — see docs/BUILD_PLAN.md.
  */
 
+// A trivia category, as the client sees it.
 export interface Category {
   id: number;
   name: string;
@@ -23,6 +24,7 @@ export interface AnswerChoice {
   text: string;
 }
 
+// A question as the client is allowed to see it — no correct-answer flag.
 export interface QuestionView {
   id: number;
   text: string;
@@ -31,24 +33,28 @@ export interface QuestionView {
   choices: AnswerChoice[];
 }
 
+// One question's slot within a specific quiz session.
 export interface QuizSessionQuestionView {
   sessionQuestionId: number;
   question: QuestionView;
   order: number;
 }
 
+// What a game sends the server after the player picks an answer.
 export interface AnswerAttemptRequest {
   sessionQuestionId: number;
   selectedAnswerId: number;
   responseTimeMs: number;
 }
 
+// The server's verdict on a submitted answer.
 export interface AnswerAttemptResult {
   isCorrect: boolean;
   correctAnswerId: number;
   explanation: string | null;
 }
 
+// The final summary once a quiz session is completed.
 export interface QuizSessionResult {
   sessionId: number;
   score: number;

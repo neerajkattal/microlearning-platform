@@ -47,6 +47,8 @@ const KEYWORDS: [RegExp, string][] = [
 
 const DEFAULT_ICON = "❔";
 
+// Resolves a category name to an emoji icon: exact match first, then a
+// keyword fallback, then a generic "?" if nothing matches.
 export function categoryIcon(name: string): string {
   const exact = EXACT[name.trim().toLowerCase()];
   if (exact) return exact;

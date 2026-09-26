@@ -22,6 +22,9 @@ interface AdminDashboardProps {
   onLogOut: () => void;
 }
 
+// The logged-in admin shell: tab navigation plus the pending-topic-request
+// count badge (fetched here so it's visible from any tab, not just once
+// TopicRequestsTab itself has been opened).
 export function AdminDashboard({ adminUsername, onLogOut }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<(typeof TABS)[number]["key"]>("overview");
   const [pendingTopicRequests, setPendingTopicRequests] = useState(0);

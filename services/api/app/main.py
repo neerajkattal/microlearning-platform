@@ -6,6 +6,9 @@ from .config import settings
 from .request_logging import RequestLoggingMiddleware
 from .routers import admin, auth, health, ingestion, questions, quiz, topic_requests, users
 
+# Entry point for the whole API: builds the FastAPI app, wires up
+# middleware (logging, CORS, real-client-IP handling), and mounts every
+# router. This is what `uvicorn app.main:app` actually runs.
 app = FastAPI(title="Microlearning Platform API")
 
 # Order matters: middleware runs outside-in on the way in, inside-out on

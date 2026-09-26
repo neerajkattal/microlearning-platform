@@ -48,22 +48,26 @@ const PALETTE = {
   hudText: "#d6d3d1",
 };
 
+// Shrinks an answer label's font as its text gets longer, so it still fits its lane.
 function fontSizeFor(text: string): number {
   if (text.length > 16) return 10;
   if (text.length > 10) return 12;
   return 14;
 }
 
+// Shrinks the question prompt's font as its text gets longer, so it still fits the banner.
 function questionFontSizeFor(text: string): number {
   if (text.length > 90) return 12;
   if (text.length > 55) return 14;
   return 16;
 }
 
+// Pixel x-coordinate of the center of a lane, for drawing the car/gates.
 export function laneToX(lane: number): number {
   return SHOULDER_WIDTH + lane * LANE_WIDTH + LANE_WIDTH / 2;
 }
 
+// Pixel x-coordinate of a lane's left edge, for drawing the road/dividers.
 function laneLeftEdgeX(lane: number): number {
   return SHOULDER_WIDTH + lane * LANE_WIDTH;
 }
@@ -79,6 +83,8 @@ export const LANE_RUSH_EVENTS = {
   GATE_CHANGED: "gate-changed",
 } as const;
 
+// The Phaser scene for Lane Rush: owns rendering and input, delegating
+// all actual game rules to the pure functions in laneRushEngine.ts.
 export class LaneRushScene extends Phaser.Scene {
   private state!: LaneRushState;
   private questions: SessionQuestion[] = [];
@@ -109,11 +115,15 @@ export class LaneRushScene extends Phaser.Scene {
     super({ key: "LaneRushScene" });
   }
 
+  // Phaser lifecycle: receives the scene's start-up data (the session's
+  // questions) and builds the initial engine state from it.
   init(data: { questions: SessionQuestion[] }) {
     this.questions = data.questions;
     this.state = createGameState(this.questions);
   }
 
+  // Phaser lifecycle: builds every graphics/text object once, wires up
+  // keyboard input, and starts the countdown.
   create() {
     this.reducedMotion =
       typeof window !== "undefined" &&
@@ -184,6 +194,9 @@ export class LaneRushScene extends Phaser.Scene {
     this.render();
   }
 
+  // Phaser lifecycle, called every frame: advances the engine state,
+  // scrolls the road, redraws, and emits events (answer locked, gate
+  // changed, race finished) for the React wrapper to react to.
   update(_time: number, delta: number) {
     this.handleKeyboardInput();
     this.state = engineUpdate(this.state, delta);
@@ -253,30 +266,37 @@ export class LaneRushScene extends Phaser.Scene {
    * itself has no opinion on mobile UI chrome, so that's rendered as
    * ordinary HTML overlaying the canvas (see ENGINEERING.md "touch/mobile
    * controls"), and just calls into the scene through these. */
+  // Shifts the car one lane left.
   pressLeft() {
     this.state = shiftLane(this.state, -1);
   }
 
+  // Shifts the car one lane right.
   pressRight() {
     this.state = shiftLane(this.state, 1);
   }
 
+  // Pauses gate movement and lane input.
   pauseGame() {
     this.state = enginePause(this.state);
   }
 
+  // Resumes a paused race.
   resumeGame() {
     this.state = engineResume(this.state);
   }
 
+  // Whether the race is currently paused.
   isPaused() {
     return this.state.phase === "paused";
   }
 
+  // The session-question id of whatever gate is currently in front of the car.
   getCurrentSessionQuestionId(): number | null {
     return this.state.currentGate?.question.session_question_id ?? null;
   }
 
+  // Marks 2 answer ids for the current gate as hint-eliminated (visual only).
   applyHint(eliminatedAnswerIds: number[]) {
     this.state = applyHint(this.state, eliminatedAnswerIds);
   }
@@ -288,6 +308,8 @@ export class LaneRushScene extends Phaser.Scene {
     this.state = engineStop(this.state);
   }
 
+  // Reads arrow-key/A-D state and shifts lanes on each fresh keydown
+  // (not held-key repeat).
   private handleKeyboardInput() {
     if (!this.cursors) return;
 
@@ -304,6 +326,7 @@ export class LaneRushScene extends Phaser.Scene {
     this.rightWasDown = !!rightDown;
   }
 
+  // Redraws every visual layer from the current engine state.
   private render() {
     this.drawTrack();
     this.drawBanner();
@@ -314,6 +337,7 @@ export class LaneRushScene extends Phaser.Scene {
     this.drawHud();
   }
 
+  // Updates the question-progress and score text in the corners.
   private drawHud() {
     const questionNumber = this.questions.length - this.state.queue.length;
     const clamped = Math.max(0, Math.min(this.questions.length, questionNumber));
@@ -323,6 +347,7 @@ export class LaneRushScene extends Phaser.Scene {
     this.scoreText.setText(`Score: ${this.state.score}`);
   }
 
+  // Shows the "3, 2, 1, GO!" countdown text, or clears it once running.
   private drawCountdown() {
     if (this.state.phase !== "countdown") {
       this.countdownText.setText("");
@@ -332,6 +357,7 @@ export class LaneRushScene extends Phaser.Scene {
     this.countdownText.setText(secondsLeft > 0 ? String(secondsLeft) : "GO!");
   }
 
+  // Draws the top banner and updates the question prompt text inside it.
   private drawBanner() {
     const g = this.bannerGraphics;
     g.clear();
@@ -347,6 +373,7 @@ export class LaneRushScene extends Phaser.Scene {
     }
   }
 
+  // Updates each lane's answer-choice label, dimming any hint-eliminated ones.
   private drawAnswerLabels() {
     const gate = this.state.currentGate;
     for (let lane = 0; lane < LANE_COUNT; lane++) {
@@ -365,6 +392,7 @@ export class LaneRushScene extends Phaser.Scene {
     }
   }
 
+  // Draws the checkered gate bar at its current travel progress toward the car.
   private drawGate() {
     const g = this.gateGraphics;
     g.clear();
@@ -388,6 +416,7 @@ export class LaneRushScene extends Phaser.Scene {
     }
   }
 
+  // Draws the road, shoulders, and scrolling dashed lane dividers.
   private drawTrack() {
     const g = this.trackGraphics;
     g.clear();
@@ -421,6 +450,7 @@ export class LaneRushScene extends Phaser.Scene {
     }
   }
 
+  // Draws the player's car sprite at its current lane.
   private drawCar() {
     const g = this.carGraphics;
     g.clear();

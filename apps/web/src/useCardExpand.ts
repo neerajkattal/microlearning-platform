@@ -20,6 +20,7 @@ export function useCardExpand(durationMs = 500) {
   const [target, setTarget] = useState<ExpandTarget | null>(null);
   const [expanded, setExpanded] = useState(false);
 
+  // Starts the expand animation for one card and schedules the completion callback.
   function trigger(target: ExpandTarget, onComplete: () => void) {
     setTarget(target);
     setExpanded(false);

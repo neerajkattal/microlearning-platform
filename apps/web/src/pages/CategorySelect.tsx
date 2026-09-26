@@ -20,6 +20,8 @@ const ANY_CATEGORY_COLOR = "#fb923c";
 const XP_PER_LEVEL = 100;
 const FEATURED_COUNT = 8;
 
+// The home/category-browsing screen: stats banner, featured carousel,
+// search, grouped category rows, and the "request a missing topic" flow.
 export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
   const [categories, setCategories] = useState<Category[] | null>(null);
   const [error, setError] = useState(false);
@@ -65,6 +67,7 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
     .slice(0, FEATURED_COUNT);
   const xpIntoLevel = me ? me.stats.xp % XP_PER_LEVEL : 0;
 
+  // Submits the current search term as a topic request.
   async function handleRequestTopic() {
     const topic = search.trim();
     if (!topic || requestingTopic) return;
@@ -81,6 +84,8 @@ export function CategorySelect({ onSelectCategory }: CategorySelectProps) {
     }
   }
 
+  // Captures the clicked tile's on-screen rect and kicks off the
+  // card-expand transition before actually navigating to quiz options.
   function selectWithExpand(
     e: React.MouseEvent<HTMLButtonElement>,
     slug: string | null,

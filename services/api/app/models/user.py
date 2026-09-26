@@ -6,6 +6,8 @@ from sqlalchemy.orm import relationship
 from ..database import Base
 
 
+# A player's account — login credentials plus profile fields. Their XP,
+# level, and streak live separately, in UserStats below.
 class User(Base):
     __tablename__ = "users"
 
@@ -36,6 +38,8 @@ class User(Base):
     achievements = relationship("UserAchievement", back_populates="user")
 
 
+# A player's gamification progress — total XP, derived level, and daily
+# streak — updated by quiz_engine/scoring.py each time a session completes.
 class UserStats(Base):
     __tablename__ = "user_stats"
 

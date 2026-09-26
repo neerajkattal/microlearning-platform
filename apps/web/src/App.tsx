@@ -45,12 +45,16 @@ function isMainAppScreen(screen: Screen): boolean {
   return screen.name !== "checking-auth" && screen.name !== "auth";
 }
 
+// Picks the header health-dot's color/animation for the current status.
 function statusDotClass(status: HealthStatus): string {
   if (status === "ok") return "bg-emerald-400";
   if (status === "error") return "bg-red-500";
   return "bg-stone-500 animate-pulse";
 }
 
+// The root player-facing component: owns the whole app's screen state
+// machine (which screen is showing, the logged-in user, in-flight quiz
+// context) and renders the current screen plus the shared header.
 export default function App() {
   const [status, setStatus] = useState<HealthStatus>("checking");
   const [slowHealthCheck, setSlowHealthCheck] = useState(false);
@@ -92,17 +96,23 @@ export default function App() {
       .catch(() => setScreen({ name: "auth" }));
   }, [screen.name]);
 
+  // Called after a successful login/register: stores the user and moves
+  // to the category browser.
   function handleAuthenticated(user: User) {
     setCurrentUser(user);
     setScreen({ name: "categories" });
   }
 
+  // Clears the stored token/user and returns to the login screen.
   function logOut() {
     clearToken();
     setCurrentUser(null);
     setScreen({ name: "auth" });
   }
 
+  // Starts a new quiz session (remembering the choices for "play again")
+  // and moves to the quiz screen, or falls back to the category screen
+  // with an error message if the request fails.
   async function startQuiz(
     categorySlug: string | null,
     mode: GameMode,

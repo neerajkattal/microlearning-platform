@@ -19,6 +19,8 @@ export const AVATAR_OPTIONS: { key: string; emoji: string; label: string }[] = [
 
 const BY_KEY = new Map(AVATAR_OPTIONS.map((option) => [option.key, option]));
 
+// Looks up the emoji for a stored avatar key, falling back to the
+// astronaut if the key is missing or unrecognized.
 export function avatarEmoji(key: string | null | undefined): string {
   return (key && BY_KEY.get(key)?.emoji) || "🧑‍🚀";
 }

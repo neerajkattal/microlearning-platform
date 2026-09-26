@@ -32,6 +32,8 @@ ACHIEVEMENT_DEFINITIONS: list[AchievementDefinition] = [
 ]
 
 
+# Looks up an Achievement row by code, creating it the first time it's
+# ever awarded to anyone.
 def get_or_create_achievement(db: Session, definition: AchievementDefinition) -> models.Achievement:
     achievement = db.query(models.Achievement).filter_by(code=definition.code).first()
     if achievement:
@@ -47,6 +49,8 @@ def get_or_create_achievement(db: Session, definition: AchievementDefinition) ->
     return achievement
 
 
+# Checks whether a single achievement's condition is met right now, given
+# this session's results and the user's up-to-date stats.
 def _qualifies(code: str, *, score: int, total_questions: int, stats: models.UserStats) -> bool:
     if code == "first_win":
         return score > 0
@@ -63,6 +67,8 @@ def _qualifies(code: str, *, score: int, total_questions: int, stats: models.Use
     return False
 
 
+# Checks every achievement definition against this session's outcome and
+# awards (persists) any the user has newly qualified for.
 def check_and_award_achievements(
     db: Session, *, user: models.User, score: int, total_questions: int, stats: models.UserStats
 ) -> list[models.Achievement]:

@@ -13,6 +13,7 @@ router = APIRouter(tags=["users"])
 
 
 @router.get("/users/me", response_model=schemas.UserMeOut)
+# Returns the logged-in player's own profile, stats, and earned achievements.
 def get_my_profile(current_user: models.User = Depends(get_current_user)):
     achievements = [ua.achievement for ua in current_user.achievements]
     return schemas.UserMeOut(
@@ -23,6 +24,7 @@ def get_my_profile(current_user: models.User = Depends(get_current_user)):
 
 
 @router.patch("/users/me", response_model=schemas.UserOut)
+# Updates the logged-in player's avatar.
 def update_my_profile(
     payload: schemas.UpdateProfileRequest,
     db: Session = Depends(get_db),
@@ -35,11 +37,14 @@ def update_my_profile(
 
 
 @router.get("/leaderboard", response_model=list[schemas.LeaderboardEntryOut])
+# Returns the top players by XP (excluding anyone hidden from the
+# leaderboard), cached briefly in Redis.
 def get_leaderboard(
     limit: int = Query(default=10, ge=1, le=100),
     db: Session = Depends(get_db),
     redis: Redis = Depends(get_redis),
 ):
+    # The actual DB query, only run on a cache miss.
     def compute():
         rows = (
             db.query(models.User, models.UserStats)

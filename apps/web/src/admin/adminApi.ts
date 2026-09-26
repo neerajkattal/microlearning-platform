@@ -20,6 +20,8 @@ export class AdminUnauthorizedError extends Error {}
 // form straight to `new Error(...)` stringifies it to the useless
 // "[object Object]", since Error coerces a non-string message with
 // plain String(), not JSON.stringify.
+// Pulls a human-readable message out of a FastAPI error response body,
+// handling both the plain-string and Pydantic-validation-array shapes.
 function extractErrorMessage(body: unknown, fallback: string): string {
   const detail = (body as { detail?: unknown } | null)?.detail;
   if (typeof detail === "string") return detail;
@@ -31,6 +33,9 @@ function extractErrorMessage(body: unknown, fallback: string): string {
   return fallback;
 }
 
+// Shared fetch wrapper used by every adminApi.* call: attaches the admin
+// token, and turns a 401/403 into an AdminUnauthorizedError (also
+// clearing the stale token) with a readable message.
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token = getAdminToken();
   // Destructured out and merged explicitly - spreading `options` last
@@ -60,6 +65,8 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+// Every backend call the admin dashboard makes, in one typed object —
+// each entry is a thin wrapper over request() for one endpoint.
 export const adminApi = {
   bootstrap: (username: string, password: string, adminKey: string) =>
     request<AdminTokenResponse>("/admin/bootstrap", {

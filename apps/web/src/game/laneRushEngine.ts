@@ -35,6 +35,8 @@ export interface LaneRushState {
   eliminatedAnswerIds: number[];
 }
 
+// Builds the initial state from the session's question list: the first
+// question becomes the current gate, the rest sit in the queue.
 export function createGameState(questions: SessionQuestion[]): LaneRushState {
   const [first, ...rest] = questions;
   return {
@@ -50,6 +52,7 @@ export function createGameState(questions: SessionQuestion[]): LaneRushState {
   };
 }
 
+// Begins the pre-race countdown. No-op unless the race is still idle.
 export function start(state: LaneRushState): LaneRushState {
   return state.phase === "idle" ? { ...state, phase: "countdown", countdownMs: COUNTDOWN_MS } : state;
 }
@@ -62,6 +65,7 @@ export function pause(state: LaneRushState): LaneRushState {
   return state.phase === "running" ? { ...state, phase: "paused" } : state;
 }
 
+// Un-pauses the race. No-op unless it's currently paused.
 export function resume(state: LaneRushState): LaneRushState {
   return state.phase === "paused" ? { ...state, phase: "running" } : state;
 }
@@ -112,6 +116,8 @@ export function shiftLane(state: LaneRushState, direction: -1 | 1): LaneRushStat
   return { ...state, carLane };
 }
 
+// Pulls the next question off the queue into currentGate, or finishes
+// the race if the queue is empty.
 function spawnNextGate(state: LaneRushState): LaneRushState {
   const [next, ...rest] = state.queue;
   if (!next) {

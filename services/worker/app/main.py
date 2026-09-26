@@ -16,12 +16,17 @@ logger = logging.getLogger("worker")
 _shutdown_requested = False
 
 
+# Signal handler for SIGTERM/SIGINT: flips a flag so the main loop exits
+# cleanly after its current cycle instead of stopping mid-job.
 def _handle_shutdown_signal(signum, frame):
     global _shutdown_requested
     logger.info("shutdown signal received, finishing current cycle")
     _shutdown_requested = True
 
 
+# Polls forever (or `max_iterations` times, for tests): each tick checks
+# DB/Redis connectivity, then runs any registered job whose own interval
+# has elapsed since its last run.
 def run(max_iterations: Optional[int] = None) -> None:
     """The worker's main loop. `max_iterations` lets tests run this without
     looping forever; production entry (`__main__`) leaves it unbounded."""

@@ -36,6 +36,7 @@ interface DemoQuizProps {
   onCreateAccount: () => void;
 }
 
+// The public landing page's playable-with-no-account demo widget.
 export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -46,6 +47,7 @@ export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
   const question = DEMO_QUESTIONS[index];
   const isLast = index === DEMO_QUESTIONS.length - 1;
 
+  // Locks in the visitor's pick and awards fake demo XP if it's correct.
   function selectAnswer(choiceIndex: number) {
     if (selected !== null) return;
     setSelected(choiceIndex);
@@ -55,6 +57,7 @@ export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
     }
   }
 
+  // Moves to the next question, or finishes the demo on the last one.
   function advance() {
     if (isLast) {
       setFinished(true);
@@ -64,6 +67,7 @@ export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
     setSelected(null);
   }
 
+  // Resets the demo back to the first question.
   function playAgain() {
     setIndex(0);
     setSelected(null);
@@ -72,6 +76,7 @@ export function DemoQuiz({ onCreateAccount }: DemoQuizProps) {
     setFinished(false);
   }
 
+  // Colors a choice button green/red once answered, dims the rest.
   function choiceClassName(choiceIndex: number): string {
     const base = "text-left px-3.5 py-2.5 rounded-lg border text-sm font-medium transition-all duration-150";
     if (selected === null) {

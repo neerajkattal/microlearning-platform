@@ -1,3 +1,6 @@
+// Shared TypeScript shapes mirroring the API's response schemas
+// (services/api/app/schemas.py) — kept in sync by hand.
+
 export type Difficulty = "easy" | "medium" | "hard" | null;
 
 export interface Category {

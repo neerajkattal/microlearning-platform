@@ -20,6 +20,8 @@ const VARIANT_CLASSES: Record<Variant, string> = {
   danger: `bg-accent-coral text-ink ${PRESSABLE} disabled:opacity-40 disabled:shadow-none disabled:translate-y-0`,
 };
 
+// A styled <button> with the site's four neubrutalist variants — just
+// forwards every other prop straight through to the real element.
 export function Button({ variant = "primary", className = "", ...props }: ButtonProps) {
   return (
     <button

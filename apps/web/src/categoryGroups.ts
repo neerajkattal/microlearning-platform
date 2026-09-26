@@ -51,6 +51,8 @@ const KEYWORDS: [RegExp, GroupKey][] = [
 
 const GROUP_ORDER: GroupKey[] = ["entertainment", "science", "world", "more"];
 
+// Resolves a category name to one of the 4 group buckets, via an exact-name
+// lookup first, then a keyword regex, then "more" as the catch-all.
 function groupKeyFor(name: string): GroupKey {
   const exact = EXACT[name.trim().toLowerCase()];
   if (exact) return exact;
@@ -58,6 +60,7 @@ function groupKeyFor(name: string): GroupKey {
   return keywordMatch ? keywordMatch[1] : "more";
 }
 
+// Returns the display label (with its emoji) for a category's group.
 export function groupLabelFor(name: string): string {
   return GROUPS[groupKeyFor(name)].label;
 }

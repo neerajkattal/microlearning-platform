@@ -6,6 +6,8 @@ from sqlalchemy.orm import relationship
 from ..database import Base
 
 
+# One row per achievement definition that exists (see achievements.py's
+# ACHIEVEMENT_DEFINITIONS) — the catalog, not who's earned what.
 class Achievement(Base):
     __tablename__ = "achievements"
 
@@ -18,6 +20,7 @@ class Achievement(Base):
     user_achievements = relationship("UserAchievement", back_populates="achievement")
 
 
+# Join row: which user has earned which achievement, and when.
 class UserAchievement(Base):
     __tablename__ = "user_achievements"
     __table_args__ = (UniqueConstraint("user_id", "achievement_id", name="uq_user_achievement"),)
@@ -31,6 +34,8 @@ class UserAchievement(Base):
     achievement = relationship("Achievement", back_populates="user_achievements")
 
 
+# Rolling aggregate stats for one question — how often it's been shown,
+# answered, and answered correctly, plus average response time.
 class QuestionStatistics(Base):
     __tablename__ = "question_statistics"
 

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { adminApi } from "../adminApi";
 import type { AdminUserDetail } from "../adminTypes";
 
+// Player list with search, plus the moderation actions (rename,
+// hide/unhide from the leaderboard).
 export function UsersTab() {
   const [users, setUsers] = useState<AdminUserDetail[] | null>(null);
   const [search, setSearch] = useState("");
@@ -9,6 +11,7 @@ export function UsersTab() {
   const [renameValue, setRenameValue] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  // Loads the user list, optionally filtered by a username search term.
   function load(searchTerm?: string) {
     adminApi
       .listUsers(searchTerm || undefined)
@@ -20,11 +23,13 @@ export function UsersTab() {
     load();
   }, []);
 
+  // Re-runs the search when the form is submitted.
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     load(search);
   }
 
+  // Hides or unhides a user from the public leaderboard.
   async function toggleHidden(user: AdminUserDetail) {
     setError(null);
     try {
@@ -35,6 +40,7 @@ export function UsersTab() {
     }
   }
 
+  // Saves the in-progress rename for a user.
   async function submitRename(user: AdminUserDetail) {
     setError(null);
     try {

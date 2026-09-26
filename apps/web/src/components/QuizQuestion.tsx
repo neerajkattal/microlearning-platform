@@ -8,6 +8,9 @@ interface QuizQuestionProps {
   onComplete: (result: CompleteSessionResult) => void;
 }
 
+// The classic (non-game-mode) quiz screen: one question at a time, with
+// hints, pause/stop, and a progress bar. Timing accounts for time spent
+// paused so a paused session doesn't cost the player a speed bonus.
 export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
   const [index, setIndex] = useState(0);
   const [questionStartedAt, setQuestionStartedAt] = useState(() => Date.now());
@@ -24,6 +27,7 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
   const isLastQuestion = index === session.questions.length - 1;
   const progressPct = Math.round(((index + 1) / session.questions.length) * 100);
 
+  // Advances to the next question, resetting all per-question state.
   function goToNextQuestion() {
     setIndex((i) => i + 1);
     setSelectedAnswerId(null);
@@ -33,6 +37,7 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
     setPausedDurationMs(0);
   }
 
+  // Completes the session on the server and hands the summary to App.tsx.
   async function finishQuiz() {
     setFinishing(true);
     const completeResult = await api.completeQuizSession(session.id);
@@ -48,16 +53,20 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
     setConfirmingStop(true);
   }
 
+  // Backs out of the stop-confirmation and resumes the quiz.
   function cancelStop() {
     setConfirmingStop(false);
     resumeQuiz();
   }
 
+  // Confirms stopping early and finishes the quiz with whatever's answered so far.
   function confirmStop() {
     setConfirmingStop(false);
     finishQuiz();
   }
 
+  // Submits the chosen answer (with elapsed response time, minus any
+  // paused time) and stores the server's scoring result.
   async function selectAnswer(answerId: number) {
     if (result || paused) return; // already answered, or paused
     setSelectedAnswerId(answerId);
@@ -71,6 +80,7 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
     setResult(res);
   }
 
+  // Requests the hint (two eliminable wrong answers) for the current question.
   async function useHint() {
     if (result || hintLoading || eliminatedIds.length > 0) return;
     setHintLoading(true);
@@ -82,11 +92,14 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
     }
   }
 
+  // Pauses the quiz and records when, so resumeQuiz can exclude this
+  // downtime from the next answer's response time.
   function pauseQuiz() {
     setPaused(true);
     setPausedAt(Date.now());
   }
 
+  // Resumes the quiz, adding the time just spent paused to the running total to exclude.
   function resumeQuiz() {
     if (pausedAt !== null) {
       setPausedDurationMs((ms) => ms + (Date.now() - pausedAt));
@@ -95,6 +108,8 @@ export function QuizQuestion({ session, onComplete }: QuizQuestionProps) {
     setPaused(false);
   }
 
+  // Colors a choice button by state: eliminated (hint), correct/incorrect
+  // (after answering), or the plain default.
   function choiceClassName(choiceId: number): string {
     const base =
       "text-left px-4 py-3.5 rounded-xl border transition-all duration-150 font-medium";

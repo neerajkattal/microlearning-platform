@@ -14,6 +14,8 @@ from sqlalchemy.orm import relationship
 from ..database import Base
 
 
+# One "run" of a quiz — a set of questions a specific user is answering,
+# tracked from in_progress through completed (or abandoned).
 class QuizSession(Base):
     __tablename__ = "quiz_sessions"
 
@@ -31,6 +33,9 @@ class QuizSession(Base):
     )
 
 
+# Join row: one question as it appears within one session, at a fixed
+# position (`order`) and with its answer-choice order shuffled for that
+# player's viewing.
 class QuizSessionQuestion(Base):
     __tablename__ = "quiz_session_questions"
 
@@ -48,6 +53,9 @@ class QuizSessionQuestion(Base):
     attempt = relationship("AnswerAttempt", back_populates="quiz_session_question", uselist=False)
 
 
+# A player's actual answer to one session question — what they picked
+# (if anything), whether it was right, and how fast they answered. This is
+# the row calculate_xp (quiz_engine/scoring.py) is ultimately scoring.
 class AnswerAttempt(Base):
     __tablename__ = "answer_attempts"
 
