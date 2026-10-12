@@ -28,7 +28,7 @@ system, a moderation/admin layer, and a live production deployment.
 
 **Stack:** FastAPI (Python) · PostgreSQL · Redis · SQLAlchemy/Alembic · React +
 TypeScript · Phaser (game engine) · Docker Compose · deployed on Vercel + Render +
-Upstash.
+Neon + Upstash.
 
 ## Highlights
 
@@ -57,7 +57,7 @@ Upstash.
   reverse proxy's IP instead of the real client's).
 - **377 automated tests** (143 API, 17 worker, 217 frontend) across unit,
   integration, and component-level coverage.
-- **Live deployment** — Vercel (frontend) + Render (API, Docker) + Upstash (Redis),
+- **Live deployment** — Vercel (frontend) + Render (API, Docker) + Neon (Postgres) + Upstash (Redis),
   with a free-tier-aware architecture (GitHub Actions cron jobs replace a paid
   background worker and keep the API warm to avoid cold starts).
 
