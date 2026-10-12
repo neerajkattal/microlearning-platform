@@ -1,4 +1,4 @@
-# Deployment — Frontend (Vercel) + Backend (Render + Upstash)
+# Deployment — Frontend (Vercel) + Backend (Render + Neon + Upstash)
 
 How this project is actually deployed live. Everything below reflects what's
 really running, not a plan — including a few real gaps in Render's public API
@@ -28,7 +28,10 @@ that were discovered by hitting them directly, not assumed from docs.
 
 - **API:** `playtolearn-api` (`srv-dai95nm743jc73e7k1mg`), free web service, Docker
   runtime, live at `https://playtolearn-api.onrender.com`.
-- **Database:** `playtolearn-db`, free Postgres.
+- **Database:** free Postgres on [Neon](https://neon.tech) (project
+  `lucky-bread-13972630`), set as `DATABASE_URL` on `playtolearn-api`. Use the
+  *direct* connection string, not the `-pooler` one — the container runs
+  `alembic upgrade head` on every start.
 - **No worker/cron service** — see "Why there's no Render worker" below.
 
 Created directly via Render's REST API (not the dashboard Blueprint-apply flow,
@@ -106,10 +109,13 @@ cold-starts (~30-60s) on the next request. `.github/workflows/keep-alive.yml` pi
 bulletproof, but free and works well in practice. Upgrading `playtolearn-api` to
 `starter` (~$7/month) removes sleep entirely if this ever isn't reliable enough.
 
-**Also worth knowing**: Render's free Postgres plans are typically time-limited
-(check Render's current pricing page for the exact window) — a real limitation of
-the free-tier choice, worth revisiting if this deployment needs to stay up
-long-term.
+**Why Neon and not Render Postgres**: the database originally ran on Render's free
+Postgres (`playtolearn-db`). Render's free databases expire 30 days after creation;
+it expired on 2026-10-11, the API crash-looped on its startup migration, and every
+request failed until `DATABASE_URL` was pointed at Neon, whose free tier doesn't
+expire. The schema is rebuilt automatically by the startup migration, and questions
+are refilled by the ingestion workflow (`gh workflow run scheduled-ingestion.yml`).
+Player accounts from the old database were not recoverable.
 
 ## Local Docker Compose is unaffected
 
