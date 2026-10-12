@@ -1,4 +1,4 @@
-# Render Blueprint — deploys the API and a managed Postgres. Apply via
+# Render Blueprint — deploys the API. Apply via
 # the Render dashboard: "New +" → "Blueprint" → connect this GitHub repo
 # → Render reads this file automatically. See docs/operations/DEPLOYMENT.md
 # for the full runbook, including Redis (Upstash — Render's own Redis
@@ -12,12 +12,13 @@
 # endpoint on a schedule (ADR-0003), so .github/workflows/
 # scheduled-ingestion.yml does that instead, for free, from GitHub
 # Actions.
-databases:
-  - name: playtolearn-db
-    plan: free
-    databaseName: microlearning
-    user: microlearning
-
+#
+# No `databases:` block: Postgres lives on Neon, not Render. Render's free
+# Postgres expires 30 days after creation (playtolearn-db did exactly that
+# on 2026-10-11 and took the API down with it); Neon's free tier doesn't
+# expire. Paste Neon's *direct* (non "-pooler") connection string into
+# DATABASE_URL — alembic runs on every container start and wants a direct
+# connection.
 services:
   - type: web
     name: playtolearn-api
@@ -32,9 +33,7 @@ services:
     # `alembic upgrade head` itself on every container start instead.
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: playtolearn-db
-          property: connectionString
+        sync: false # set manually to the Neon direct connection string
       - key: JWT_SECRET_KEY
         generateValue: true
       - key: CORS_ORIGINS
